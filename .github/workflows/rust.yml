@@ -23,4 +23,5 @@ jobs:
       - name:                   Upload to codecov.io
         uses:                   codecov/codecov-action@v1
         with:
+          token:                c5b96e01-367a-400a-80f1-92d3eac2d1e6
           fail_ci_if_error:     true
