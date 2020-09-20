@@ -1,5 +1,5 @@
 # game-engine
 
-[![Build Status](https://github.com/krisukox/game-engine-v4/workflows/Build/badge.svg)](https://github.com/krisukox/game-engine-v4/actions)
+[![Build Status](https://github.com/krisukox/game-engine-v4/workflows/coverage/badge.svg)](https://github.com/krisukox/game-engine-v4/actions)
 ![codecov](https://codecov.io/gh/krisukox/game-engine-v4/branch/coordinate-graph/graphs/badge.svg?token=H1GXCQQ3YG)
 ![codecov](https://codecov.io/gh/krisukox/game-engine-v4/branch/master/graphs/badge.svg?token=H1GXCQQ3YG)
