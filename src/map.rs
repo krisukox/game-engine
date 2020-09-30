@@ -2,6 +2,8 @@ use crate::graph;
 
 pub struct Map(image::RgbaImage);
 
+const ERROR_STRING_WRONG_FORMAT: &str = "Image should be in format RGBA 8 bit";
+
 impl Map {
     pub fn new(str_path: &str) -> Result<Map, image::ImageError> {
         let path = std::path::Path::new(str_path);
@@ -10,7 +12,7 @@ impl Map {
             return Ok(Map(value));
         }
         return Err(image::ImageError::FormatError(String::from(
-            "Image should be in format RGBA 8 bit",
+            ERROR_STRING_WRONG_FORMAT,
         )));
     }
 
@@ -98,6 +100,26 @@ mod tests {
             );
         } else {
             panic!("File with image for the testcase doesn't exist or format is not RGBA 8 bit");
+        }
+    }
+
+    #[test]
+    fn new_map_file_not_found() {
+        if let Err(image::ImageError::IoError(err)) = Map::new("dummy_path/dummy_picture.png") {
+            assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        } else {
+            panic!("new_map_file_not_found test failed");
+        }
+    }
+
+    #[test]
+    fn new_map_wrong_format_image() {
+        if let Err(image::ImageError::FormatError(err_str)) =
+            Map::new("test_resources/map-wrong-format.jpeg")
+        {
+            assert_eq!(err_str, ERROR_STRING_WRONG_FORMAT);
+        } else {
+            panic!("new_map_image_wrong_format test failed");
         }
     }
 }
