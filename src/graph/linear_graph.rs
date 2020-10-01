@@ -1,4 +1,4 @@
-use crate::graph::coordinate::Coordinate;
+use super::coordinate::Coordinate;
 
 #[derive(Debug, Clone)]
 pub enum Slope {

@@ -12,6 +12,13 @@ impl Coordinate {
     }
 }
 
+impl std::ops::AddAssign<&Coordinate> for Coordinate {
+    fn add_assign(&mut self, rhs: &Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
