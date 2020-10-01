@@ -1,6 +1,6 @@
-// Angle start-end means:
+// Angle start-end direction:
 // 1.reverse clocwise
-// 2.same as on the coordinate system
+// 2.same as the coordinate system
 //
 // example below means that Angle::value returns ~1.04 radians(60 degree)
 // instead of ~5.23 radians(300 degree)
@@ -53,9 +53,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn player_get_angle_value() {
-        let pi_2 = std::f64::consts::PI * 2.0;
-
+    fn angle_value() {
         let start_angle = 0.1;
         let end_angle = 0.6;
         let angle_1 = Angle {
@@ -68,14 +66,14 @@ mod test {
         };
 
         assert_eq!(angle_1.value(), end_angle - start_angle);
-        assert_ne!(angle_1.value(), pi_2 - end_angle + start_angle);
+        assert_ne!(angle_1.value(), PI_2 - end_angle + start_angle);
 
-        assert_eq!(angle_2.value(), pi_2 - end_angle + start_angle);
+        assert_eq!(angle_2.value(), PI_2 - end_angle + start_angle);
         assert_ne!(angle_2.value(), end_angle - start_angle);
     }
 
     #[test]
-    fn player_rotate() {
+    fn angle_rotate() {
         let positive_delta = 0.6;
         let negative_delta = -0.4;
 
@@ -101,9 +99,7 @@ mod test {
     }
 
     #[test]
-    fn player_rotate_out_of_range() {
-        let pi_2 = std::f64::consts::PI * 2.0;
-
+    fn angle_rotate_out_of_range() {
         let positive_delta = 0.8;
         let negative_delta = -0.6;
 
@@ -118,13 +114,13 @@ mod test {
 
         angle.rotate(positive_delta);
         assert_eq!(angle.start, start_angle + positive_delta);
-        assert_eq!(angle.end, end_angle + positive_delta - pi_2);
+        assert_eq!(angle.end, end_angle + positive_delta - PI_2);
 
         start_angle = angle.start;
         end_angle = angle.end;
 
         angle.rotate(negative_delta);
         assert_eq!(angle.start, start_angle + negative_delta);
-        assert_eq!(angle.end, end_angle + negative_delta + pi_2);
+        assert_eq!(angle.end, end_angle + negative_delta + PI_2);
     }
 }
