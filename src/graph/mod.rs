@@ -167,4 +167,11 @@ mod tests {
             &second_coordinate_2,
         );
     }
+
+    #[test]
+    #[should_panic]
+    fn next_coordinate_panic() {
+        let graph = LinearGraph::new(Tangens(0.0), Radians(7.0));
+        graph.get_next(&Coordinate { x: 0.0, y: 0.0 });
+    }
 }

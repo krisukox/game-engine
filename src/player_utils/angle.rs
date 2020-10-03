@@ -1,6 +1,3 @@
-use crate::graph::LinearGraph;
-use std::vec::Vec;
-
 // Angle start-end direction:
 // 1.reverse clocwise
 // 2.same as the coordinate system
@@ -22,8 +19,6 @@ use std::vec::Vec;
 pub struct Angle {
     pub start: f64, // radians
     pub end: f64,   // radians
-                    // number_of_rays: i64, // number of all rays - 360 degree
-                    // rays: Vec<LinearGraph>,
 }
 
 const PI_2: f64 = std::f64::consts::PI * 2.0;
@@ -39,8 +34,6 @@ fn rotate(angle: &mut f64, value: f64) {
 }
 
 impl Angle {
-    pub fn new(start: f64, end: f64, number_of_rays: i64) {}
-
     pub fn value(&self) -> f64 {
         if self.start < self.end {
             return self.end - self.start;
