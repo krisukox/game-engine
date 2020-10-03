@@ -1,16 +1,34 @@
 use super::coordinate::Coordinate;
+use std::vec::Vec;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Slope {
     Vertical,
     Value(f64),
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Direction {
     Increasing,
     Decreasing,
 }
 
+// Increasing and Decreasing refers to x value if Slope is Value
+// Increasing and Decreasing refers to y value if Slope is Vertical
+//
+// Decr      Incr
+//   _       _
+//  |\   |y  /|
+//    \  |  /
+//     \ | /
+// x____\|/_____
+//      /|\
+//     / | \
+//    /  |  \
+//  |/_  |  _\|
+// Decr     Incr
+
+#[derive(Debug, PartialEq)]
 pub struct LinearGraph {
     slope: Slope,
     direction: Direction,
@@ -30,6 +48,51 @@ fn prev_integer(value: f64) -> f64 {
         return prev_value - 1_f64;
     }
     return prev_value;
+}
+
+fn calculate_slope(amount: usize, index: usize) -> Slope {
+    let radians = std::f64::consts::PI * index as f64 / (amount / 2) as f64;
+    return Slope::Value(radians.tan());
+}
+
+fn calculate_graph(amount: usize, index: usize) -> LinearGraph {
+    if index > amount / 2 {
+        return LinearGraph {
+            slope: calculate_slope(amount, index - amount / 2),
+            direction: Direction::Decreasing,
+        };
+    } else {
+        return LinearGraph {
+            slope: calculate_slope(amount, index),
+            direction: Direction::Increasing,
+        };
+    }
+}
+
+fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
+    if index == 0 {
+        return LinearGraph {
+            slope: Slope::Value(0.0),
+            direction: Direction::Increasing,
+        };
+    } else if index == amount / 4 {
+        return LinearGraph {
+            slope: Slope::Vertical,
+            direction: Direction::Increasing,
+        };
+    } else if index == amount / 2 {
+        return LinearGraph {
+            slope: Slope::Value(0.0),
+            direction: Direction::Decreasing,
+        };
+    } else if index == amount * 3 / 4 {
+        return LinearGraph {
+            slope: Slope::Vertical,
+            direction: Direction::Decreasing,
+        };
+    } else {
+        return calculate_graph(amount, index);
+    }
 }
 
 impl LinearGraph {
@@ -125,6 +188,14 @@ impl LinearGraph {
             }
         }
     }
+
+    pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
+        let mut all_rays = Vec::with_capacity(number_of_rays);
+        for index in 0..number_of_rays {
+            all_rays.push(generate_one_graph(number_of_rays, index));
+        }
+        return all_rays;
+    }
 }
 
 #[cfg(test)]
@@ -164,4 +235,71 @@ mod tests {
         assert_ne!(prev_integer(FLOAT_2), PREV_INTEGER_3);
         assert_ne!(prev_integer(FLOAT_3), PREV_INTEGER_1);
     }
+
+    #[test]
+    fn get_all_rays_check_size() {
+        let size = 123456_usize;
+        assert_eq!(LinearGraph::get_all_rays(size).len(), size);
+    }
+
+    // #[test]
+    // fn get_all_rays_4() {
+    //     let all_rays = LinearGraph::get_all_rays(8);
+    //     assert_eq!(
+    //         all_rays[0],
+    //         LinearGraph {
+    //             slope: Slope::Value(0.0),
+    //             direction: Direction::Increasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[1],
+    //         LinearGraph {
+    //             slope: Slope::Value(std::f64::consts::PI / 4.0),
+    //             direction: Direction::Increasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[2],
+    //         LinearGraph {
+    //             slope: Slope::Vertical,
+    //             direction: Direction::Decreasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[3],
+    //         LinearGraph {
+    //             slope: Slope::Value(std::f64::consts::PI * 3.0 / 4.0),
+    //             direction: Direction::Decreasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[4],
+    //         LinearGraph {
+    //             slope: Slope::Value(0.0),
+    //             direction: Direction::Decreasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[5],
+    //         LinearGraph {
+    //             slope: Slope::Value(0.0),
+    //             direction: Direction::Decreasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[6],
+    //         LinearGraph {
+    //             slope: Slope::Vertical,
+    //             direction: Direction::Increasing,
+    //         }
+    //     );
+    //     assert_eq!(
+    //         all_rays[7],
+    //         LinearGraph {
+    //             slope: Slope::Value(0.0),
+    //             direction: Direction::Increasing,
+    //         }
+    //     );
+    // }
 }
