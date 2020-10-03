@@ -31,18 +31,20 @@ coverage:
     project:
       default:
         # basic
-        target: 75%
+        target: auto
         threshold: 0%
         base: auto 
-        flags: 
-          - unit
-        paths: 
-          - "src"
-       # advanced
+        # advanced
+        branches: 
+          - master
+        if_no_uploads: error
         if_not_found: success
         if_ci_failed: error
-        informational: true
         only_pulls: false
+        flags: 
+          - "unit"
+        paths: 
+          - "src"
 
 parsers:
   gcov:
