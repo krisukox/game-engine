@@ -44,45 +44,45 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn next_coordinate_positive_slope_y_closer() {
-    //     let tangens = 1.5_f64;
-    //     let radians = tangens.atan();
-    //     let first_coordinate = Coordinate { x: 1.0, y: 1.5 };
+    #[test]
+    fn next_coordinate_positive_slope_y_closer() {
+        let tangens = 1.5_f64;
+        let radians = tangens.atan();
+        let first_coordinate = Coordinate { x: 1.0, y: 1.5 };
 
-    //     let coordinate_next_y = 2.0;
-    //     let second_coordinate: Coordinate = Coordinate {
-    //         x: first_coordinate.x + (coordinate_next_y - first_coordinate.y) / tangens,
-    //         y: coordinate_next_y,
-    //     };
+        let coordinate_next_y = 2.0;
+        let second_coordinate: Coordinate = Coordinate {
+            x: first_coordinate.x + (coordinate_next_y - first_coordinate.y) / tangens,
+            y: coordinate_next_y,
+        };
 
-    //     test_coordinates(
-    //         Tangens(tangens),
-    //         Radians(radians),
-    //         &first_coordinate,
-    //         &second_coordinate,
-    //     );
-    // }
+        test_coordinates(
+            Tangens(tangens),
+            Radians(radians),
+            &first_coordinate,
+            &second_coordinate,
+        );
+    }
 
-    // #[test]
-    // fn next_coordinate_negative_slope_y_closer() {
-    //     let tangens = -1.5_f64;
-    //     let radians = tangens.atan();
-    //     let first_coordinate = Coordinate { x: 1.0, y: 1.5 };
+    #[test]
+    fn next_coordinate_negative_slope_y_closer() {
+        let tangens = -1.5_f64;
+        let radians = tangens.atan();
+        let first_coordinate = Coordinate { x: 1.0, y: 1.5 };
 
-    //     let coordinate_prev_y = 1.0;
-    //     let second_coordinate: Coordinate = Coordinate {
-    //         x: first_coordinate.x + (coordinate_prev_y - first_coordinate.y) / tangens,
-    //         y: coordinate_prev_y,
-    //     };
+        let coordinate_prev_y = 1.0;
+        let second_coordinate: Coordinate = Coordinate {
+            x: first_coordinate.x + (coordinate_prev_y - first_coordinate.y) / tangens,
+            y: coordinate_prev_y,
+        };
 
-    //     test_coordinates(
-    //         Tangens(tangens),
-    //         Radians(radians),
-    //         &first_coordinate,
-    //         &second_coordinate,
-    //     );
-    // }
+        test_coordinates(
+            Tangens(tangens),
+            Radians(radians),
+            &first_coordinate,
+            &second_coordinate,
+        );
+    }
 
     // #[test]
     // fn next_coordinate_positive_slope_x_closer() {
