@@ -13,25 +13,14 @@ pub enum Direction {
     Decreasing,
 }
 
-// Increasing and Decreasing refers to x value if Slope is Value
-// Increasing and Decreasing refers to y value if Slope is Vertical
-//
-// Decr      Incr
-//   _       _
-//  |\   |y  /|
-//    \  |  /
-//     \ | /
-// x____\|/_____
-//      /|\
-//     / | \
-//    /  |  \
-//  |/_  |  _\|
-// Decr     Incr
+#[derive(Clone)]
+pub struct Tangens(pub f64);
+pub struct Radians(pub f64);
 
 #[derive(Debug, PartialEq)]
 pub struct LinearGraph {
-    slope: Slope,
-    direction: Direction,
+    tangens: f64,
+    radians: f64,
 }
 
 fn next_integer(value: f64) -> f64 {
@@ -50,152 +39,237 @@ fn prev_integer(value: f64) -> f64 {
     return prev_value;
 }
 
-fn calculate_slope(amount: usize, index: usize) -> Slope {
-    let radians = std::f64::consts::PI * index as f64 / (amount / 2) as f64;
-    return Slope::Value(radians.tan());
-}
+// fn calculate_slope(amount: usize, index: usize) -> Slope {
+//     let radians = std::f64::consts::PI * index as f64 / (amount / 2) as f64;
+//     return Slope::Value(radians.tan());
+// }
 
-fn calculate_graph(amount: usize, index: usize) -> LinearGraph {
-    if index > amount / 2 {
-        return LinearGraph {
-            slope: calculate_slope(amount, index - amount / 2),
-            direction: Direction::Decreasing,
-        };
-    } else {
-        return LinearGraph {
-            slope: calculate_slope(amount, index),
-            direction: Direction::Increasing,
-        };
-    }
-}
+// fn calculate_graph(amount: usize, index: usize) -> LinearGraph {
+//     if index > amount / 2 {
+//         return LinearGraph {
+//             slope: calculate_slope(amount, index - amount / 2),
+//             direction: Direction::Decreasing,
+//         };
+//     } else {
+//         return LinearGraph {
+//             slope: calculate_slope(amount, index),
+//             direction: Direction::Increasing,
+//         };
+//     }
+// }
 
-fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
-    if index == 0 {
-        return LinearGraph {
-            slope: Slope::Value(0.0),
-            direction: Direction::Increasing,
-        };
-    } else if index == amount / 4 {
-        return LinearGraph {
-            slope: Slope::Vertical,
-            direction: Direction::Increasing,
-        };
-    } else if index == amount / 2 {
-        return LinearGraph {
-            slope: Slope::Value(0.0),
-            direction: Direction::Decreasing,
-        };
-    } else if index == amount * 3 / 4 {
-        return LinearGraph {
-            slope: Slope::Vertical,
-            direction: Direction::Decreasing,
-        };
-    } else {
-        return calculate_graph(amount, index);
-    }
-}
+// fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
+//     if index == 0 {
+//         return LinearGraph {
+//             slope: Slope::Value(0.0),
+//             direction: Direction::Increasing,
+//         };
+//     } else if index == amount / 4 {
+//         return LinearGraph {
+//             slope: Slope::Vertical,
+//             direction: Direction::Increasing,
+//         };
+//     } else if index == amount / 2 {
+//         return LinearGraph {
+//             slope: Slope::Value(0.0),
+//             direction: Direction::Decreasing,
+//         };
+//     } else if index == amount * 3 / 4 {
+//         return LinearGraph {
+//             slope: Slope::Vertical,
+//             direction: Direction::Decreasing,
+//         };
+//     } else {
+//         return calculate_graph(amount, index);
+//     }
+// }
 
 impl LinearGraph {
-    pub fn new(slope: Slope, direction: Direction) -> LinearGraph {
-        LinearGraph { slope, direction }
+    pub fn new(tangens: Tangens, radians: Radians) -> LinearGraph {
+        LinearGraph {
+            tangens: tangens.0,
+            radians: radians.0,
+        }
     }
 
     pub fn get_next(&self, current_coordinate: &Coordinate) -> Coordinate {
-        match self.direction {
-            Direction::Increasing => {
-                if let Slope::Value(slope) = self.slope {
-                    if slope > 0_f64 {
-                        let next_x = next_integer(current_coordinate.x);
-                        let next_y = next_integer(current_coordinate.y);
-                        let delta_x = next_x - current_coordinate.x;
-                        let delta_y = next_y - current_coordinate.y;
-                        if delta_x * slope < delta_y {
-                            return Coordinate {
-                                x: next_x,
-                                y: current_coordinate.y + delta_x * slope,
-                            };
-                        } else {
-                            return Coordinate {
-                                x: current_coordinate.x + delta_y / slope,
-                                y: next_y,
-                            };
-                        }
-                    } else {
-                        let next_x = next_integer(current_coordinate.x);
-                        let prev_y = prev_integer(current_coordinate.y);
-                        let delta_x = next_x - current_coordinate.x;
-                        let delta_y = prev_y - current_coordinate.y; // negative
-                        if delta_x * -slope < -delta_y {
-                            return Coordinate {
-                                x: next_x,
-                                y: current_coordinate.y + delta_x * slope,
-                            };
-                        } else {
-                            return Coordinate {
-                                x: current_coordinate.x + delta_y / slope,
-                                y: prev_y,
-                            };
-                        }
-                    }
-                } else {
-                    return Coordinate {
-                        x: current_coordinate.x,
-                        y: next_integer(current_coordinate.y),
-                    };
-                }
+        if self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0 {
+            // not sure if does >= works
+            let next_x = next_integer(current_coordinate.x);
+            let next_y = next_integer(current_coordinate.y);
+            let delta_x = next_x - current_coordinate.x;
+            let delta_y = next_y - current_coordinate.y;
+            if delta_x * self.tangens < delta_y {
+                return Coordinate {
+                    x: next_x,
+                    y: current_coordinate.y + delta_x * self.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / self.tangens,
+                    y: next_y,
+                };
             }
-            Direction::Decreasing => {
-                if let Slope::Value(slope) = self.slope {
-                    if slope > 0_f64 {
-                        let prev_x = prev_integer(current_coordinate.x);
-                        let prev_y = prev_integer(current_coordinate.y);
-                        let delta_x = prev_x - current_coordinate.x; // negative
-                        let delta_y = prev_y - current_coordinate.y; // negative
-                        if -delta_x * slope < -delta_y {
-                            return Coordinate {
-                                x: prev_x,
-                                y: current_coordinate.y + delta_x * slope,
-                            };
-                        } else {
-                            return Coordinate {
-                                x: current_coordinate.x + delta_y / slope,
-                                y: prev_y,
-                            };
-                        }
-                    } else {
-                        let prev_x = prev_integer(current_coordinate.x);
-                        let next_y = next_integer(current_coordinate.y);
-                        let delta_x = prev_x - current_coordinate.x; // negative
-                        let delta_y = next_y - current_coordinate.y;
-                        if -delta_x * -slope < delta_y {
-                            return Coordinate {
-                                x: prev_x,
-                                y: current_coordinate.y + delta_x * slope,
-                            };
-                        } else {
-                            return Coordinate {
-                                x: current_coordinate.x + delta_y / slope,
-                                y: next_y,
-                            };
-                        }
-                    }
-                } else {
-                    return Coordinate {
-                        x: current_coordinate.x,
-                        y: prev_integer(current_coordinate.y),
-                    };
-                }
+        } else if self.radians == std::f64::consts::PI / 2.0 {
+            return Coordinate {
+                x: current_coordinate.x,
+                y: next_integer(current_coordinate.y),
+            };
+        } else if self.radians > std::f64::consts::PI / 2.0 && self.radians < std::f64::consts::PI {
+            let prev_x = prev_integer(current_coordinate.x);
+            let next_y = next_integer(current_coordinate.y);
+            let delta_x = prev_x - current_coordinate.x; // negative
+            let delta_y = next_y - current_coordinate.y;
+            if -delta_x * -self.tangens < delta_y {
+                return Coordinate {
+                    x: prev_x,
+                    y: current_coordinate.y + delta_x * self.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / self.tangens,
+                    y: next_y,
+                };
+            }
+        } else if self.radians >= std::f64::consts::PI
+            && self.radians < std::f64::consts::PI * 3.0 / 2.0
+        {
+            let prev_x = prev_integer(current_coordinate.x);
+            let prev_y = prev_integer(current_coordinate.y);
+            let delta_x = prev_x - current_coordinate.x; // negative
+            let delta_y = prev_y - current_coordinate.y; // negative
+            if -delta_x * self.tangens < -delta_y {
+                return Coordinate {
+                    x: prev_x,
+                    y: current_coordinate.y + delta_x * self.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / self.tangens,
+                    y: prev_y,
+                };
+            }
+        } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
+            return Coordinate {
+                x: current_coordinate.x,
+                y: prev_integer(current_coordinate.y),
+            };
+        } else if self.radians > std::f64::consts::PI * 3.0 / 2.0
+            && self.radians < std::f64::consts::PI * 2.0
+        {
+            let next_x = next_integer(current_coordinate.x);
+            let prev_y = prev_integer(current_coordinate.y);
+            let delta_x = next_x - current_coordinate.x;
+            let delta_y = prev_y - current_coordinate.y; // negative
+            if delta_x * -self.tangens < -delta_y {
+                return Coordinate {
+                    x: next_x,
+                    y: current_coordinate.y + delta_x * self.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / self.tangens,
+                    y: prev_y,
+                };
             }
         }
+        panic!("radians value out of scope");
+
+        // match self.direction {
+        //     Direction::Increasing => {
+        //         if let Slope::Value(slope) = self.slope {
+        //             if slope > 0_f64 {
+        //                 let next_x = next_integer(current_coordinate.x);
+        //                 let next_y = next_integer(current_coordinate.y);
+        //                 let delta_x = next_x - current_coordinate.x;
+        //                 let delta_y = next_y - current_coordinate.y;
+        //                 if delta_x * slope < delta_y {
+        //                     return Coordinate {
+        //                         x: next_x,
+        //                         y: current_coordinate.y + delta_x * slope,
+        //                     };
+        //                 } else {
+        //                     return Coordinate {
+        //                         x: current_coordinate.x + delta_y / slope,
+        //                         y: next_y,
+        //                     };
+        //                 }
+        //             } else {
+        //                 let next_x = next_integer(current_coordinate.x);
+        //                 let prev_y = prev_integer(current_coordinate.y);
+        //                 let delta_x = next_x - current_coordinate.x;
+        //                 let delta_y = prev_y - current_coordinate.y; // negative
+        //                 if delta_x * -slope < -delta_y {
+        //                     return Coordinate {
+        //                         x: next_x,
+        //                         y: current_coordinate.y + delta_x * slope,
+        //                     };
+        //                 } else {
+        //                     return Coordinate {
+        //                         x: current_coordinate.x + delta_y / slope,
+        //                         y: prev_y,
+        //                     };
+        //                 }
+        //             }
+        //         } else {
+        //             return Coordinate {
+        //                 x: current_coordinate.x,
+        //                 y: next_integer(current_coordinate.y),
+        //             };
+        //         }
+        //     }
+        //     Direction::Decreasing => {
+        //         if let Slope::Value(slope) = self.slope {
+        //             if slope > 0_f64 {
+        //                 let prev_x = prev_integer(current_coordinate.x);
+        //                 let prev_y = prev_integer(current_coordinate.y);
+        //                 let delta_x = prev_x - current_coordinate.x; // negative
+        //                 let delta_y = prev_y - current_coordinate.y; // negative
+        //                 if -delta_x * slope < -delta_y {
+        //                     return Coordinate {
+        //                         x: prev_x,
+        //                         y: current_coordinate.y + delta_x * slope,
+        //                     };
+        //                 } else {
+        //                     return Coordinate {
+        //                         x: current_coordinate.x + delta_y / slope,
+        //                         y: prev_y,
+        //                     };
+        //                 }
+        //             } else {
+        //                 let prev_x = prev_integer(current_coordinate.x);
+        //                 let next_y = next_integer(current_coordinate.y);
+        //                 let delta_x = prev_x - current_coordinate.x; // negative
+        //                 let delta_y = next_y - current_coordinate.y;
+        //                 if -delta_x * -slope < delta_y {
+        //                     return Coordinate {
+        //                         x: prev_x,
+        //                         y: current_coordinate.y + delta_x * slope,
+        //                     };
+        //                 } else {
+        //                     return Coordinate {
+        //                         x: current_coordinate.x + delta_y / slope,
+        //                         y: next_y,
+        //                     };
+        //                 }
+        //             }
+        //         } else {
+        //             return Coordinate {
+        //                 x: current_coordinate.x,
+        //                 y: prev_integer(current_coordinate.y),
+        //             };
+        //         }
+        //     }
+        // }
     }
 
-    pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
-        let mut all_rays = Vec::with_capacity(number_of_rays);
-        for index in 0..number_of_rays {
-            all_rays.push(generate_one_graph(number_of_rays, index));
-        }
-        return all_rays;
-    }
+    // pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
+    //     let mut all_rays = Vec::with_capacity(number_of_rays);
+    //     for index in 0..number_of_rays {
+    //         all_rays.push(generate_one_graph(number_of_rays, index));
+    //     }
+    //     return all_rays;
+    // }
 }
 
 #[cfg(test)]
@@ -236,11 +310,11 @@ mod tests {
         assert_ne!(prev_integer(FLOAT_3), PREV_INTEGER_1);
     }
 
-    #[test]
-    fn get_all_rays_check_size() {
-        let size = 123456_usize;
-        assert_eq!(LinearGraph::get_all_rays(size).len(), size);
-    }
+    // #[test]
+    // fn get_all_rays_check_size() {
+    //     let size = 123456_usize;
+    //     assert_eq!(LinearGraph::get_all_rays(size).len(), size);
+    // }
 
     // #[test]
     // fn get_all_rays_4() {
