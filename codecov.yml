@@ -21,19 +21,6 @@ coverage:
       default:
         # basic
         target: 90%
-        threshold: 0%
-        base: auto 
-        # advanced
-        branches: 
-          - master
-        if_no_uploads: error
-        if_not_found: success
-        if_ci_failed: error
-        only_pulls: false
-        flags: 
-          - "unit"
-        paths: 
-          - "src"
 
 parsers:
   gcov:
