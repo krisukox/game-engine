@@ -2,7 +2,7 @@ mod coordinate;
 mod linear_graph;
 
 pub use self::coordinate::Coordinate;
-pub use self::linear_graph::{Direction, LinearGraph, Radians, Slope, Tangens};
+pub use self::linear_graph::{LinearGraph, Radians, Tangens};
 
 #[cfg(test)]
 mod tests {
@@ -129,8 +129,8 @@ mod tests {
         let first_coordinate_1 = Coordinate { x: 1.5, y: 1.0 };
         let second_coordinate_1 = Coordinate { x: 1.5, y: 2.0 };
 
-        let first_coordinate_2 = Coordinate { x: 2.0, y: 1.0 };
-        let second_coordinate_2 = Coordinate { x: 2.0, y: 2.0 };
+        let first_coordinate_2 = Coordinate { x: 2.0, y: 2.0 };
+        let second_coordinate_2 = Coordinate { x: 2.0, y: 1.0 };
 
         test_coordinates(
             Tangens(std::f64::INFINITY),
@@ -140,7 +140,7 @@ mod tests {
         );
         test_coordinates(
             Tangens(std::f64::NEG_INFINITY),
-            Radians(std::f64::consts::PI / 2.0),
+            Radians(std::f64::consts::PI * 3.0 / 2.0),
             &first_coordinate_2,
             &second_coordinate_2,
         );
@@ -151,8 +151,8 @@ mod tests {
         let first_coordinate_1 = Coordinate { x: 2.0, y: 1.5 };
         let second_coordinate_1 = Coordinate { x: 3.0, y: 1.5 };
 
-        let first_coordinate_2 = Coordinate { x: 2.0, y: 2.0 };
-        let second_coordinate_2 = Coordinate { x: 3.0, y: 2.0 };
+        let first_coordinate_2 = Coordinate { x: 3.0, y: 2.0 };
+        let second_coordinate_2 = Coordinate { x: 2.0, y: 2.0 };
 
         test_coordinates(
             Tangens(0.0),
@@ -162,7 +162,7 @@ mod tests {
         );
         test_coordinates(
             Tangens(0.0),
-            Radians(0.0),
+            Radians(std::f64::consts::PI),
             &first_coordinate_2,
             &second_coordinate_2,
         );
