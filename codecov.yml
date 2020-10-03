@@ -14,13 +14,17 @@ coverage:
         target: 90%
         threshold: 0%
         base: auto 
-
-coverage:
-  status:
     patch:
       default:
         # basic
         target: 90%
+
+# coverage:
+#   status:
+#     patch:
+#       default:
+#         # basic
+#         target: 90%
 
 parsers:
   gcov:
