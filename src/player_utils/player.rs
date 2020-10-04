@@ -34,10 +34,7 @@ mod test {
         let angle_start = 1.3;
         let angle_end = 4.3;
         let player = Player::new(
-            Angle {
-                start: angle_start,
-                end: angle_end,
-            },
+            Angle::new(angle_start, angle_end, 100),
             Coordinate { x: 0.0, y: 0.0 },
         );
         assert_eq!(player.get_angle_value(), angle_end - angle_start);
@@ -49,10 +46,7 @@ mod test {
         let angle_start = 1.3;
         let angle_end = 4.3;
         let mut player = Player::new(
-            Angle {
-                start: angle_start,
-                end: angle_end,
-            },
+            Angle::new(angle_start, angle_end, 100),
             Coordinate { x: 0.0, y: 0.0 },
         );
         player.rotate(rotate_delta);
@@ -67,10 +61,7 @@ mod test {
         let coordinate_x = 1.3;
         let coordinate_y = 4.7;
         let mut player = Player::new(
-            Angle {
-                start: 0.0,
-                end: 0.0,
-            },
+            Angle::new(0.0, 0.0, 100),
             Coordinate {
                 x: coordinate_x,
                 y: coordinate_y,

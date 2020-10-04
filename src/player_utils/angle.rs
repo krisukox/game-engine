@@ -1,3 +1,6 @@
+use crate::graph::LinearGraph;
+use std::vec::Vec;
+
 // Angle start-end direction:
 // 1.reverse clocwise
 // 2.same as the coordinate system
@@ -17,8 +20,9 @@
 //       |
 #[derive(Debug)]
 pub struct Angle {
-    pub start: f64, // radians
-    pub end: f64,   // radians
+    pub start: f64,         // radians
+    pub end: f64,           // radians
+    rays: Vec<LinearGraph>, // all rays around the player
 }
 
 const PI_2: f64 = std::f64::consts::PI * 2.0;
@@ -34,6 +38,14 @@ fn rotate(angle: &mut f64, value: f64) {
 }
 
 impl Angle {
+    pub fn new(start: f64, end: f64, number_of_rays: usize) -> Angle {
+        Angle {
+            start: start,
+            end: end,
+            rays: LinearGraph::get_all_rays(number_of_rays),
+        }
+    }
+
     pub fn value(&self) -> f64 {
         if self.start < self.end {
             return self.end - self.start;
@@ -56,14 +68,8 @@ mod test {
     fn angle_value() {
         let start_angle = 0.1;
         let end_angle = 0.6;
-        let angle_1 = Angle {
-            start: start_angle,
-            end: end_angle,
-        };
-        let angle_2 = Angle {
-            start: end_angle,
-            end: start_angle,
-        };
+        let angle_1 = Angle::new(start_angle, end_angle, 100);
+        let angle_2 = Angle::new(end_angle, start_angle, 100);
 
         assert_eq!(angle_1.value(), end_angle - start_angle);
         assert_ne!(angle_1.value(), PI_2 - end_angle + start_angle);
@@ -79,10 +85,7 @@ mod test {
 
         let mut start_angle = 3.2;
         let mut end_angle = 3.9;
-        let mut angle = Angle {
-            start: start_angle,
-            end: end_angle,
-        };
+        let mut angle = Angle::new(start_angle, end_angle, 100);
         assert_eq!(angle.start, start_angle);
         assert_eq!(angle.end, end_angle);
 
@@ -105,10 +108,7 @@ mod test {
 
         let mut start_angle = 5.1;
         let mut end_angle = 5.5;
-        let mut angle = Angle {
-            start: start_angle,
-            end: end_angle,
-        };
+        let mut angle = Angle::new(start_angle, end_angle, 100);
         assert_eq!(angle.start, start_angle);
         assert_eq!(angle.end, end_angle);
 
