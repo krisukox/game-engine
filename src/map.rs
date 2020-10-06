@@ -1,5 +1,7 @@
 use crate::graph;
 
+use std::vec::Vec;
+
 pub struct Map(image::RgbaImage);
 
 const ERROR_STRING_WRONG_FORMAT: &str = "Image should be in format RGBA 8 bit";
@@ -32,25 +34,70 @@ impl Map {
         return pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0;
     }
 
+    fn is_black_wall(
+        &self,
+        coordinate_1: graph::Coordinate,
+        coordinate_2: graph::Coordinate,
+    ) -> Option<Vec<graph::Coordinate>> {
+        if self.is_black_pixel(&coordinate_1) && self.is_black_pixel(&coordinate_2) {
+            return Some(vec![coordinate_1, coordinate_2]);
+        }
+        return None;
+    }
+
+    fn get_point_or_wall(&self, coordinate: &graph::Coordinate) -> Option<Vec<graph::Coordinate>> {
+        let x_floor = coordinate.x.floor();
+        let y_floor = coordinate.y.floor();
+        if x_floor == coordinate.x && y_floor == coordinate.y {
+            if self.is_black_pixel(coordinate) {
+                return Some(vec![coordinate.clone()]);
+            }
+            return None;
+        } else if x_floor == coordinate.x {
+            return self.is_black_wall(
+                graph::Coordinate {
+                    x: coordinate.x,
+                    y: y_floor,
+                },
+                graph::Coordinate {
+                    x: coordinate.x,
+                    y: coordinate.y.ceil(),
+                },
+            );
+        } else if y_floor == coordinate.y {
+            return self.is_black_wall(
+                graph::Coordinate {
+                    x: x_floor,
+                    y: coordinate.y,
+                },
+                graph::Coordinate {
+                    x: coordinate.x.ceil(),
+                    y: coordinate.y,
+                },
+            );
+        }
+        println!("It shouldn't heppend but treat it normally");
+        let rounded_coordinate = graph::Coordinate {
+            x: coordinate.x.round(),
+            y: coordinate.y.round(),
+        };
+        if self.is_black_pixel(&rounded_coordinate) {
+            return Some(vec![rounded_coordinate]);
+        }
+        return None;
+    }
+
     pub fn cast_ray(
         &self,
         position: &graph::Coordinate,
         ray: &graph::LinearGraph,
     ) -> Vec<graph::Coordinate> {
-        let mut black_points: Vec<graph::Coordinate> = Vec::new();
-
         let mut last_position = position.clone();
         let mut next_position: graph::Coordinate;
         loop {
             next_position = ray.get_next(&last_position);
-            let points = next_position.get_nearest_coordinates();
-            for point in points {
-                if self.is_black_pixel(&point) {
-                    black_points.push(point);
-                }
-            }
-            if !black_points.is_empty() {
-                return black_points;
+            if let Some(points) = self.get_point_or_wall(&next_position) {
+                return points;
             }
             last_position = next_position;
         }

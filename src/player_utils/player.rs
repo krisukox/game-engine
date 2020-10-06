@@ -1,5 +1,6 @@
 use super::angle::Angle;
-use crate::graph::Coordinate;
+use crate::graph::{Coordinate, LinearGraph};
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct Player {
@@ -22,6 +23,10 @@ impl Player {
 
     pub fn change_position(&mut self, position_delta: &Coordinate) {
         self.position += position_delta;
+    }
+
+    pub fn get_rays(&self) -> Rc<Vec<LinearGraph>> {
+        return self.angle.get_rays();
     }
 }
 
