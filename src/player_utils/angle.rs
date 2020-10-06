@@ -1,5 +1,4 @@
 use crate::graph::LinearGraph;
-use std::rc::Rc;
 
 const PI_2: f64 = std::f64::consts::PI * 2.0;
 
@@ -24,7 +23,7 @@ const PI_2: f64 = std::f64::consts::PI * 2.0;
 pub struct Angle {
     pub start: f64,             // radians
     pub end: f64,               // radians
-    rays: Rc<Vec<LinearGraph>>, // all rays around the player
+    rays: Vec<LinearGraph>,     // all rays around the player
     radians_as_rays_index: f64, // number of rays devided by 2 PI
 }
 
@@ -43,7 +42,7 @@ impl Angle {
         Angle {
             start: start,
             end: end,
-            rays: Rc::new(LinearGraph::get_all_rays(number_of_rays)),
+            rays: LinearGraph::get_all_rays(number_of_rays),
             radians_as_rays_index: number_of_rays as f64 / PI_2,
         }
     }
@@ -78,10 +77,6 @@ impl Angle {
             start: self.start_into_rays_index(),
             end: self.end_into_rays_index(),
         }]
-    }
-
-    pub fn get_rays(&self) -> Rc<Vec<LinearGraph>> {
-        return Rc::clone(&self.rays);
     }
 
     fn start_into_rays_index(&self) -> usize {
