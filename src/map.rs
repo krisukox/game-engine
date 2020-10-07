@@ -34,57 +34,20 @@ impl Map {
         return pixel[0] == 0 && pixel[1] == 0 && pixel[2] == 0;
     }
 
-    fn is_black_wall(
+    fn is_black_wall_or_point(
         &self,
-        coordinate_1: graph::Coordinate,
-        coordinate_2: graph::Coordinate,
+        points: Vec<graph::Coordinate>,
     ) -> Option<Vec<graph::Coordinate>> {
-        if self.is_black_pixel(&coordinate_1) && self.is_black_pixel(&coordinate_2) {
-            return Some(vec![coordinate_1, coordinate_2]);
+        for point in &points {
+            if !self.is_black_pixel(&point) {
+                return None;
+            }
         }
-        return None;
+        return Some(points);
     }
 
     fn get_point_or_wall(&self, coordinate: &graph::Coordinate) -> Option<Vec<graph::Coordinate>> {
-        let x_floor = coordinate.x.floor();
-        let y_floor = coordinate.y.floor();
-        if x_floor == coordinate.x && y_floor == coordinate.y {
-            if self.is_black_pixel(coordinate) {
-                return Some(vec![coordinate.clone()]);
-            }
-            return None;
-        } else if x_floor == coordinate.x {
-            return self.is_black_wall(
-                graph::Coordinate {
-                    x: coordinate.x,
-                    y: y_floor,
-                },
-                graph::Coordinate {
-                    x: coordinate.x,
-                    y: coordinate.y.ceil(),
-                },
-            );
-        } else if y_floor == coordinate.y {
-            return self.is_black_wall(
-                graph::Coordinate {
-                    x: x_floor,
-                    y: coordinate.y,
-                },
-                graph::Coordinate {
-                    x: coordinate.x.ceil(),
-                    y: coordinate.y,
-                },
-            );
-        }
-        println!("It shouldn't heppend but treat it normally");
-        let rounded_coordinate = graph::Coordinate {
-            x: coordinate.x.round(),
-            y: coordinate.y.round(),
-        };
-        if self.is_black_pixel(&rounded_coordinate) {
-            return Some(vec![rounded_coordinate]);
-        }
-        return None;
+        return self.is_black_wall_or_point(coordinate.get_nearest_coordinates());
     }
 
     pub fn cast_ray(
@@ -273,7 +236,7 @@ mod tests {
             if let Some(black_point_or_wall) = black_point_or_wall_1 {
                 assert!(black_point_or_wall.contains(&position_black_1));
             } else {
-                panic!("");
+                panic!("black_point_or_wall_1 contains None");
             }
             if let Some(black_point_or_wall) = black_point_or_wall_2 {
                 assert!(black_point_or_wall.contains(&graph::Coordinate {
@@ -285,7 +248,7 @@ mod tests {
                     y: position_black_2.y.floor()
                 }));
             } else {
-                panic!("");
+                panic!("black_point_or_wall_2 contains None");
             }
             if let Some(black_point_or_wall) = black_point_or_wall_3 {
                 assert!(black_point_or_wall.contains(&graph::Coordinate {
@@ -297,7 +260,7 @@ mod tests {
                     y: position_black_3.y
                 }));
             } else {
-                panic!("");
+                panic!("black_point_or_wall_3 contains None");
             }
             if let Some(black_point_or_wall) = black_point_or_wall_4 {
                 assert!(black_point_or_wall.contains(&graph::Coordinate {
@@ -305,7 +268,7 @@ mod tests {
                     y: position_black_4.y.round()
                 }));
             } else {
-                panic!("");
+                panic!("black_point_or_wall_4 contains None");
             }
         }
     }
