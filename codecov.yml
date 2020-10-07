@@ -3,23 +3,12 @@ codecov:
 
 coverage:
   status:
+    project:
+      default:
+        target: 90%
     patch:
       default:
-        # basic
-        target: auto
-        threshold: 0%
-        base: auto 
-        # advanced
-        branches: 
-          - master
-        if_no_uploads: error
-        if_not_found: success
-        if_ci_failed: error
-        only_pulls: false
-        flags: 
-          - "unit"
-        paths: 
-          - "src"
+        target: 90%
 
 parsers:
   gcov:
