@@ -1,7 +1,5 @@
 use crate::graph;
 
-use std::vec::Vec;
-
 pub struct Map(image::RgbaImage);
 
 const ERROR_STRING_WRONG_FORMAT: &str = "Image should be in format RGBA 8 bit";
