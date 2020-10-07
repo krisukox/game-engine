@@ -1,5 +1,4 @@
 use super::coordinate::Coordinate;
-use std::vec::Vec;
 
 #[derive(Clone)]
 pub struct Tangens(pub f64);

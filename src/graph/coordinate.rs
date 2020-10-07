@@ -103,20 +103,14 @@ mod tests {
             y: coordinate_2.y
         }));
 
-        assert_eq!(
-            points_3[0],
-            Coordinate {
-                x: coordinate_3.x,
-                y: coordinate_3.y
-            }
-        );
+        assert!(points_3.contains(&Coordinate {
+            x: coordinate_3.x,
+            y: coordinate_3.y
+        }));
 
-        assert_eq!(
-            points_4[0],
-            Coordinate {
-                x: coordinate_4.x.round(),
-                y: coordinate_4.y.round()
-            }
-        );
+        assert!(points_4.contains(&Coordinate {
+            x: coordinate_4.x.round(),
+            y: coordinate_4.y.round()
+        }));
     }
 }

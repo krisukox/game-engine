@@ -1,7 +1,4 @@
 use crate::graph::LinearGraph;
-use std::vec::Vec;
-
-struct Rays(Vec<LinearGraph>);
 
 const PI_2: f64 = std::f64::consts::PI * 2.0;
 
