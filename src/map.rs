@@ -256,4 +256,72 @@ mod tests {
             assert_eq!(black_points_2[0], expected_black_point_2);
         }
     }
+
+    #[test]
+    fn get_point_or_wall_black() {
+        if let Ok(map) = Map::new("test_resources/map.png") {
+            let position_black_1 = graph::Coordinate { x: 33.0, y: 30.0 };
+            let position_black_2 = graph::Coordinate { x: 33.0, y: 30.5 };
+            let position_black_3 = graph::Coordinate { x: 33.5, y: 30.0 };
+            let position_black_4 = graph::Coordinate { x: 33.5, y: 30.5 };
+
+            let black_point_or_wall_1 = map.get_point_or_wall(&position_black_1);
+            let black_point_or_wall_2 = map.get_point_or_wall(&position_black_2);
+            let black_point_or_wall_3 = map.get_point_or_wall(&position_black_3);
+            let black_point_or_wall_4 = map.get_point_or_wall(&position_black_4);
+
+            if let Some(black_point_or_wall) = black_point_or_wall_1 {
+                assert!(black_point_or_wall.contains(&position_black_1));
+            } else {
+                panic!("");
+            }
+            if let Some(black_point_or_wall) = black_point_or_wall_2 {
+                assert!(black_point_or_wall.contains(&graph::Coordinate {
+                    x: position_black_2.x,
+                    y: position_black_2.y.ceil()
+                }));
+                assert!(black_point_or_wall.contains(&graph::Coordinate {
+                    x: position_black_2.x,
+                    y: position_black_2.y.floor()
+                }));
+            } else {
+                panic!("");
+            }
+            if let Some(black_point_or_wall) = black_point_or_wall_3 {
+                assert!(black_point_or_wall.contains(&graph::Coordinate {
+                    x: position_black_3.x.ceil(),
+                    y: position_black_3.y
+                }));
+                assert!(black_point_or_wall.contains(&graph::Coordinate {
+                    x: position_black_3.x.floor(),
+                    y: position_black_3.y
+                }));
+            } else {
+                panic!("");
+            }
+            if let Some(black_point_or_wall) = black_point_or_wall_4 {
+                assert!(black_point_or_wall.contains(&graph::Coordinate {
+                    x: position_black_4.x.round(),
+                    y: position_black_4.y.round()
+                }));
+            } else {
+                panic!("");
+            }
+        }
+    }
+
+    #[test]
+    fn get_point_or_wall() {
+        if let Ok(map) = Map::new("test_resources/map.png") {
+            let position_black_1 = graph::Coordinate { x: 24.0, y: 19.0 };
+            let position_black_2 = graph::Coordinate { x: 24.0, y: 19.5 };
+            let position_black_3 = graph::Coordinate { x: 24.5, y: 19.0 };
+            let position_black_4 = graph::Coordinate { x: 24.5, y: 19.5 };
+
+            assert!(map.get_point_or_wall(&position_black_1).is_none());
+            assert!(map.get_point_or_wall(&position_black_2).is_none());
+            assert!(map.get_point_or_wall(&position_black_3).is_none());
+            assert!(map.get_point_or_wall(&position_black_4).is_none());
+        }
+    }
 }
