@@ -2,9 +2,24 @@ codecov:
   require_ci_to_pass: yes
 
 coverage:
-  precision: 2
-  round: down
-  range: "70...100"
+  status:
+    patch:
+      default:
+        # basic
+        target: auto
+        threshold: 0%
+        base: auto 
+        # advanced
+        branches: 
+          - master
+        if_no_uploads: error
+        if_not_found: success
+        if_ci_failed: error
+        only_pulls: false
+        flags: 
+          - "unit"
+        paths: 
+          - "src"
 
 parsers:
   gcov:
