@@ -45,6 +45,24 @@ impl Coordinate {
             y: self.y.round(),
         }];
     }
+
+    pub fn into_radians(&self, end_coordinate: &Coordinate) -> f64 {
+        let delta_x = self.x - end_coordinate.x;
+        let delta_y = self.y - end_coordinate.y;
+        if delta_x == 0.0 {
+            if self.y < end_coordinate.y {
+                return std::f64::consts::PI / 2.0;
+            }
+            return std::f64::consts::PI * 3.0 / 2.0;
+        }
+        if self.x < end_coordinate.x {
+            if self.y > end_coordinate.y {
+                return (delta_y / delta_x).atan() + 2.0 * std::f64::consts::PI;
+            }
+            return (delta_y / delta_x).atan();
+        }
+        return (delta_y / delta_x).atan() + std::f64::consts::PI;
+    }
 }
 
 impl std::ops::AddAssign<&Coordinate> for Coordinate {
@@ -112,5 +130,26 @@ mod tests {
             x: coordinate_4.x.round(),
             y: coordinate_4.y.round()
         }));
+    }
+
+    #[test]
+    fn into_radians() {
+        let start_coordinate = Coordinate { x: 0.0, y: 0.0 };
+        let end_coordinates = vec![
+            Coordinate { x: 1.0, y: 0.0 },
+            Coordinate { x: 1.0, y: 1.0 },
+            Coordinate { x: 0.0, y: 1.0 },
+            Coordinate { x: -1.0, y: 1.0 },
+            Coordinate { x: -1.0, y: 0.0 },
+            Coordinate { x: -1.0, y: -1.0 },
+            Coordinate { x: 0.0, y: -1.0 },
+            Coordinate { x: 1.0, y: -1.0 },
+        ];
+        let mut radian = 0.0;
+
+        for end_coordinate in end_coordinates {
+            assert_eq!(start_coordinate.into_radians(&end_coordinate), radian);
+            radian += std::f64::consts::PI / 4.0;
+        }
     }
 }

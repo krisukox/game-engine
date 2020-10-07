@@ -1,9 +1,17 @@
 use crate::graph;
 use crate::map::Map;
+use crate::player_utils;
+use piston_window::Size;
+
+pub struct FieldOfView {
+    pub angle_width: f64,  //angle in radians
+    pub angle_height: f64, //angle in radians
+}
 
 pub struct ObjectGenerator {
     map: Map,
     rays: Vec<graph::LinearGraph>,
+    resolution: Size,
 }
 
 impl ObjectGenerator {
@@ -22,6 +30,20 @@ impl ObjectGenerator {
             }
         }
         return points_in_sight;
+    }
+
+    fn point_width_in_field_of_view(
+        &self,
+        angle: &player_utils::Angle,
+        start_position: &graph::Coordinate,
+        end_position: &graph::Coordinate,
+    ) -> f64 {
+        let point_radians = start_position.into_radians(end_position);
+        if point_radians < angle.start {
+            return (point_radians + std::f64::consts::PI * 2.0 - angle.start) / angle.value()
+                * self.resolution.width;
+        }
+        return (point_radians - angle.start) / angle.value() * self.resolution.width;
     }
 }
 
@@ -58,12 +80,109 @@ mod test {
         }
         let rays_indexes = 0..rays.len() / 4 + 1;
         if let Ok(map) = Map::new("test_resources/map.png") {
-            let object_generator = ObjectGenerator { map, rays };
+            let object_generator = ObjectGenerator {
+                map,
+                rays,
+                resolution: Size {
+                    width: 0.0,
+                    height: 0.0,
+                },
+            };
             let points_in_sight = object_generator.get_points_in_sight(&position, rays_indexes);
             assert_eq!(expected_points_in_sight.len(), points_in_sight.len());
             for expected_point in expected_points_in_sight {
                 assert!(points_in_sight.contains(&expected_point));
             }
+        }
+    }
+
+    #[test] //angle.start < angle.end
+    fn point_width_in_field_of_view_1() {
+        let dummy_rays: Vec<graph::LinearGraph> = Vec::new();
+        let resolution_width = 800.0;
+
+        if let Ok(map) = Map::new("test_resources/map.png") {
+            let object_generator = ObjectGenerator {
+                map,
+                rays: dummy_rays,
+                resolution: Size {
+                    width: resolution_width,
+                    height: 0.0,
+                },
+            };
+            let angle = player_utils::Angle::new(0.0, std::f64::consts::PI, 4);
+            let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: 5.0, y: 5.0 },
+                ),
+                resolution_width / 4.0
+            );
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: 0.0, y: 5.0 },
+                ),
+                resolution_width / 2.0
+            );
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: -5.0, y: 5.0 },
+                ),
+                resolution_width * 3.0 / 4.0
+            );
+        }
+    }
+
+    #[test] //angle.start > angle.end
+    fn point_width_in_field_of_view_2() {
+        let dummy_rays: Vec<graph::LinearGraph> = Vec::new();
+        let resolution_width = 800.0;
+
+        if let Ok(map) = Map::new("test_resources/map.png") {
+            let object_generator = ObjectGenerator {
+                map,
+                rays: dummy_rays,
+                resolution: Size {
+                    width: resolution_width,
+                    height: 0.0,
+                },
+            };
+            let angle = player_utils::Angle::new(
+                std::f64::consts::PI * 3.0 / 2.0,
+                std::f64::consts::PI / 2.0,
+                4,
+            );
+            let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: 5.0, y: -5.0 },
+                ),
+                resolution_width / 4.0
+            );
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: 5.0, y: 0.0 },
+                ),
+                resolution_width / 2.0
+            );
+            assert_eq!(
+                object_generator.point_width_in_field_of_view(
+                    &angle,
+                    &start_position,
+                    &graph::Coordinate { x: 5.0, y: 5.0 },
+                ),
+                resolution_width * 3.0 / 4.0
+            );
         }
     }
 }
