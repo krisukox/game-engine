@@ -1,15 +1,6 @@
 codecov:
   require_ci_to_pass: yes
 
-coverage:
-  status:
-    project:
-      default:
-        target: 90%
-    patch:
-      default:
-        target: 90%
-
 parsers:
   gcov:
     branch_detection:
