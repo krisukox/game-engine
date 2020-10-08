@@ -105,7 +105,10 @@ mod test {
                 height: 0,
             },
         };
-        let angle = player_utils::Angle::new(0.0, std::f64::consts::PI, 4);
+        let angle = player_utils::Angle {
+            start: 0.0,
+            end: std::f64::consts::PI,
+        };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
         assert_eq!(
             object_generator.point_width_in_field_of_view(
@@ -147,11 +150,10 @@ mod test {
                 height: 0,
             },
         };
-        let angle = player_utils::Angle::new(
-            std::f64::consts::PI * 3.0 / 2.0,
-            std::f64::consts::PI / 2.0,
-            4,
-        );
+        let angle = player_utils::Angle {
+            start: std::f64::consts::PI * 3.0 / 2.0,
+            end: std::f64::consts::PI / 2.0,
+        };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
         assert_eq!(
             object_generator.point_width_in_field_of_view(

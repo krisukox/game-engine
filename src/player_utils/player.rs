@@ -1,19 +1,28 @@
 use super::angle::Angle;
-use crate::graph::Coordinate;
+use crate::graph::{Coordinate, LinearGraph};
 
 #[derive(Debug)]
 pub struct Player {
     angle: Angle,
     position: Coordinate,
+    number_of_rays: usize,
 }
 
 impl Player {
-    pub fn new(angle: Angle, position: Coordinate) -> Player {
-        Player { angle, position }
+    pub fn new(angle: Angle, position: Coordinate, number_of_rays: usize) -> Player {
+        Player {
+            angle,
+            position,
+            number_of_rays,
+        }
     }
 
     pub fn get_angle_value(&self) -> f64 {
-        return self.angle.value();
+        self.angle.value()
+    }
+
+    pub fn get_all_rays(&self) -> Vec<LinearGraph> {
+        LinearGraph::get_all_rays(self.number_of_rays)
     }
 
     pub fn rotate(&mut self, angle_delta: f64) {
@@ -34,8 +43,12 @@ mod test {
         let angle_start = 1.3;
         let angle_end = 4.3;
         let player = Player::new(
-            Angle::new(angle_start, angle_end, 100),
+            Angle {
+                start: angle_start,
+                end: angle_end,
+            },
             Coordinate { x: 0.0, y: 0.0 },
+            100,
         );
         assert_eq!(player.get_angle_value(), angle_end - angle_start);
     }
@@ -46,8 +59,12 @@ mod test {
         let angle_start = 1.3;
         let angle_end = 4.3;
         let mut player = Player::new(
-            Angle::new(angle_start, angle_end, 100),
+            Angle {
+                start: angle_start,
+                end: angle_end,
+            },
             Coordinate { x: 0.0, y: 0.0 },
+            100,
         );
         player.rotate(rotate_delta);
         assert_eq!(player.angle.start, angle_start + rotate_delta);
@@ -61,11 +78,15 @@ mod test {
         let coordinate_x = 1.3;
         let coordinate_y = 4.7;
         let mut player = Player::new(
-            Angle::new(0.0, 0.0, 100),
+            Angle {
+                start: 0.0,
+                end: 0.0,
+            },
             Coordinate {
                 x: coordinate_x,
                 y: coordinate_y,
             },
+            100,
         );
         assert_eq!(player.position.x, coordinate_x);
         assert_eq!(player.position.y, coordinate_y);
