@@ -6,6 +6,11 @@ const ERROR_STRING_WRONG_FORMAT: &str = "Image should be in format RGBA 8 bit";
 
 impl Map {
     pub fn new(str_path: &str) -> Result<Map, image::ImageError> {
+        let map1 = Map(image::ImageBuffer::from_pixel(
+            1,
+            1,
+            image::Rgba([255 as u8, 255, 255, 255]),
+        ));
         let path = std::path::Path::new(str_path);
         let pic = image::open(path)?;
         if let image::ImageRgba8(value) = pic {
@@ -14,6 +19,14 @@ impl Map {
         return Err(image::ImageError::FormatError(String::from(
             ERROR_STRING_WRONG_FORMAT,
         )));
+    }
+
+    pub fn dummy() -> Map {
+        Map(image::ImageBuffer::from_pixel(
+            1,
+            1,
+            image::Rgba([255 as u8, 255, 255, 255]),
+        ))
     }
 
     fn validate_coordinate(&self, coordinate: &graph::Coordinate) -> bool {
