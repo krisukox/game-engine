@@ -1,7 +1,8 @@
 use std::ops::{Add, AddAssign, Div, Sub};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub struct Radians(pub f64);
+pub struct Radians(pub f64); // Radians range [0, pi*2)
+                             // TODO consider to add a constructor that will be checking if the value is in the range
 
 pub const PI_2: f64 = std::f64::consts::PI * 2.0;
 
@@ -91,6 +92,16 @@ mod test {
                 - Radians(radians_value)
                 - Radians(radians_value),
             Radians(radians_value)
+        );
+    }
+
+    #[test]
+    fn div() {
+        let radians_1 = 2.5;
+        let radians_2 = 0.5;
+        assert_eq!(
+            Radians(radians_1) / Radians(radians_2),
+            radians_1 / radians_2
         );
     }
 
