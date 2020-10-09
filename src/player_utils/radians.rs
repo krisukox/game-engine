@@ -48,14 +48,6 @@ impl Radians {
     }
 }
 
-impl std::ops::Deref for Radians {
-    type Target = f64;
-
-    fn deref(&self) -> &f64 {
-        return &self.0;
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;

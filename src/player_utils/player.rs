@@ -55,6 +55,20 @@ mod test {
     }
 
     #[test]
+    fn get_all_rays() {
+        let number_of_rays = 100;
+        let player = Player::new(
+            Angle {
+                start: Radians(0.0),
+                end: Radians(0.0),
+            },
+            graph::Coordinate { x: 0.0, y: 0.0 },
+            number_of_rays,
+        );
+        assert_eq!(player.get_all_rays().len(), number_of_rays);
+    }
+
+    #[test]
     fn player_rotate() {
         let rotate_delta = 1.7;
         let angle_start = 1.3;
