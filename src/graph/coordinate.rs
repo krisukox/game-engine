@@ -1,3 +1,5 @@
+use crate::player_utils;
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct Coordinate {
     pub x: f64,
@@ -46,22 +48,22 @@ impl Coordinate {
         }];
     }
 
-    pub fn into_radians(&self, end_coordinate: &Coordinate) -> f64 {
+    pub fn into_radians(&self, end_coordinate: &Coordinate) -> player_utils::Radians {
         let delta_x = self.x - end_coordinate.x;
         let delta_y = self.y - end_coordinate.y;
         if delta_x == 0.0 {
             if self.y < end_coordinate.y {
-                return std::f64::consts::PI / 2.0;
+                return player_utils::Radians(std::f64::consts::PI / 2.0);
             }
-            return std::f64::consts::PI * 3.0 / 2.0;
+            return player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0);
         }
         if self.x < end_coordinate.x {
             if self.y > end_coordinate.y {
-                return (delta_y / delta_x).atan() + 2.0 * std::f64::consts::PI;
+                return player_utils::Radians((delta_y / delta_x).atan() + player_utils::PI_2);
             }
-            return (delta_y / delta_x).atan();
+            return player_utils::Radians((delta_y / delta_x).atan());
         }
-        return (delta_y / delta_x).atan() + std::f64::consts::PI;
+        return player_utils::Radians((delta_y / delta_x).atan() + std::f64::consts::PI);
     }
 }
 
@@ -145,11 +147,11 @@ mod tests {
             Coordinate { x: 0.0, y: -1.0 },
             Coordinate { x: 1.0, y: -1.0 },
         ];
-        let mut radian = 0.0;
+        let mut radian = player_utils::Radians(0.0);
 
         for end_coordinate in end_coordinates {
             assert_eq!(start_coordinate.into_radians(&end_coordinate), radian);
-            radian += std::f64::consts::PI / 4.0;
+            radian += player_utils::Radians(std::f64::consts::PI / 4.0);
         }
     }
 }

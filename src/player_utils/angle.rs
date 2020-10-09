@@ -1,6 +1,4 @@
-use crate::graph::LinearGraph;
-
-const PI_2: f64 = std::f64::consts::PI * 2.0;
+use super::radians::{Radians, PI_2};
 
 // Angle start-end direction:
 // 1.reverse clocwise
@@ -21,70 +19,40 @@ const PI_2: f64 = std::f64::consts::PI * 2.0;
 //       |
 #[derive(Debug)]
 pub struct Angle {
-    pub start: f64,             // radians
-    pub end: f64,               // radians
-    rays: Vec<LinearGraph>,     // all rays around the player
-    radians_as_rays_index: f64, // number of rays devided by 2 PI
-}
-
-fn rotate(angle: &mut f64, value: f64) {
-    if *angle + value < 0.0 {
-        *angle = *angle + value + PI_2;
-    } else if *angle + value > PI_2 {
-        *angle = *angle + value - PI_2;
-    } else {
-        *angle += value;
-    }
+    pub start: Radians, // radians
+    pub end: Radians,   // radians
 }
 
 impl Angle {
-    pub fn new(start: f64, end: f64, number_of_rays: usize) -> Angle {
-        Angle {
-            start: start,
-            end: end,
-            rays: LinearGraph::get_all_rays(number_of_rays),
-            radians_as_rays_index: number_of_rays as f64 / PI_2,
-        }
+    pub fn value(&self) -> Radians {
+        self.end - self.start
     }
 
-    pub fn value(&self) -> f64 {
-        if self.start < self.end {
-            return self.end - self.start;
-        } else {
-            return PI_2 - self.start + self.end;
-        }
+    pub fn rotate(&mut self, angle_delta: Radians) {
+        self.start += angle_delta;
+        self.end += angle_delta;
     }
 
-    pub fn rotate(&mut self, angle_delta: f64) {
-        rotate(&mut self.start, angle_delta);
-        rotate(&mut self.end, angle_delta);
-    }
-
-    pub fn get_rays_angle_range(&self) -> std::vec::Vec<std::ops::Range<usize>> {
+    pub fn get_rays_angle_range(
+        &self,
+        number_of_rays: usize,
+    ) -> std::vec::Vec<std::ops::Range<usize>> {
         if self.start > self.end {
             return vec![
                 std::ops::Range {
-                    start: self.start_into_rays_index(),
-                    end: self.rays.len() - 1,
+                    start: self.start.into_rays_index(number_of_rays).floor() as usize,
+                    end: number_of_rays - 1,
                 },
                 std::ops::Range {
                     start: 0,
-                    end: self.end_into_rays_index(),
+                    end: self.end.into_rays_index(number_of_rays).ceil() as usize,
                 },
             ];
         }
         vec![std::ops::Range {
-            start: self.start_into_rays_index(),
-            end: self.end_into_rays_index(),
+            start: self.start.into_rays_index(number_of_rays).floor() as usize,
+            end: self.end.into_rays_index(number_of_rays).ceil() as usize,
         }]
-    }
-
-    fn start_into_rays_index(&self) -> usize {
-        (self.radians_as_rays_index * self.start).floor() as usize
-    }
-
-    fn end_into_rays_index(&self) -> usize {
-        (self.radians_as_rays_index * self.end).ceil() as usize
     }
 }
 
@@ -94,62 +62,40 @@ mod test {
 
     #[test]
     fn angle_value() {
-        let start_angle = 0.1;
-        let end_angle = 0.6;
-        let angle_1 = Angle::new(start_angle, end_angle, 100);
-        let angle_2 = Angle::new(end_angle, start_angle, 100);
+        let start_angle = 5.5;
+        let end_angle = 0.4;
+        let angle_1 = Angle {
+            start: Radians(start_angle),
+            end: Radians(end_angle),
+        };
 
-        assert_eq!(angle_1.value(), end_angle - start_angle);
-        assert_ne!(angle_1.value(), PI_2 - end_angle + start_angle);
-
-        assert_eq!(angle_2.value(), PI_2 - end_angle + start_angle);
-        assert_ne!(angle_2.value(), end_angle - start_angle);
+        assert_eq!(angle_1.value(), Radians(end_angle - start_angle + PI_2));
     }
 
     #[test]
     fn angle_rotate() {
-        let positive_delta = 0.6;
-        let negative_delta = -0.4;
+        let delta = 2.0;
 
-        let mut start_angle = 3.2;
-        let mut end_angle = 3.9;
-        let mut angle = Angle::new(start_angle, end_angle, 100);
-        assert_eq!(angle.start, start_angle);
-        assert_eq!(angle.end, end_angle);
+        let start_angle = 4.0;
+        let end_angle = 5.5;
+        let mut angle = Angle {
+            start: Radians(start_angle),
+            end: Radians(end_angle),
+        };
+        assert_eq!(angle.start, Radians(start_angle));
+        assert_eq!(angle.end, Radians(end_angle));
 
-        angle.rotate(positive_delta);
-        assert_eq!(angle.start, start_angle + positive_delta);
-        assert_eq!(angle.end, end_angle + positive_delta);
+        angle.rotate(Radians(delta));
+        assert_eq!(angle.start, Radians(start_angle + delta));
+        assert_eq!(angle.end, Radians(end_angle + delta - PI_2));
 
-        start_angle = angle.start;
-        end_angle = angle.end;
+        angle.rotate(Radians(delta));
+        assert_eq!(angle.start, Radians(start_angle + delta + delta - PI_2));
+        assert_eq!(angle.end, Radians(end_angle + delta + delta - PI_2));
 
-        angle.rotate(negative_delta);
-        assert_eq!(angle.start, start_angle + negative_delta);
-        assert_eq!(angle.end, end_angle + negative_delta);
-    }
-
-    #[test]
-    fn angle_rotate_out_of_range() {
-        let positive_delta = 0.8;
-        let negative_delta = -0.6;
-
-        let mut start_angle = 5.1;
-        let mut end_angle = 5.5;
-        let mut angle = Angle::new(start_angle, end_angle, 100);
-        assert_eq!(angle.start, start_angle);
-        assert_eq!(angle.end, end_angle);
-
-        angle.rotate(positive_delta);
-        assert_eq!(angle.start, start_angle + positive_delta);
-        assert_eq!(angle.end, end_angle + positive_delta - PI_2);
-
-        start_angle = angle.start;
-        end_angle = angle.end;
-
-        angle.rotate(negative_delta);
-        assert_eq!(angle.start, start_angle + negative_delta);
-        assert_eq!(angle.end, end_angle + negative_delta + PI_2);
+        angle.rotate(Radians(-delta));
+        assert_eq!(angle.start, Radians(start_angle + delta));
+        assert_eq!(angle.end, Radians(end_angle + delta - PI_2));
     }
 
     #[test]
@@ -157,17 +103,17 @@ mod test {
         let start_angle = 5.1;
         let end_angle = 5.5;
         let number_of_rays = 100;
-        let angle = Angle::new(start_angle, end_angle, number_of_rays);
-        let ranges = angle.get_rays_angle_range();
+        let angle = Angle {
+            start: Radians(start_angle),
+            end: Radians(end_angle),
+        };
+        let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 1);
         assert_eq!(
-            ranges[0].start,
+            ranges[0],
             (start_angle * number_of_rays as f64 / PI_2).floor() as usize
-        );
-        assert_eq!(
-            ranges[0].end,
-            (end_angle * number_of_rays as f64 / PI_2).ceil() as usize
+                ..(end_angle * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 
@@ -176,19 +122,20 @@ mod test {
         let start_angle = 5.1;
         let end_angle = 0.5;
         let number_of_rays = 100;
-        let angle = Angle::new(start_angle, end_angle, number_of_rays);
-        let ranges = angle.get_rays_angle_range();
+        let angle = Angle {
+            start: Radians(start_angle),
+            end: Radians(end_angle),
+        };
+        let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 2);
         assert_eq!(
-            ranges[0].start,
-            (start_angle * number_of_rays as f64 / PI_2).floor() as usize
+            ranges[0],
+            (start_angle * number_of_rays as f64 / PI_2).floor() as usize..number_of_rays - 1
         );
-        assert_eq!(ranges[0].end, number_of_rays - 1);
-        assert_eq!(ranges[1].start, 0);
         assert_eq!(
-            ranges[1].end,
-            (end_angle * number_of_rays as f64 / PI_2).ceil() as usize
+            ranges[1],
+            0..(end_angle * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 }
