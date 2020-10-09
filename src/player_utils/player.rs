@@ -1,15 +1,16 @@
 use super::angle::Angle;
-use crate::graph::{Coordinate, LinearGraph};
+use super::radians::Radians;
+use crate::graph;
 
 #[derive(Debug)]
 pub struct Player {
     angle: Angle,
-    position: Coordinate,
+    position: graph::Coordinate,
     number_of_rays: usize,
 }
 
 impl Player {
-    pub fn new(angle: Angle, position: Coordinate, number_of_rays: usize) -> Player {
+    pub fn new(angle: Angle, position: graph::Coordinate, number_of_rays: usize) -> Player {
         Player {
             angle,
             position,
@@ -17,19 +18,19 @@ impl Player {
         }
     }
 
-    pub fn get_angle_value(&self) -> f64 {
+    pub fn get_angle_value(&self) -> Radians {
         self.angle.value()
     }
 
-    pub fn get_all_rays(&self) -> Vec<LinearGraph> {
-        LinearGraph::get_all_rays(self.number_of_rays)
+    pub fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
+        graph::LinearGraph::get_all_rays(self.number_of_rays)
     }
 
-    pub fn rotate(&mut self, angle_delta: f64) {
+    pub fn rotate(&mut self, angle_delta: Radians) {
         self.angle.rotate(angle_delta);
     }
 
-    pub fn change_position(&mut self, position_delta: &Coordinate) {
+    pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
         self.position += position_delta;
     }
 }
@@ -44,13 +45,13 @@ mod test {
         let angle_end = 4.3;
         let player = Player::new(
             Angle {
-                start: angle_start,
-                end: angle_end,
+                start: Radians(angle_start),
+                end: Radians(angle_end),
             },
-            Coordinate { x: 0.0, y: 0.0 },
+            graph::Coordinate { x: 0.0, y: 0.0 },
             100,
         );
-        assert_eq!(player.get_angle_value(), angle_end - angle_start);
+        assert_eq!(player.get_angle_value(), Radians(angle_end - angle_start));
     }
 
     #[test]
@@ -60,29 +61,29 @@ mod test {
         let angle_end = 4.3;
         let mut player = Player::new(
             Angle {
-                start: angle_start,
-                end: angle_end,
+                start: Radians(angle_start),
+                end: Radians(angle_end),
             },
-            Coordinate { x: 0.0, y: 0.0 },
+            graph::Coordinate { x: 0.0, y: 0.0 },
             100,
         );
-        player.rotate(rotate_delta);
-        assert_eq!(player.angle.start, angle_start + rotate_delta);
-        assert_eq!(player.angle.end, angle_end + rotate_delta);
+        player.rotate(Radians(rotate_delta));
+        assert_eq!(player.angle.start, Radians(angle_start + rotate_delta));
+        assert_eq!(player.angle.end, Radians(angle_end + rotate_delta));
     }
 
     #[test]
     fn player_change_position() {
-        let change_position_delta = Coordinate { x: 0.2, y: 0.5 };
+        let change_position_delta = graph::Coordinate { x: 0.2, y: 0.5 };
 
         let coordinate_x = 1.3;
         let coordinate_y = 4.7;
         let mut player = Player::new(
             Angle {
-                start: 0.0,
-                end: 0.0,
+                start: Radians(0.0),
+                end: Radians(0.0),
             },
-            Coordinate {
+            graph::Coordinate {
                 x: coordinate_x,
                 y: coordinate_y,
             },

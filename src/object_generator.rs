@@ -34,10 +34,6 @@ impl ObjectGenerator {
         end_position: &graph::Coordinate,
     ) -> f64 {
         let point_radians = start_position.into_radians(end_position);
-        if point_radians < angle.start {
-            return (point_radians + std::f64::consts::PI * 2.0 - angle.start) / angle.value()
-                * self.resolution.width as f64;
-        }
         return (point_radians - angle.start) / angle.value() * self.resolution.width as f64;
     }
 }
@@ -106,8 +102,8 @@ mod test {
             },
         };
         let angle = player_utils::Angle {
-            start: 0.0,
-            end: std::f64::consts::PI,
+            start: player_utils::Radians(0.0),
+            end: player_utils::Radians(std::f64::consts::PI),
         };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
         assert_eq!(
@@ -151,8 +147,8 @@ mod test {
             },
         };
         let angle = player_utils::Angle {
-            start: std::f64::consts::PI * 3.0 / 2.0,
-            end: std::f64::consts::PI / 2.0,
+            start: player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0),
+            end: player_utils::Radians(std::f64::consts::PI / 2.0),
         };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
         assert_eq!(
