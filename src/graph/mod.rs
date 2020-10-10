@@ -28,20 +28,18 @@ mod tests {
         );
         let graph_increasing: LinearGraph = LinearGraph::new(tangens.clone(), radians_1);
         let graph_decreasing: LinearGraph = LinearGraph::new(tangens.clone(), radians_2);
-        let result_second_coordinate = graph_increasing.get_next(&first_coordinate);
-        let result_first_coordinate = graph_decreasing.get_next(&second_coordinate);
+        let mut result_second_coordinate = first_coordinate.clone();
+        let mut result_first_coordinate = second_coordinate.clone();
+        graph_increasing.get_next(&mut result_second_coordinate);
+        graph_decreasing.get_next(&mut result_first_coordinate);
 
         assert_eq!(*first_coordinate, result_first_coordinate);
         assert_eq!(*second_coordinate, result_second_coordinate);
 
-        assert_eq!(
-            *first_coordinate,
-            graph_decreasing.get_next(&result_second_coordinate)
-        );
-        assert_eq!(
-            *second_coordinate,
-            graph_increasing.get_next(&result_first_coordinate)
-        );
+        graph_decreasing.get_next(&mut result_second_coordinate);
+        assert_eq!(*first_coordinate, result_second_coordinate);
+        graph_increasing.get_next(&mut result_first_coordinate);
+        assert_eq!(*second_coordinate, result_first_coordinate);
     }
 
     #[test]
@@ -172,6 +170,6 @@ mod tests {
     #[should_panic]
     fn next_coordinate_panic() {
         let graph = LinearGraph::new(Tangens(0.0), Radians(7.0));
-        graph.get_next(&Coordinate { x: 0.0, y: 0.0 });
+        graph.get_next(&mut Coordinate { x: 0.0, y: 0.0 });
     }
 }

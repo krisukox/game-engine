@@ -63,42 +63,52 @@ impl LinearGraph {
         }
     }
 
-    pub fn get_next(&self, current_coordinate: &Coordinate) -> Coordinate {
+    // returns delta coordinate
+    fn get_next_(&self, current_coordinate: &mut Coordinate) -> Coordinate {
         if self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0 {
             let next_x = next_integer(current_coordinate.x);
             let next_y = next_integer(current_coordinate.y);
             let delta_x = next_x - current_coordinate.x;
             let delta_y = next_y - current_coordinate.y;
             if delta_x * self.tangens < delta_y {
+                current_coordinate.x = next_x;
+                current_coordinate.y = current_coordinate.y + delta_x * self.tangens;
                 return Coordinate {
-                    x: next_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
+                    x: delta_x,
+                    y: delta_x * self.tangens,
                 };
             } else {
+                current_coordinate.x = current_coordinate.x + delta_y / self.tangens;
+                current_coordinate.y = next_y;
                 return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: next_y,
+                    x: delta_y / self.tangens,
+                    y: delta_y,
                 };
             }
         } else if self.radians == std::f64::consts::PI / 2.0 {
-            return Coordinate {
-                x: current_coordinate.x,
-                y: next_integer(current_coordinate.y),
-            };
+            let next_y = next_integer(current_coordinate.y);
+            let delta_y = next_y - current_coordinate.y;
+            current_coordinate.x = current_coordinate.x;
+            current_coordinate.y = next_y;
+            return Coordinate { x: 0.0, y: delta_y };
         } else if self.radians > std::f64::consts::PI / 2.0 && self.radians < std::f64::consts::PI {
             let prev_x = prev_integer(current_coordinate.x);
             let next_y = next_integer(current_coordinate.y);
             let delta_x = prev_x - current_coordinate.x; // negative
             let delta_y = next_y - current_coordinate.y;
             if -delta_x * -self.tangens < delta_y {
+                current_coordinate.x = prev_x;
+                current_coordinate.y = current_coordinate.y + delta_x * self.tangens;
                 return Coordinate {
-                    x: prev_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
+                    x: -delta_x,
+                    y: -delta_x * -self.tangens,
                 };
             } else {
+                current_coordinate.x = current_coordinate.x + delta_y / self.tangens;
+                current_coordinate.y = next_y;
                 return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: next_y,
+                    x: delta_y / -self.tangens,
+                    y: delta_y,
                 };
             }
         } else if self.radians >= std::f64::consts::PI
@@ -109,21 +119,26 @@ impl LinearGraph {
             let delta_x = prev_x - current_coordinate.x; // negative
             let delta_y = prev_y - current_coordinate.y; // negative
             if -delta_x * self.tangens < -delta_y {
+                current_coordinate.x = prev_x;
+                current_coordinate.y = current_coordinate.y + delta_x * self.tangens;
                 return Coordinate {
-                    x: prev_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
+                    x: -delta_x,
+                    y: -delta_x * self.tangens,
                 };
             } else {
+                current_coordinate.x = current_coordinate.x + delta_y / self.tangens;
+                current_coordinate.y = prev_y;
                 return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: prev_y,
+                    x: -delta_y / self.tangens,
+                    y: -delta_y,
                 };
             }
         } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
-            return Coordinate {
-                x: current_coordinate.x,
-                y: prev_integer(current_coordinate.y),
-            };
+            let prev_y = prev_integer(current_coordinate.y);
+            let delta_y = current_coordinate.y - prev_y;
+            current_coordinate.x = current_coordinate.x;
+            current_coordinate.y = prev_y;
+            return Coordinate { x: 0.0, y: delta_y };
         } else if self.radians > std::f64::consts::PI * 3.0 / 2.0
             && self.radians < std::f64::consts::PI * 2.0
         {
@@ -132,18 +147,31 @@ impl LinearGraph {
             let delta_x = next_x - current_coordinate.x;
             let delta_y = prev_y - current_coordinate.y; // negative
             if delta_x * -self.tangens < -delta_y {
+                current_coordinate.x = next_x;
+                current_coordinate.y = current_coordinate.y + delta_x * self.tangens;
                 return Coordinate {
-                    x: next_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
+                    x: delta_x,
+                    y: delta_x * -self.tangens,
                 };
             } else {
+                current_coordinate.x = current_coordinate.x + delta_y / self.tangens;
+                current_coordinate.y = prev_y;
                 return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: prev_y,
+                    x: -delta_y / -self.tangens,
+                    y: -delta_y,
                 };
             }
         }
         panic!("radians value out of scope");
+    }
+
+    pub fn get_next(&self, current_coordinate: &mut Coordinate) {
+        self.get_next_(current_coordinate);
+    }
+
+    pub fn get_next_with_delta(&self, current_coordinate: &mut Coordinate) -> f64 {
+        let delta_coordinate = self.get_next_(current_coordinate);
+        (delta_coordinate.x.powi(2) + delta_coordinate.y.powi(2)).sqrt()
     }
 
     pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
