@@ -1,16 +1,19 @@
 use crate::graph;
 use crate::map::Map;
 use crate::player_utils;
+use piston_window::types::Vec2d;
 use piston_window::Size;
 
 pub struct ObjectGenerator {
     map: Map,
     rays: Vec<graph::LinearGraph>,
-    resolution: Size, // Size currently contains u32 because of piston_window 0.83.0 instead of 0.113.0
+    resolution: Size, // Size currently contains u32 because of piston_window 0.83.0 instead of f64 in 0.113.0
+    half_vertical_angle_value: player_utils::Radians,
+    wall_height: f64,
 }
 
 impl ObjectGenerator {
-    pub fn get_points_in_sight(
+    fn get_points_in_sight(
         &self,
         position: &graph::Coordinate,
         rays_indexes: std::ops::Range<usize>,
@@ -35,6 +38,43 @@ impl ObjectGenerator {
     ) -> f64 {
         let point_radians = start_position.into_radians(end_position);
         return (point_radians - angle.start) / angle.value() * self.resolution.width as f64;
+    }
+
+    // returns 1/2 of point height
+    fn point_height_in_field_of_view(
+        &self,
+        start_position: &graph::Coordinate,
+        end_position: &graph::Coordinate,
+    ) -> f64 {
+        let point_radians = graph::ZERO_COORDINATE.into_radians(&graph::Coordinate {
+            x: start_position.distance(&end_position),
+            y: self.wall_height,
+        });
+        return point_radians / self.half_vertical_angle_value * self.resolution.height as f64
+            / 2.0;
+    }
+
+    pub fn generate_polygons(
+        &self,
+        position: graph::Coordinate,
+        rays_indexes: std::ops::Range<usize>,
+        angle: player_utils::Angle,
+    ) -> Vec<[Vec2d; 4]> {
+        let mut last_point_width = 0.0;
+        let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
+        let points_in_sight = self.get_points_in_sight(&position, rays_indexes);
+        for end_position in points_in_sight {
+            let point_width = self.point_width_in_field_of_view(&angle, &position, &end_position);
+            let point_height = self.point_height_in_field_of_view(&position, &end_position);
+            polygons.push([
+                [last_point_width, point_height],
+                [point_width, point_height],
+                [point_width, -point_height],
+                [last_point_width, -point_height],
+            ]);
+            last_point_width = point_height;
+        }
+        return polygons;
     }
 }
 
@@ -78,6 +118,8 @@ mod test {
                     width: 0,
                     height: 0,
                 },
+                half_vertical_angle_value: Default::default(),
+                wall_height: Default::default(),
             };
             let points_in_sight = object_generator.get_points_in_sight(&position, rays_indexes);
             assert_eq!(expected_points_in_sight.len(), points_in_sight.len());
@@ -89,17 +131,17 @@ mod test {
 
     #[test] //angle.start < angle.end
     fn point_width_in_field_of_view_1() {
-        let dummy_map = Map::dummy();
-        let dummy_rays: Vec<graph::LinearGraph> = Vec::new();
         let resolution_width = 800;
 
         let object_generator = ObjectGenerator {
-            map: dummy_map,
-            rays: dummy_rays,
+            map: Map::dummy(),
+            rays: Default::default(),
             resolution: Size {
                 width: resolution_width,
-                height: 0,
+                height: Default::default(),
             },
+            half_vertical_angle_value: Default::default(),
+            wall_height: Default::default(),
         };
         let angle = player_utils::Angle {
             start: player_utils::Radians(0.0),
@@ -134,17 +176,17 @@ mod test {
 
     #[test] //angle.start > angle.end
     fn point_width_in_field_of_view_2() {
-        let dummy_map = Map::dummy();
-        let dummy_rays: Vec<graph::LinearGraph> = Vec::new();
         let resolution_width = 800;
 
         let object_generator = ObjectGenerator {
-            map: dummy_map,
-            rays: dummy_rays,
+            map: Map::dummy(),
+            rays: Default::default(),
             resolution: Size {
                 width: resolution_width,
                 height: 0,
             },
+            half_vertical_angle_value: Default::default(),
+            wall_height: Default::default(),
         };
         let angle = player_utils::Angle {
             start: player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0),
@@ -174,6 +216,47 @@ mod test {
                 &graph::Coordinate { x: 5.0, y: 5.0 },
             ),
             resolution_width as f64 * 3.0 / 4.0
+        );
+    }
+
+    #[test]
+    fn point_height_in_field_of_view() {
+        let resolution_height = 600;
+
+        let object_generator = ObjectGenerator {
+            map: Map::dummy(),
+            rays: Default::default(),
+            resolution: Size {
+                width: 0,
+                height: resolution_height,
+            },
+            half_vertical_angle_value: player_utils::Radians(std::f64::consts::PI / 2.0),
+            wall_height: 5.0,
+        };
+        assert_eq!(
+            object_generator.point_height_in_field_of_view(
+                &graph::Coordinate { x: 0.0, y: 0.0 },
+                &graph::Coordinate { x: 5.0, y: 0.0 },
+            ),
+            resolution_height as f64 / 4.0
+        );
+
+        let object_generator = ObjectGenerator {
+            map: Map::dummy(),
+            rays: Default::default(),
+            resolution: Size {
+                width: 0,
+                height: resolution_height,
+            },
+            half_vertical_angle_value: player_utils::Radians(std::f64::consts::PI / 3.0),
+            wall_height: 5.0,
+        };
+        assert_eq!(
+            object_generator.point_height_in_field_of_view(
+                &graph::Coordinate { x: 0.0, y: 0.0 },
+                &graph::Coordinate { x: 5.0, y: 0.0 },
+            ),
+            resolution_height as f64 * 3.0 / 8.0
         );
     }
 }

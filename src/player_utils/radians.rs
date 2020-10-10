@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, Sub};
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
 pub struct Radians(pub f64); // Radians range [0, pi*2)
                              // TODO consider to add a constructor that will be checking if the value is in the range
 

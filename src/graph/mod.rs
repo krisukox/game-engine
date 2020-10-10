@@ -1,7 +1,7 @@
 mod coordinate;
 mod linear_graph;
 
-pub use self::coordinate::Coordinate;
+pub use self::coordinate::{Coordinate, ZERO_COORDINATE};
 pub use self::linear_graph::{LinearGraph, Radians, Tangens};
 
 #[cfg(test)]

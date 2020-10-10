@@ -6,6 +6,8 @@ pub struct Coordinate {
     pub y: f64,
 }
 
+pub const ZERO_COORDINATE: Coordinate = Coordinate { x: 0.0, y: 0.0 };
+
 impl Coordinate {
     pub fn distance(&self, coordinate: &Coordinate) -> f64 {
         return (((self.x - coordinate.x).powf(2_f64) + (self.y - coordinate.y).powf(2_f64))
