@@ -1,6 +1,6 @@
 use crate::player_utils;
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Default, Clone, Debug)]
 pub struct Coordinate {
     pub x: f64,
     pub y: f64,
@@ -15,23 +15,47 @@ impl Coordinate {
             .sqrt();
     }
 
-    pub fn get_nearest_coordinates(&self) -> Vec<Coordinate> {
+    pub fn get_nearest_coordinates(&self, last_coordinate: &Coordinate) -> Vec<Coordinate> {
         let x_floor = self.x.floor();
         let y_floor = self.y.floor();
         if x_floor == self.x && y_floor == self.y {
             return vec![self.clone()];
         } else if x_floor == self.x {
+            if last_coordinate.x < x_floor {
+                return vec![
+                    Coordinate {
+                        x: self.x,
+                        y: y_floor,
+                    },
+                    Coordinate {
+                        x: self.x,
+                        y: self.y.ceil(),
+                    },
+                ];
+            }
             return vec![
-                Coordinate {
-                    x: self.x,
-                    y: y_floor,
-                },
                 Coordinate {
                     x: self.x,
                     y: self.y.ceil(),
                 },
+                Coordinate {
+                    x: self.x,
+                    y: y_floor,
+                },
             ];
         } else if y_floor == self.y {
+            if last_coordinate.y < y_floor {
+                return vec![
+                    Coordinate {
+                        x: self.x.ceil(),
+                        y: self.y,
+                    },
+                    Coordinate {
+                        x: x_floor,
+                        y: self.y,
+                    },
+                ];
+            }
             return vec![
                 Coordinate {
                     x: x_floor,
@@ -98,10 +122,10 @@ mod tests {
         let coordinate_2 = Coordinate { x: 3.5, y: 4.0 };
         let coordinate_3 = Coordinate { x: 5.0, y: 6.0 };
         let coordinate_4 = Coordinate { x: 5.5, y: 4.5 };
-        let points_1 = coordinate_1.get_nearest_coordinates();
-        let points_2 = coordinate_2.get_nearest_coordinates();
-        let points_3 = coordinate_3.get_nearest_coordinates();
-        let points_4 = coordinate_4.get_nearest_coordinates();
+        let points_1 = coordinate_1.get_nearest_coordinates(&Default::default());
+        let points_2 = coordinate_2.get_nearest_coordinates(&Default::default());
+        let points_3 = coordinate_3.get_nearest_coordinates(&Default::default());
+        let points_4 = coordinate_4.get_nearest_coordinates(&Default::default());
         assert_eq!(points_1.len(), 2);
         assert_eq!(points_2.len(), 2);
         assert_eq!(points_3.len(), 1);

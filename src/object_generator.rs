@@ -63,6 +63,7 @@ impl ObjectGenerator {
         let mut last_point_width = 0.0;
         let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
         let points_in_sight = self.get_points_in_sight(&position, rays_indexes);
+        // let points_in_sight_iter = points_in_sight.iter();
         for end_position in points_in_sight {
             let point_width = self.point_width_in_field_of_view(&angle, &position, &end_position);
             let point_height = self.point_height_in_field_of_view(&position, &end_position);
@@ -72,7 +73,7 @@ impl ObjectGenerator {
                 [point_width, -point_height],
                 [last_point_width, -point_height],
             ]);
-            last_point_width = point_height;
+            last_point_width = point_width;
         }
         return polygons;
     }
