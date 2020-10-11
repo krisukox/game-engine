@@ -17,7 +17,7 @@ use super::radians::{Radians, PI_2};
 //       |
 //       |
 //       |
-#[derive(Debug)]
+#[derive(Debug, Default, PartialEq, Clone)]
 pub struct Angle {
     pub start: Radians, // radians
     pub end: Radians,   // radians
@@ -53,6 +53,19 @@ impl Angle {
             start: self.start.into_rays_index(number_of_rays).floor() as usize,
             end: self.end.into_rays_index(number_of_rays).ceil() as usize,
         }]
+    }
+
+    pub fn is_inside(&self, radians: Radians) -> bool {
+        if self.start > self.end {
+            if radians >= self.start || radians <= self.end {
+                return true;
+            }
+            return false;
+        }
+        if radians >= self.start && radians <= self.end {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -137,5 +150,22 @@ mod test {
             ranges[1],
             0..(end_angle * number_of_rays as f64 / PI_2).ceil() as usize
         );
+    }
+
+    #[test]
+    fn is_inside() {
+        let start_angle = 5.2;
+        let end_angle = 2.3;
+        let angle = Angle {
+            start: Radians(start_angle),
+            end: Radians(end_angle),
+        };
+
+        assert!(!angle.is_inside(Radians(4.5)));
+        assert!(angle.is_inside(Radians(5.2)));
+        assert!(angle.is_inside(Radians(5.8)));
+        assert!(angle.is_inside(Radians(0.4)));
+        assert!(angle.is_inside(Radians(2.3)));
+        assert!(!angle.is_inside(Radians(2.5)));
     }
 }

@@ -16,6 +16,16 @@ fn fix_radians(radians: f64) -> f64 {
     }
 }
 
+impl Radians {
+    pub fn into_rays_index(&self, number_of_rays: usize) -> f64 {
+        number_of_rays as f64 / PI_2 * self.0
+    }
+
+    pub fn min(&self, other: Radians) -> Radians {
+        Radians(self.0.min(other.0))
+    }
+}
+
 impl AddAssign for Radians {
     fn add_assign(&mut self, rhs: Self) {
         self.0 = fix_radians(self.0 + rhs.0);
@@ -36,16 +46,23 @@ impl Sub for Radians {
     }
 }
 
-impl Div for Radians {
-    type Output = f64;
-    fn div(self, rhs: Self) -> f64 {
-        self.0 / rhs.0
+impl Sub<&Radians> for Radians {
+    type Output = Self;
+    fn sub(self, rhs: &Self) -> Self {
+        Radians(fix_radians(self.0 - rhs.0))
+    }
+}
+impl Sub<Radians> for &Radians {
+    type Output = Radians;
+    fn sub(self, rhs: Radians) -> Self::Output {
+        Radians(fix_radians(self.0 - rhs.0))
     }
 }
 
-impl Radians {
-    pub fn into_rays_index(&self, number_of_rays: usize) -> f64 {
-        number_of_rays as f64 / PI_2 * self.0
+impl Div for Radians {
+    type Output = f64;
+    fn div(self, rhs: Self) -> Self::Output {
+        self.0 / rhs.0
     }
 }
 

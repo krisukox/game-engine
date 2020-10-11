@@ -91,6 +91,21 @@ impl Coordinate {
         }
         return player_utils::Radians((delta_y / delta_x).atan() + std::f64::consts::PI);
     }
+
+    pub fn is_nearest_coordinate(&self, coordinate: &Coordinate) -> bool {
+        if self.x == coordinate.x {
+            if (self.y - coordinate.y).abs() == 1.0 {
+                return true;
+            }
+            return false;
+        } else if self.y == coordinate.y {
+            if (self.x - coordinate.x).abs() == 1.0 {
+                return true;
+            }
+            return false;
+        }
+        false
+    }
 }
 
 impl std::ops::AddAssign<&Coordinate> for Coordinate {

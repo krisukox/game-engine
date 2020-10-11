@@ -68,6 +68,23 @@ impl Map {
         }
     }
 
+    // pub fn cast_ray_and_check_position(
+    //     &self,
+    //     start_position: &graph::Coordinate,
+    //     expected_position: &graph::Coordinate,
+    //     ray: &graph::LinearGraph,
+    // ) -> Vec<graph::Coordinate> {
+    //     let mut last_position = start_position.clone();
+    //     let mut next_position: graph::Coordinate;
+    //     loop {
+    //         next_position = ray.get_next(&last_position);
+    //         if let Some(points) = self.get_point_or_wall(&last_position, &next_position) {
+    //             return points;
+    //         }
+    //         last_position = next_position;
+    //     }
+    // }
+
     pub fn dummy() -> Map {
         Map(image::ImageBuffer::from_pixel(
             1,
