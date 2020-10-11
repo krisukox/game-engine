@@ -44,9 +44,6 @@ impl Div for Radians {
 }
 
 impl Radians {
-    pub const PI: Radians = Radians(std::f64::consts::PI);
-    pub const PI_2: Radians = Radians(std::f64::consts::PI * 2.0);
-
     pub fn into_rays_index(&self, number_of_rays: usize) -> f64 {
         number_of_rays as f64 / PI_2 * self.0
     }

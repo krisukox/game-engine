@@ -47,7 +47,7 @@ impl Map {
     fn get_point_or_wall(
         &self,
         last_position: &graph::Coordinate, // last cordinate is needed because get_point_or_wall
-        next_position: &graph::Coordinate, // returns coordinates sorted in clockwise order
+        next_position: &graph::Coordinate, // has to return coordinates sorted in clockwise order
     ) -> Option<Vec<graph::Coordinate>> {
         return self.is_black_wall_or_point(next_position.get_nearest_coordinates(&last_position));
     }
@@ -58,32 +58,15 @@ impl Map {
         ray: &graph::LinearGraph,
     ) -> Vec<graph::Coordinate> {
         let mut last_position = position.clone();
-        let mut next_position = position.clone();
+        let mut next_position: graph::Coordinate;
         loop {
-            ray.get_next(&mut next_position);
+            next_position = ray.get_next(&last_position);
             if let Some(points) = self.get_point_or_wall(&last_position, &next_position) {
                 return points;
             }
-            last_position = next_position.clone();
+            last_position = next_position;
         }
     }
-
-    // pub fn cast_ray_and_check_wall(
-    //     &self,
-    //     start_position: &graph::Coordinate,
-    //     expected_position: &graph::Coordinate,
-    //     ray: &graph::LinearGraph,
-    // ) -> Vec<graph::Coordinate> {
-    //     let mut last_position = start_position.clone();
-    //     let mut next_position: graph::Coordinate;
-    //     loop {
-    //         next_position = ray.get_next(&last_position);
-    //         if let Some(points) = self.get_point_or_wall(&last_position, &next_position) {
-    //             return points;
-    //         }
-    //         last_position = next_position;
-    //     }
-    // }
 
     pub fn dummy() -> Map {
         Map(image::ImageBuffer::from_pixel(

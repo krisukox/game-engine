@@ -1,4 +1,4 @@
-use super::radians::Radians;
+use super::radians::{Radians, PI_2};
 
 // Angle start-end direction:
 // 1.reverse clocwise
@@ -59,7 +59,6 @@ impl Angle {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::player_utils::radians::PI_2;
 
     #[test]
     fn angle_value() {
