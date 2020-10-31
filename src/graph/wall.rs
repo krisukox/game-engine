@@ -15,42 +15,40 @@ impl Wall {
 #[derive(Debug, PartialEq, Default)]
 pub struct Walls(pub Vec<Wall>);
 
-pub enum TryExtendValue {
-    Extended,
-    ContainsAlready,
-    OnePoint(Coordinate),
-    NewWall,
-    NoPoint,
-    NoWalls,
-}
+// pub enum TryExtendValue {
+//     OnePoint(Coordinate),
+//     Extended,
+//     ContainsAlready,
+//     NewWall,
+//     NoPoint,
+// }
 
 impl Walls {
-    pub fn try_extend_last_wall(&mut self, points: &mut Vec<Coordinate>) -> TryExtendValue {
+    pub fn try_extend_last_wall(&mut self, points: &mut Vec<Coordinate>) -> Option<Coordinate> {
         if let Some(last_wall) = self.0.last_mut() {
             if let Some(first) = points.get(0) {
-                if *first == last_wall.start_point {
-                    return TryExtendValue::ContainsAlready;
-                }
                 if let Some(second) = points.get(1) {
-                    if (last_wall.end_point == *first && last_wall.start_point != *second)
-                        || (last_wall.end_point == *second && last_wall.start_point != *first)
-                    {
+                    if *second == last_wall.end_point {
+                        return None;
+                    }
+                    if last_wall.end_point == *first && last_wall.start_point != *second {
                         if (last_wall.start_point.x == last_wall.end_point.x
                             && last_wall.end_point.x == second.x)
                             || (last_wall.start_point.y == last_wall.end_point.y
                                 && last_wall.end_point.y == second.y)
                         {
                             last_wall.end_point = second.clone();
-                            return TryExtendValue::Extended;
+                            println!("try_extend_last_wall size {}", self.0.len());
+                            return None;
                         }
                     }
                     self.0.push(Wall {
                         start_point: first.clone(),
                         end_point: second.clone(),
                     });
-                    return TryExtendValue::NewWall;
+                    return None;
                 }
-                return TryExtendValue::OnePoint(points.remove(0));
+                return Some(points.remove(0));
             }
         } else {
             if let Some(first) = points.get(0) {
@@ -59,11 +57,11 @@ impl Walls {
                         start_point: first.clone(),
                         end_point: second.clone(),
                     });
-                    return TryExtendValue::NewWall;
+                    return None;
                 }
-                return TryExtendValue::OnePoint(points.remove(0));
+                return Some(points.remove(0));
             }
         }
-        return TryExtendValue::NoPoint;
+        return None;
     }
 }

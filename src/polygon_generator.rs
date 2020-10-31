@@ -49,6 +49,7 @@ impl PolygonGenerator {
 
 #[cfg(test)]
 mod test {
+    #![allow(non_upper_case_globals)]
     use super::*;
     use mockall::*;
 

@@ -12,7 +12,7 @@ cfg_if::cfg_if! {
     }
 }
 
-pub struct ObjectGeneratorController {
+pub struct ObjectGenerator {
     pub map: Map,
     pub rays: Vec<graph::LinearGraph>,
     pub object_generator: PolygonGenerator,
@@ -41,15 +41,12 @@ fn handle_points(
     walls: &mut graph::Walls,
     new_points: &mut Vec<graph::Coordinate>,
 ) {
-    match walls.try_extend_last_wall(new_points) {
-        graph::TryExtendValue::OnePoint(point) => {
-            handle_one_point(last_points, walls, point);
-        }
-        _ => {}
+    if let Some(point) = walls.try_extend_last_wall(new_points) {
+        handle_one_point(last_points, walls, point);
     }
 }
 
-impl ObjectGeneratorController {
+impl ObjectGenerator {
     fn get_walls_in_sight(
         &self,
         position: &graph::Coordinate,
@@ -217,20 +214,20 @@ mod test {
                 .in_sequence(&mut seq);
         }
 
-        let object_generator_controller = ObjectGeneratorController {
+        let object_generator = ObjectGenerator {
             map: Map::dummy(),
             rays: Default::default(),
             object_generator,
         };
         assert_eq!(
-            object_generator_controller.generate_polygons_(walls_in_sight, position, angle),
+            object_generator.generate_polygons_(walls_in_sight, position, angle),
             generate_polygons
         );
     }
 
     #[test]
-    fn get_points_in_sight() {
-        let expected_points_in_sight = graph::Walls(vec![
+    fn get_walls_in_sight() {
+        let expected_walls_in_sight = graph::Walls(vec![
             graph::Wall {
                 start_point: graph::Coordinate { x: 34.0, y: 26.0 },
                 end_point: graph::Coordinate { x: 34.0, y: 28.0 },
@@ -267,14 +264,14 @@ mod test {
         }
         let rays_indexes = 0..rays.len() / 4 + 1;
         if let Ok(map) = Map::new("test_resources/map.png") {
-            let object_generator_controller = ObjectGeneratorController {
+            let object_generator = ObjectGenerator {
                 map,
                 rays,
                 object_generator: polygon_generator::MockPolygonGenerator::new(),
             };
             assert_eq!(
-                object_generator_controller.get_walls_in_sight(&position, rays_indexes),
-                expected_points_in_sight
+                object_generator.get_walls_in_sight(&position, rays_indexes),
+                expected_walls_in_sight
             );
         }
     }
