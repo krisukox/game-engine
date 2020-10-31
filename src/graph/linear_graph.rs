@@ -1,9 +1,5 @@
 use super::coordinate::Coordinate;
 
-#[derive(Clone)]
-pub struct Tangens(pub f64);
-pub struct Radians(pub f64);
-
 #[derive(Debug, PartialEq)]
 pub struct LinearGraph {
     pub radians: f64,
@@ -43,13 +39,6 @@ fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
 }
 
 impl LinearGraph {
-    pub fn new(tangens: Tangens, radians: Radians) -> LinearGraph {
-        LinearGraph {
-            tangens: tangens.0,
-            radians: radians.0,
-        }
-    }
-
     pub fn from_radians(radians: f64) -> LinearGraph {
         if radians == 0.0 || radians == std::f64::consts::PI {
             return LinearGraph {

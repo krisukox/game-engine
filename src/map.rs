@@ -301,7 +301,7 @@ mod tests {
                     ]
                 );
             } else {
-                panic!("black_point_or_wall_2 contains None");
+                panic!("black_point contains None");
             }
 
             if let Some(black_wall) =
@@ -321,7 +321,7 @@ mod tests {
                     ]
                 );
             } else {
-                panic!("black_point_or_wall_2 contains None");
+                panic!("black_point contains None");
             }
 
             if let Some(black_wall) =
@@ -341,7 +341,7 @@ mod tests {
                     ]
                 );
             } else {
-                panic!("black_point_or_wall_2 contains None");
+                panic!("black_point contains None");
             }
 
             if let Some(black_wall) =
@@ -361,7 +361,7 @@ mod tests {
                     ]
                 );
             } else {
-                panic!("black_point_or_wall_2 contains None");
+                panic!("black_point contains None");
             }
         }
     }

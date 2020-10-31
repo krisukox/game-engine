@@ -3,7 +3,7 @@ mod linear_graph;
 mod wall;
 
 pub use self::coordinate::{Coordinate, ZERO_COORDINATE};
-pub use self::linear_graph::{LinearGraph, Radians, Tangens};
+pub use self::linear_graph::LinearGraph;
 pub use self::wall::{Wall, Walls};
 
 #[cfg(test)]
@@ -152,7 +152,10 @@ mod tests {
     #[test]
     #[should_panic]
     fn next_coordinate_panic() {
-        let graph = LinearGraph::new(Tangens(0.0), Radians(7.0));
+        let graph = LinearGraph {
+            radians: 7.0,
+            tangens: 0.0,
+        };
         graph.get_next(&Coordinate { x: 0.0, y: 0.0 });
     }
 }
