@@ -1,33 +1,39 @@
 mod coordinate;
 mod linear_graph;
+mod wall;
 
-pub use self::coordinate::Coordinate;
-pub use self::linear_graph::{LinearGraph, Radians, Tangens};
+pub use self::coordinate::{Coordinate, ZERO_COORDINATE};
+pub use self::linear_graph::LinearGraph;
+pub use self::wall::{Wall, Walls};
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn test_coordinates(
-        tangens: Tangens,
-        radians: Radians,
+        tangens: f64,
+        radians: f64,
         first_coordinate: &Coordinate,
         second_coordinate: &Coordinate,
     ) {
-        let radians_1 = Radians(if radians.0 < 0.0 {
-            radians.0 + std::f64::consts::PI * 2.0
+        let radians_1 = if radians < 0.0 {
+            radians + std::f64::consts::PI * 2.0
         } else {
-            radians.0
-        });
-        let radians_2 = Radians(
-            if radians_1.0 + std::f64::consts::PI < std::f64::consts::PI * 2.0 {
-                radians_1.0 + std::f64::consts::PI
-            } else {
-                radians_1.0 - std::f64::consts::PI
-            },
-        );
-        let graph_increasing: LinearGraph = LinearGraph::new(tangens.clone(), radians_1);
-        let graph_decreasing: LinearGraph = LinearGraph::new(tangens.clone(), radians_2);
+            radians
+        };
+        let radians_2 = if radians_1 + std::f64::consts::PI < std::f64::consts::PI * 2.0 {
+            radians_1 + std::f64::consts::PI
+        } else {
+            radians_1 - std::f64::consts::PI
+        };
+        let graph_increasing: LinearGraph = LinearGraph {
+            tangens,
+            radians: radians_1,
+        };
+        let graph_decreasing: LinearGraph = LinearGraph {
+            tangens,
+            radians: radians_2,
+        };
         let result_second_coordinate = graph_increasing.get_next(&first_coordinate);
         let result_first_coordinate = graph_decreasing.get_next(&second_coordinate);
 
@@ -56,12 +62,7 @@ mod tests {
             y: coordinate_next_y,
         };
 
-        test_coordinates(
-            Tangens(tangens),
-            Radians(radians),
-            &first_coordinate,
-            &second_coordinate,
-        );
+        test_coordinates(tangens, radians, &first_coordinate, &second_coordinate);
     }
 
     #[test]
@@ -76,12 +77,7 @@ mod tests {
             y: coordinate_prev_y,
         };
 
-        test_coordinates(
-            Tangens(tangens),
-            Radians(radians),
-            &first_coordinate,
-            &second_coordinate,
-        );
+        test_coordinates(tangens, radians, &first_coordinate, &second_coordinate);
     }
 
     #[test]
@@ -96,12 +92,7 @@ mod tests {
             y: first_coordinate.y + (coordinate_next_x - first_coordinate.x) * tangens,
         };
 
-        test_coordinates(
-            Tangens(tangens),
-            Radians(radians),
-            &first_coordinate,
-            &second_coordinate,
-        );
+        test_coordinates(tangens, radians, &first_coordinate, &second_coordinate);
     }
 
     #[test]
@@ -116,12 +107,7 @@ mod tests {
             y: first_coordinate.y + (coordinate_next_x - first_coordinate.x) * tangens,
         };
 
-        test_coordinates(
-            Tangens(tangens),
-            Radians(radians),
-            &first_coordinate,
-            &second_coordinate,
-        );
+        test_coordinates(tangens, radians, &first_coordinate, &second_coordinate);
     }
 
     #[test]
@@ -133,14 +119,14 @@ mod tests {
         let second_coordinate_2 = Coordinate { x: 2.0, y: 1.0 };
 
         test_coordinates(
-            Tangens(std::f64::INFINITY),
-            Radians(std::f64::consts::PI / 2.0),
+            std::f64::INFINITY,
+            std::f64::consts::PI / 2.0,
             &first_coordinate_1,
             &second_coordinate_1,
         );
         test_coordinates(
-            Tangens(std::f64::NEG_INFINITY),
-            Radians(std::f64::consts::PI * 3.0 / 2.0),
+            std::f64::NEG_INFINITY,
+            std::f64::consts::PI * 3.0 / 2.0,
             &first_coordinate_2,
             &second_coordinate_2,
         );
@@ -154,15 +140,10 @@ mod tests {
         let first_coordinate_2 = Coordinate { x: 3.0, y: 2.0 };
         let second_coordinate_2 = Coordinate { x: 2.0, y: 2.0 };
 
+        test_coordinates(0.0, 0.0, &first_coordinate_1, &second_coordinate_1);
         test_coordinates(
-            Tangens(0.0),
-            Radians(0.0),
-            &first_coordinate_1,
-            &second_coordinate_1,
-        );
-        test_coordinates(
-            Tangens(0.0),
-            Radians(std::f64::consts::PI),
+            0.0,
+            std::f64::consts::PI,
             &first_coordinate_2,
             &second_coordinate_2,
         );
@@ -171,7 +152,10 @@ mod tests {
     #[test]
     #[should_panic]
     fn next_coordinate_panic() {
-        let graph = LinearGraph::new(Tangens(0.0), Radians(7.0));
+        let graph = LinearGraph {
+            radians: 7.0,
+            tangens: 0.0,
+        };
         graph.get_next(&Coordinate { x: 0.0, y: 0.0 });
     }
 }
