@@ -6,8 +6,8 @@ pub struct Radians(pub f64);
 
 #[derive(Debug, PartialEq)]
 pub struct LinearGraph {
-    radians: f64,
-    tangens: f64,
+    pub radians: f64,
+    pub tangens: f64,
 }
 
 fn next_integer(value: f64) -> f64 {
