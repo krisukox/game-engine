@@ -15,14 +15,6 @@ impl Wall {
 #[derive(Debug, PartialEq, Default)]
 pub struct Walls(pub Vec<Wall>);
 
-// pub enum TryExtendValue {
-//     OnePoint(Coordinate),
-//     Extended,
-//     ContainsAlready,
-//     NewWall,
-//     NoPoint,
-// }
-
 impl Walls {
     pub fn try_extend_last_wall(&mut self, points: &mut Vec<Coordinate>) -> Option<Coordinate> {
         if let Some(last_wall) = self.0.last_mut() {
