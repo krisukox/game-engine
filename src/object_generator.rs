@@ -80,14 +80,14 @@ impl ObjectGenerator {
                 angle,
                 polygons,
             );
-            polygons.push(self.object_generator.generate_object(
+            polygons.push(self.object_generator.generate_polygon(
                 &walls_in_sight[index],
                 position,
                 angle,
             ));
             return ret_index;
         }
-        polygons.push(self.object_generator.generate_object(
+        polygons.push(self.object_generator.generate_polygon(
             &walls_in_sight[index],
             position,
             angle,
@@ -107,7 +107,7 @@ impl ObjectGenerator {
             if walls_in_sight.0[index].point_distance_start(&position)
                 > walls_in_sight.0[index + 1].point_distance_start(&position)
             {
-                polygons.push(self.object_generator.generate_object(
+                polygons.push(self.object_generator.generate_polygon(
                     &walls_in_sight.0[index],
                     &position,
                     &angle,
@@ -199,7 +199,7 @@ mod test {
             let cloned_angle = angle.clone();
             let cloned_position = position.clone();
             object_generator
-                .expect_generate_object()
+                .expect_generate_polygon()
                 .times(1)
                 .withf(
                     move |wall: &graph::Wall,

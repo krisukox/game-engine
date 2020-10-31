@@ -20,7 +20,7 @@ pub struct PolygonGenerator {
 
 #[cfg_attr(test, automock)]
 impl PolygonGenerator {
-    pub fn generate_object(
+    pub fn generate_polygon(
         &self,
         wall: &graph::Wall,
         position: &graph::Coordinate,
@@ -54,7 +54,7 @@ mod test {
     use mockall::*;
 
     #[test]
-    fn generate_object() {
+    fn generate_polygon() {
         static angle: player_utils::Angle = player_utils::Angle {
             start: player_utils::Radians(0.5),
             end: player_utils::Radians(0.5),
@@ -126,7 +126,7 @@ mod test {
             .in_sequence(&mut seq);
 
         assert_eq!(
-            PolygonGenerator { point_generator }.generate_object(&wall, &position, &angle),
+            PolygonGenerator { point_generator }.generate_polygon(&wall, &position, &angle),
             [
                 [start_point_width, start_point_height],
                 [end_point_width, end_point_height],
