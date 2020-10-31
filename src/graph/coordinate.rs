@@ -117,47 +117,85 @@ mod tests {
     }
 
     #[test]
-    fn get_near_coordinates() {
-        let coordinate_1 = Coordinate { x: 1.0, y: 2.5 };
-        let coordinate_2 = Coordinate { x: 3.5, y: 4.0 };
-        let coordinate_3 = Coordinate { x: 5.0, y: 6.0 };
-        let coordinate_4 = Coordinate { x: 5.5, y: 4.5 };
-        let points_1 = coordinate_1.get_nearest_coordinates(&Default::default());
-        let points_2 = coordinate_2.get_nearest_coordinates(&Default::default());
-        let points_3 = coordinate_3.get_nearest_coordinates(&Default::default());
-        let points_4 = coordinate_4.get_nearest_coordinates(&Default::default());
-        assert_eq!(points_1.len(), 2);
-        assert_eq!(points_2.len(), 2);
-        assert_eq!(points_3.len(), 1);
-        assert_eq!(points_4.len(), 1);
+    fn get_nearest_coordinates() {
+        let coordinate_1 = Coordinate { x: 5.0, y: 6.0 };
+        let coordinate_2 = Coordinate { x: 5.5, y: 4.5 };
+        let coordinate_3 = Coordinate { x: 1.0, y: 2.5 };
+        let coordinate_3_last_1 = Coordinate { x: 0.5, y: 1.0 };
+        let coordinate_3_last_2 = Coordinate { x: 1.5, y: 2.0 };
+        let coordinate_4 = Coordinate { x: 3.5, y: 4.0 };
+        let coordinate_4_last_1 = Coordinate { x: 3.0, y: 3.5 };
+        let coordinate_4_last_2 = Coordinate { x: 4.0, y: 4.5 };
 
-        assert!(points_1.contains(&Coordinate {
-            x: coordinate_1.x,
-            y: coordinate_1.y.ceil()
-        }));
-        assert!(points_1.contains(&Coordinate {
-            x: coordinate_1.x,
-            y: coordinate_1.y.floor()
-        }));
+        assert_eq!(
+            coordinate_1.get_nearest_coordinates(&Default::default()),
+            vec![Coordinate {
+                x: coordinate_1.x,
+                y: coordinate_1.y
+            }]
+        );
 
-        assert!(points_2.contains(&Coordinate {
-            x: coordinate_2.x.ceil(),
-            y: coordinate_2.y
-        }));
-        assert!(points_2.contains(&Coordinate {
-            x: coordinate_2.x.floor(),
-            y: coordinate_2.y
-        }));
+        assert_eq!(
+            coordinate_2.get_nearest_coordinates(&Default::default()),
+            vec![Coordinate {
+                x: coordinate_2.x.round(),
+                y: coordinate_2.y.round()
+            }]
+        );
 
-        assert!(points_3.contains(&Coordinate {
-            x: coordinate_3.x,
-            y: coordinate_3.y
-        }));
+        assert_eq!(
+            coordinate_3.get_nearest_coordinates(&coordinate_3_last_1),
+            vec![
+                Coordinate {
+                    x: coordinate_3.x,
+                    y: coordinate_3.y.floor()
+                },
+                Coordinate {
+                    x: coordinate_3.x,
+                    y: coordinate_3.y.ceil()
+                }
+            ]
+        );
+        assert_eq!(
+            coordinate_3.get_nearest_coordinates(&coordinate_3_last_2),
+            vec![
+                Coordinate {
+                    x: coordinate_3.x,
+                    y: coordinate_3.y.ceil()
+                },
+                Coordinate {
+                    x: coordinate_3.x,
+                    y: coordinate_3.y.floor()
+                }
+            ]
+        );
 
-        assert!(points_4.contains(&Coordinate {
-            x: coordinate_4.x.round(),
-            y: coordinate_4.y.round()
-        }));
+        assert_eq!(
+            coordinate_4.get_nearest_coordinates(&coordinate_4_last_1),
+            vec![
+                Coordinate {
+                    x: coordinate_4.x.ceil(),
+                    y: coordinate_4.y
+                },
+                Coordinate {
+                    x: coordinate_4.x.floor(),
+                    y: coordinate_4.y
+                }
+            ]
+        );
+        assert_eq!(
+            coordinate_4.get_nearest_coordinates(&coordinate_4_last_2),
+            vec![
+                Coordinate {
+                    x: coordinate_4.x.floor(),
+                    y: coordinate_4.y
+                },
+                Coordinate {
+                    x: coordinate_4.x.ceil(),
+                    y: coordinate_4.y
+                }
+            ]
+        );
     }
 
     #[test]
