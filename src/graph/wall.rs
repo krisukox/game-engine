@@ -7,16 +7,12 @@ pub struct Wall {
 }
 
 impl Wall {
-    pub fn point_distance_end(&self, point: &Coordinate) -> f64 {
-        point.distance(&self.end_point)
-    }
-
     pub fn point_distance_start(&self, point: &Coordinate) -> f64 {
         point.distance(&self.start_point)
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Walls(pub Vec<Wall>);
 
 pub enum TryExtendValue {
@@ -29,14 +25,8 @@ pub enum TryExtendValue {
 }
 
 impl Walls {
-    // pub fn wall_distance(&self, wall: &Wall) -> f64 {
-    //     wall.point_distance(&self.start_point)
-    // }
-
     pub fn try_extend_last_wall(&mut self, points: &mut Vec<Coordinate>) -> TryExtendValue {
-        let cos = (1, 3.0);
         if let Some(last_wall) = self.0.last_mut() {
-            // println!("try_extend_last_wall 1");
             if let Some(first) = points.get(0) {
                 if *first == last_wall.start_point {
                     return TryExtendValue::ContainsAlready;
@@ -63,11 +53,8 @@ impl Walls {
                 return TryExtendValue::OnePoint(points.remove(0));
             }
         } else {
-            // println!("try_extend_last_wall 2");
             if let Some(first) = points.get(0) {
-                // println!("try_extend_last_wall 22");
                 if let Some(second) = points.get(1) {
-                    // println!("try_extend_last_wall 222");
                     self.0.push(Wall {
                         start_point: first.clone(),
                         end_point: second.clone(),

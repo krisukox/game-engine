@@ -31,6 +31,8 @@ fn handle_one_point(
             }
             last_points.clear();
         }
+    } else {
+        last_points.clear();
     }
 }
 
@@ -275,5 +277,27 @@ mod test {
                 expected_points_in_sight
             );
         }
+    }
+
+    #[test]
+    fn handle_one_point_test() {
+        let mut last_points = Vec::new();
+        let mut walls = Default::default();
+        let last_point = graph::Coordinate { x: 1.0, y: 3.0 };
+
+        handle_one_point(&mut last_points, &mut walls, last_point.clone());
+        assert_eq!(last_points, vec![last_point]);
+
+        handle_one_point(&mut last_points, &mut walls, Default::default());
+        assert!(last_points.is_empty());
+
+        handle_one_point(&mut last_points, &mut walls, Default::default());
+        last_points = vec![
+            graph::Coordinate { x: 5.0, y: 7.0 },
+            graph::Coordinate { x: 9.0, y: 11.0 },
+        ];
+
+        handle_one_point(&mut last_points, &mut walls, Default::default());
+        assert!(last_points.is_empty());
     }
 }
