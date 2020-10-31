@@ -280,12 +280,13 @@ mod test {
     fn handle_one_point_test() {
         let mut last_points = Vec::new();
         let mut walls = Default::default();
-        let last_point = graph::Coordinate { x: 1.0, y: 3.0 };
+        let last_point_1 = graph::Coordinate { x: 1.0, y: 3.0 };
+        let last_point_2 = graph::Coordinate { x: 2.0, y: 3.0 };
 
-        handle_one_point(&mut last_points, &mut walls, last_point.clone());
-        assert_eq!(last_points, vec![last_point]);
+        handle_one_point(&mut last_points, &mut walls, last_point_1.clone());
+        assert_eq!(last_points, vec![last_point_1]);
 
-        handle_one_point(&mut last_points, &mut walls, Default::default());
+        handle_one_point(&mut last_points, &mut walls, last_point_2);
         assert!(last_points.is_empty());
 
         handle_one_point(&mut last_points, &mut walls, Default::default());
