@@ -4,8 +4,8 @@ use crate::graph;
 
 #[derive(Debug)]
 pub struct Player {
-    angle: Angle,
-    position: graph::Coordinate,
+    pub angle: Angle,
+    pub position: graph::Coordinate,
     number_of_rays: usize,
 }
 
@@ -20,6 +20,10 @@ impl Player {
 
     pub fn get_angle_value(&self) -> Radians {
         self.angle.value()
+    }
+
+    pub fn get_rays_angle_range(&self) -> std::vec::Vec<std::ops::Range<usize>> {
+        self.angle.get_rays_angle_range(self.number_of_rays)
     }
 
     pub fn get_all_rays(&self) -> Vec<graph::LinearGraph> {

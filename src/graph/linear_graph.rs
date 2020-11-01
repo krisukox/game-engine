@@ -1,6 +1,6 @@
 use super::coordinate::Coordinate;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct LinearGraph {
     pub radians: f64,
     pub tangens: f64,

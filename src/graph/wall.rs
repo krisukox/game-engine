@@ -30,7 +30,6 @@ impl Walls {
                                 && last_wall.end_point.y == second.y)
                         {
                             last_wall.end_point = second.clone();
-                            println!("try_extend_last_wall size {}", self.0.len());
                             return None;
                         }
                     }
