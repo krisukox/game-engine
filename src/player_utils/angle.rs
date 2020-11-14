@@ -37,21 +37,23 @@ impl Angle {
         &self,
         number_of_rays: usize,
     ) -> std::vec::Vec<std::ops::Range<usize>> {
-        if self.start > self.end {
+        let start = self.start - Radians(0.02);
+        let end = self.end + Radians(0.02);
+        if start > end {
             return vec![
                 std::ops::Range {
-                    start: self.start.into_rays_index(number_of_rays).floor() as usize,
-                    end: number_of_rays - 1,
+                    start: start.into_rays_index(number_of_rays).floor() as usize,
+                    end: number_of_rays,
                 },
                 std::ops::Range {
                     start: 0,
-                    end: self.end.into_rays_index(number_of_rays).ceil() as usize,
+                    end: end.into_rays_index(number_of_rays).ceil() as usize,
                 },
             ];
         }
         vec![std::ops::Range {
-            start: self.start.into_rays_index(number_of_rays).floor() as usize,
-            end: self.end.into_rays_index(number_of_rays).ceil() as usize,
+            start: start.into_rays_index(number_of_rays).floor() as usize,
+            end: end.into_rays_index(number_of_rays).ceil() as usize,
         }]
     }
 

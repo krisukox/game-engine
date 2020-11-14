@@ -10,6 +10,10 @@ impl Wall {
     pub fn point_distance_start(&self, point: &Coordinate) -> f64 {
         point.distance(&self.start_point)
     }
+
+    pub fn point_distance_end(&self, point: &Coordinate) -> f64 {
+        point.distance(&self.end_point)
+    }
 }
 
 #[derive(Debug, PartialEq, Default)]

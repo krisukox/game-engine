@@ -204,7 +204,6 @@ mod tests {
             std::f64::consts::PI * 7.0 / 4.0,
         ];
         for index in 0..NUMBER_OF_RAYS {
-            println!("get_all_rays_8 {:?}", all_rays[index]);
             assert_eq!(all_rays[index], LinearGraph::from_radians(radians[index]));
         }
     }

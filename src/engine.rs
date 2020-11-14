@@ -1,16 +1,21 @@
-use crate::graph::{Coordinate, LinearGraph};
-use crate::map::Map;
+use crate::graph::Coordinate;
 use crate::object_generator::ObjectGenerator;
 use crate::player_utils::Player;
 use crate::player_utils::Radians;
-use crate::point_generator::PointGenerator;
-use crate::polygon_generator::PolygonGenerator;
 use glutin_window::GlutinWindow as Window;
 use graphics::{Polygon, Transformed};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
-use piston::window::{Size, WindowSettings};
+use piston::input::{ButtonEvent, MouseCursorEvent, MouseRelativeEvent, RenderEvent};
+
+cfg_if::cfg_if! {
+if #[cfg(not(test))]{
+    use crate::map::Map;
+    use crate::point_generator::PointGenerator;
+    use crate::polygon_generator::PolygonGenerator;
+    use piston::window::{Size, WindowSettings};
+}
+}
 
 pub struct Engine {
     generator: ObjectGenerator,
@@ -56,9 +61,7 @@ impl Engine {
     pub fn start(&mut self) {
         let mut events = Events::new(EventSettings::new());
         let mut gl = GlGraphics::new(OPENGL_VERSION);
-
         while let Some(e) = events.next(&mut self.window) {
-            println!("Naglik !!!!!!");
             if let Some(args) = e.render_args() {
                 gl.draw(args.viewport(), |c, g| {
                     let transform = c.transform.flip_v().trans(0.0, -300.0);
@@ -73,6 +76,37 @@ impl Engine {
                         );
                     }
                 });
+            }
+
+            // if let Some(args) = e.mouse_cursor_args() {
+            //     println!("naglik mouse_cursor_args {:?}", args);
+            // }
+
+            if let Some(args) = e.mouse_relative_args() {
+                // println!("naglik mouse_relative_args {:?}", args);
+                self.player.rotate(Radians(args[0] / 100.0));
+            }
+
+            if let Some(args) = e.button_args() {
+                if piston::input::ButtonState::Press == args.state {
+                    if let piston::input::Button::Keyboard(key) = args.button {
+                        match key {
+                            piston::input::Key::W => {
+                                self.player.change_position(&Coordinate { x: 0.5, y: 0.0 })
+                            }
+                            piston::input::Key::S => {
+                                self.player.change_position(&Coordinate { x: -0.5, y: 0.0 })
+                            }
+                            piston::input::Key::A => {
+                                self.player.change_position(&Coordinate { x: 0.0, y: 0.5 })
+                            }
+                            piston::input::Key::D => {
+                                self.player.change_position(&Coordinate { x: 0.0, y: -0.5 })
+                            }
+                            _ => {}
+                        }
+                    }
+                }
             }
         }
     }

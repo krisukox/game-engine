@@ -72,7 +72,7 @@ impl ObjectGenerator {
         polygons: &mut Vec<[Vec2d; 4]>,
     ) -> usize {
         if index < walls_in_sight.len() - 1
-            && walls_in_sight[index].point_distance_start(position)
+            && walls_in_sight[index].point_distance_end(position)
                 < walls_in_sight[index + 1].point_distance_start(position)
         {
             let ret_index = self.generate_farther_polygons(
@@ -105,8 +105,8 @@ impl ObjectGenerator {
     ) -> Vec<[Vec2d; 4]> {
         let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
         let mut index = 0;
-        while index < walls_in_sight.0.len() {
-            if walls_in_sight.0[index].point_distance_start(&position)
+        while index < walls_in_sight.0.len() - 1 {
+            if walls_in_sight.0[index].point_distance_end(&position)
                 > walls_in_sight.0[index + 1].point_distance_start(&position)
             {
                 polygons.push(self.polygon_generator.generate_polygon(
@@ -125,6 +125,13 @@ impl ObjectGenerator {
             }
             index += 1;
         }
+        if index == walls_in_sight.0.len() - 1 {
+            polygons.push(self.polygon_generator.generate_polygon(
+                &walls_in_sight.0[index],
+                &position,
+                &angle,
+            ));
+        }
         return polygons;
     }
 
@@ -142,52 +149,19 @@ mod test {
     use super::*;
     use mockall::*;
 
-    #[test]
-    fn generate_polygons() {
-        use crate::polygon_generator::MockPolygonGenerator as PolygonGenerator;
-        let mut object_generator = PolygonGenerator::new();
+    fn test_generate_polygons(
+        walls_in_sight: graph::Walls,
+        generate_polygons: Vec<[Vec2d; 4]>,
+        walls_in_sight_indices: Vec<usize>,
+        position: graph::Coordinate,
+    ) {
+        let mut object_generator = polygon_generator::MockPolygonGenerator::new();
+        let mut seq = Sequence::new();
 
-        let walls_in_sight = graph::Walls(vec![
-            graph::Wall {
-                start_point: graph::Coordinate { x: 1.0, y: 4.0 },
-                end_point: graph::Coordinate { x: 2.0, y: 4.0 },
-            },
-            graph::Wall {
-                start_point: graph::Coordinate { x: 2.0, y: 4.0 },
-                end_point: graph::Coordinate { x: 2.0, y: 3.0 },
-            },
-            graph::Wall {
-                start_point: graph::Coordinate { x: 2.0, y: 3.0 },
-                end_point: graph::Coordinate { x: 3.0, y: 3.0 },
-            },
-            graph::Wall {
-                start_point: graph::Coordinate { x: 3.0, y: 4.0 },
-                end_point: graph::Coordinate { x: 4.0, y: 4.0 },
-            },
-            graph::Wall {
-                start_point: graph::Coordinate { x: 4.0, y: 5.0 },
-                end_point: graph::Coordinate { x: 5.0, y: 5.0 },
-            },
-            graph::Wall {
-                start_point: graph::Coordinate { x: 5.0, y: 6.0 },
-                end_point: graph::Coordinate { x: 6.0, y: 6.0 },
-            },
-        ]);
-        let walls_in_sight_indices: Vec<usize> = vec![0, 1, 5, 4, 3, 2];
-        let position = graph::Coordinate { x: 2.0, y: 1.0 };
         let angle = player_utils::Angle {
             start: player_utils::Radians(0.0),
             end: player_utils::Radians(std::f64::consts::PI / 2.0),
         };
-        let generate_polygons = vec![
-            [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
-            [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
-            [[2.0, 0.5], [3.0, 0.5], [4.0, 0.5], [5.0, 0.5]],
-            [[3.0, 0.6], [4.0, 0.6], [5.0, 0.6], [6.0, 0.6]],
-            [[4.0, 0.4], [5.0, 0.4], [6.0, 0.4], [7.0, 0.4]],
-            [[5.0, 0.2], [6.0, 0.2], [7.0, 0.2], [8.0, 0.2]],
-        ];
-        let mut seq = Sequence::new();
 
         for (index, polygon) in walls_in_sight_indices
             .iter()
@@ -220,6 +194,100 @@ mod test {
         assert_eq!(
             object_generator.generate_polygons_(walls_in_sight, &position, &angle),
             generate_polygons
+        );
+    }
+
+    #[test]
+    fn generate_polygons_1() {
+        let walls_in_sight = graph::Walls(vec![
+            graph::Wall {
+                start_point: graph::Coordinate { x: 1.0, y: 4.0 },
+                end_point: graph::Coordinate { x: 2.0, y: 4.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 2.0, y: 4.0 },
+                end_point: graph::Coordinate { x: 2.0, y: 3.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 2.0, y: 3.0 },
+                end_point: graph::Coordinate { x: 3.0, y: 3.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 3.0, y: 4.0 },
+                end_point: graph::Coordinate { x: 4.0, y: 4.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 4.0, y: 5.0 },
+                end_point: graph::Coordinate { x: 5.0, y: 5.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 5.0, y: 6.0 },
+                end_point: graph::Coordinate { x: 6.0, y: 6.0 },
+            },
+        ]);
+        let generate_polygons = vec![
+            [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
+            [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
+            [[2.0, 0.5], [3.0, 0.5], [4.0, 0.5], [5.0, 0.5]],
+            [[3.0, 0.6], [4.0, 0.6], [5.0, 0.6], [6.0, 0.6]],
+            [[4.0, 0.4], [5.0, 0.4], [6.0, 0.4], [7.0, 0.4]],
+            [[5.0, 0.2], [6.0, 0.2], [7.0, 0.2], [8.0, 0.2]],
+        ];
+        let walls_in_sight_indices: Vec<usize> = vec![0, 1, 5, 4, 3, 2];
+        let position = graph::Coordinate { x: 2.0, y: 1.0 };
+
+        test_generate_polygons(
+            walls_in_sight,
+            generate_polygons,
+            walls_in_sight_indices,
+            position,
+        );
+    }
+
+    #[test]
+    fn generate_polygons_2() {
+        let walls_in_sight = graph::Walls(vec![
+            graph::Wall {
+                start_point: graph::Coordinate { x: 1.0, y: 7.0 },
+                end_point: graph::Coordinate { x: 2.0, y: 7.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 2.0, y: 6.0 },
+                end_point: graph::Coordinate { x: 3.0, y: 6.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 3.0, y: 5.0 },
+                end_point: graph::Coordinate { x: 4.0, y: 5.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 4.0, y: 4.0 },
+                end_point: graph::Coordinate { x: 5.0, y: 4.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 5.0, y: 4.0 },
+                end_point: graph::Coordinate { x: 5.0, y: 5.0 },
+            },
+            graph::Wall {
+                start_point: graph::Coordinate { x: 5.0, y: 5.0 },
+                end_point: graph::Coordinate { x: 6.0, y: 5.0 },
+            },
+        ]);
+        let generate_polygons = vec![
+            [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
+            [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
+            [[2.0, 0.5], [3.0, 0.5], [4.0, 0.5], [5.0, 0.5]],
+            [[3.0, 0.6], [4.0, 0.6], [5.0, 0.6], [6.0, 0.6]],
+            [[4.0, 0.4], [5.0, 0.4], [6.0, 0.4], [7.0, 0.4]],
+            [[5.0, 0.2], [6.0, 0.2], [7.0, 0.2], [8.0, 0.2]],
+        ];
+        let walls_in_sight_indices: Vec<usize> = vec![0, 1, 2, 3, 4, 5];
+        let position = graph::Coordinate { x: 5.0, y: 2.0 };
+
+        test_generate_polygons(
+            walls_in_sight,
+            generate_polygons,
+            walls_in_sight_indices,
+            position,
         );
     }
 

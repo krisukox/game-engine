@@ -115,8 +115,8 @@ fn cos1() {
     let number_of_rays = 400;
     let player = Player::new(
         player_utils::Angle {
-            start: player_utils::Radians(1.0),
-            end: player_utils::Radians(3.0),
+            start: player_utils::Radians(1.8),
+            end: player_utils::Radians(3.8),
         },
         graph::Coordinate { x: 27.0, y: 26.0 },
         number_of_rays,
