@@ -34,6 +34,18 @@ impl Player {
         self.angle.rotate(angle_delta);
     }
 
+    pub fn move_forward_backward(&mut self, distance: f64) {
+        let direction = graph::LinearGraph::from_radians(self.angle.get_direction().0);
+        self.position = direction.get_next_from_distance(&self.position, distance);
+    }
+
+    pub fn move_right_left(&mut self, distance: f64) {
+        let direction = graph::LinearGraph::from_radians(
+            (self.angle.get_direction() - Radians(std::f64::consts::PI / 2.0)).0,
+        );
+        self.position = direction.get_next_from_distance(&self.position, distance);
+    }
+
     pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
         self.position += position_delta;
     }

@@ -60,6 +60,10 @@ impl ObjectGenerator {
                 handle_points(&mut last_points, &mut walls_in_sight, &mut points);
             }
         }
+        for wall in walls_in_sight.0.clone() {
+            // println!("naglik wall {:?}", wall);
+        }
+        // println!("\n");
         return walls_in_sight;
     }
 

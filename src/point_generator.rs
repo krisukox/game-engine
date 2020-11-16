@@ -31,6 +31,18 @@ impl PointGenerator {
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
     ) -> f64 {
+        // let graph = graph::LinearGraph::from_radians(point_radians.0);
+        // let cross_point = graph::Coordinate {
+        //     x: 1.0 / (graph.tangens + 1.0),
+        //     y: (1.0 / (graph.tangens + 1.0)) * graph.tangens,
+        // };
+        // let distance_between = cross_point.distance(&graph::Coordinate { x: 1.0, y: 0.0 });
+        // let whole_line = 2.0_f64.sqrt();
+        // println!(
+        //     "point_width_inside_field_of_view {}",
+        //     distance_between / whole_line
+        // );
+        // return distance_between / whole_line * self.resolution.width as f64;
         return (point_radians - angle.start) / angle.value() * self.resolution.width as f64;
     }
 

@@ -17,3 +17,7 @@ piston2d-opengl_graphics = "0.76.0"
 
 [dev-dependencies]
 mockall = "0.8.2"
+
+[lib]
+name = "game_engine_3d"
+path = "src/lib.rs"

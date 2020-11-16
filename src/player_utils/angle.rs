@@ -69,6 +69,10 @@ impl Angle {
         }
         return false;
     }
+
+    pub fn get_direction(&self) -> Radians {
+        self.start + Radians(self.value() / 2.0)
+    }
 }
 
 #[cfg(test)]

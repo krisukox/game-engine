@@ -1,26 +1,30 @@
 use crate::graph::Coordinate;
+use crate::map::Map;
 use crate::object_generator::ObjectGenerator;
 use crate::player_utils::Player;
 use crate::player_utils::Radians;
-use glutin_window::GlutinWindow as Window;
+use crate::point_generator::PointGenerator;
+use crate::polygon_generator::PolygonGenerator;
+use glutin_window::GlutinWindow;
 use graphics::{Polygon, Transformed};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{ButtonEvent, MouseCursorEvent, MouseRelativeEvent, RenderEvent};
+use piston::window::{Size, WindowSettings};
+use piston::AdvancedWindow;
+// cfg_if::cfg_if! {
+// if #[cfg(not(test))]{
+// use crate::map::Map;
+// use crate::point_generator::PointGenerator;
+// use crate::polygon_generator::PolygonGenerator;
 
-cfg_if::cfg_if! {
-if #[cfg(not(test))]{
-    use crate::map::Map;
-    use crate::point_generator::PointGenerator;
-    use crate::polygon_generator::PolygonGenerator;
-    use piston::window::{Size, WindowSettings};
-}
-}
+// }
+// }
 
 pub struct Engine {
     generator: ObjectGenerator,
     player: Player,
-    window: Window,
+    window: GlutinWindow,
 }
 
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
@@ -42,11 +46,6 @@ impl Engine {
                 wall_height,
             },
         };
-        let window: Window = WindowSettings::new("game", resolution)
-            .graphics_api(OPENGL_VERSION)
-            .exit_on_esc(true)
-            .build()
-            .unwrap();
         Result::Ok(Engine {
             generator: ObjectGenerator {
                 map,
@@ -54,8 +53,24 @@ impl Engine {
                 polygon_generator,
             },
             player,
-            window,
+            window: Self::create_window(resolution),
         })
+    }
+
+    fn create_window(resolution: Size) -> GlutinWindow {
+        let mut window: GlutinWindow = WindowSettings::new("game", resolution)
+            .graphics_api(OPENGL_VERSION)
+            .fullscreen(false)
+            .exit_on_esc(true)
+            .build()
+            .unwrap();
+        window.ctx.window().set_maximized(false);
+        window.set_capture_cursor(true);
+        if let Result::Err(err) = window.ctx.window().grab_cursor(true) {
+            println!("create window grab cursor Error: {}", err);
+        }
+        // window.ctx.window().hide_cursor(true);
+        return window;
     }
 
     pub fn start(&mut self) {
@@ -68,7 +83,7 @@ impl Engine {
                     graphics::clear([0.8, 0.8, 0.8, 1.0], g);
                     let polygons = self.generator.generate_polygons(&self.player);
                     for polygon_ in polygons {
-                        Polygon::new([1.0, 0.0, 0.0, 1.0]).draw(
+                        Polygon::new([1.0, 0.0, 0.5, 1.0]).draw(
                             &polygon_,
                             &c.draw_state,
                             transform,
@@ -78,13 +93,12 @@ impl Engine {
                 });
             }
 
-            // if let Some(args) = e.mouse_cursor_args() {
-            //     println!("naglik mouse_cursor_args {:?}", args);
-            // }
+            if let Some(args) = e.mouse_cursor_args() {
+                // println!("naglik mouse_cursor_args {:?}", args);
+            }
 
             if let Some(args) = e.mouse_relative_args() {
-                // println!("naglik mouse_relative_args {:?}", args);
-                self.player.rotate(Radians(args[0] / 100.0));
+                self.player.rotate(Radians(args[0] / 1000.0));
             }
 
             if let Some(args) = e.button_args() {
@@ -92,16 +106,16 @@ impl Engine {
                     if let piston::input::Button::Keyboard(key) = args.button {
                         match key {
                             piston::input::Key::W => {
-                                self.player.change_position(&Coordinate { x: 0.5, y: 0.0 })
+                                self.player.move_forward_backward(0.5);
                             }
                             piston::input::Key::S => {
-                                self.player.change_position(&Coordinate { x: -0.5, y: 0.0 })
+                                self.player.move_forward_backward(-0.5);
                             }
                             piston::input::Key::A => {
-                                self.player.change_position(&Coordinate { x: 0.0, y: 0.5 })
+                                self.player.move_right_left(0.5);
                             }
                             piston::input::Key::D => {
-                                self.player.change_position(&Coordinate { x: 0.0, y: -0.5 })
+                                self.player.move_right_left(-0.5);
                             }
                             _ => {}
                         }

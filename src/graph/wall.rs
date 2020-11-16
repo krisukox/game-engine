@@ -27,20 +27,24 @@ impl Walls {
                     if *second == last_wall.end_point {
                         return None;
                     }
-                    if last_wall.end_point == *first && last_wall.start_point != *second {
-                        if (last_wall.start_point.x == last_wall.end_point.x
-                            && last_wall.end_point.x == second.x)
-                            || (last_wall.start_point.y == last_wall.end_point.y
-                                && last_wall.end_point.y == second.y)
-                        {
-                            last_wall.end_point = second.clone();
-                            return None;
-                        }
-                    }
                     self.0.push(Wall {
                         start_point: first.clone(),
                         end_point: second.clone(),
                     });
+                    // if last_wall.end_point == *first && last_wall.start_point != *second {
+                    //     if (last_wall.start_point.x == last_wall.end_point.x
+                    //         && last_wall.end_point.x == second.x)
+                    //         || (last_wall.start_point.y == last_wall.end_point.y
+                    //             && last_wall.end_point.y == second.y)
+                    //     {
+                    //         last_wall.end_point = second.clone();
+                    //         return None;
+                    //     }
+                    // }
+                    // self.0.push(Wall {
+                    //     start_point: first.clone(),
+                    //     end_point: second.clone(),
+                    // });
                     return None;
                 }
                 return Some(points.remove(0));

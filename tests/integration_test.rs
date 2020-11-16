@@ -105,14 +105,17 @@ fn cos() {
 
 use crate::engine::Engine;
 
+// width: 1045.0,
+// height: 700.0,
+
 #[test]
 fn cos1() {
     let path_to_map = "test_resources/map.png";
     let resolution = Size {
-        width: 800.0,
-        height: 600.0,
+        width: 1280.0,
+        height: 720.0,
     };
-    let number_of_rays = 400;
+    let number_of_rays = 2000;
     let player = Player::new(
         player_utils::Angle {
             start: player_utils::Radians(1.8),
@@ -122,7 +125,7 @@ fn cos1() {
         number_of_rays,
     );
     let vertical_angle_value = player_utils::Radians(std::f64::consts::PI);
-    let wall_height = 5.0;
+    let wall_height = 7.0;
 
     if let Ok(mut engine) = Engine::new(
         path_to_map,

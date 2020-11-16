@@ -42,12 +42,12 @@ impl LinearGraph {
     pub fn from_radians(radians: f64) -> LinearGraph {
         if radians == 0.0 || radians == std::f64::consts::PI {
             return LinearGraph {
-                radians: radians,
+                radians,
                 tangens: 0.0,
             };
         }
         LinearGraph {
-            radians: radians,
+            radians,
             tangens: radians.tan(),
         }
     }
@@ -131,6 +131,57 @@ impl LinearGraph {
                     y: prev_y,
                 };
             }
+        }
+        panic!("radians value out of scope");
+    }
+
+    pub fn get_next_from_distance(&self, coordinate: &Coordinate, distance: f64) -> Coordinate {
+        if self.radians > std::f64::consts::PI * 3.0 / 2.0
+            || (self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0)
+        {
+            let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
+            if distance > 0.0 {
+                if x_delta < 0.0 {
+                    x_delta *= -1.0;
+                }
+            } else {
+                if x_delta > 0.0 {
+                    x_delta *= -1.0;
+                }
+            }
+            let y_delta = x_delta * self.tangens;
+            return Coordinate {
+                x: coordinate.x + x_delta,
+                y: coordinate.y + y_delta,
+            };
+        } else if self.radians == std::f64::consts::PI / 2.0 {
+            return Coordinate {
+                x: coordinate.x,
+                y: coordinate.y + distance,
+            };
+        } else if self.radians > std::f64::consts::PI / 2.0
+            && self.radians < std::f64::consts::PI * 3.0 / 2.0
+        {
+            let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
+            if distance > 0.0 {
+                if x_delta > 0.0 {
+                    x_delta *= -1.0;
+                }
+            } else {
+                if x_delta < 0.0 {
+                    x_delta *= -1.0;
+                }
+            }
+            let y_delta = x_delta * self.tangens;
+            return Coordinate {
+                x: coordinate.x + x_delta,
+                y: coordinate.y + y_delta,
+            };
+        } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
+            return Coordinate {
+                x: coordinate.x,
+                y: coordinate.y - distance,
+            };
         }
         panic!("radians value out of scope");
     }
