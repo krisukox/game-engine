@@ -66,16 +66,31 @@ impl Engine {
         while let Some(e) = events.next(&mut self.window) {
             if let Some(args) = e.render_args() {
                 gl.draw(args.viewport(), |c, g| {
-                    let transform = c.transform.flip_v().trans(0.0, -300.0);
+                    let transform = c
+                        .transform
+                        .flip_v()
+                        .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
                     graphics::clear([0.8, 0.8, 0.8, 1.0], g);
                     let polygons = self.generator.generate_polygons(&self.player);
+                    // let mut var = 0;
                     for polygon_ in polygons {
+                        // if var == 0 {
                         Polygon::new([1.0, 0.0, 0.5, 1.0]).draw(
                             &polygon_,
                             &c.draw_state,
                             transform,
                             g,
                         );
+                        // var = 1;
+                        // } else {
+                        //     Polygon::new([0.2, 0.55, 1.0, 1.0]).draw(
+                        //         &polygon_,
+                        //         &c.draw_state,
+                        //         transform,
+                        //         g,
+                        //     );
+                        //     var = 0;
+                        // }
                     }
                 });
             }

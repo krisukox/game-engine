@@ -105,6 +105,7 @@ impl ObjectGenerator {
     ) -> Vec<[Vec2d; 4]> {
         let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
         let mut index = 0;
+        print!("\n \n");
         while index < walls_in_sight.0.len() - 1 {
             if walls_in_sight.0[index].point_distance_end(&position)
                 > walls_in_sight.0[index + 1].point_distance_start(&position)
@@ -290,6 +291,19 @@ mod test {
             position,
         );
     }
+
+    // #[test]
+    // fn generate_polygons_3() {
+    //     let object_generator = ObjectGenerator {
+    //         map: Map::dummy(),
+    //         rays: Default::default(),
+    //         polygon_generator: object_generator,
+    //     };
+    //     assert_eq!(
+    //         object_generator.generate_polygons_(walls_in_sight, &position, &angle),
+    //         generate_polygons
+    //     );
+    // }
 
     #[test]
     fn get_walls_in_sight() {
