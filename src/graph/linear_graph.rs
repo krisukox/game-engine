@@ -286,4 +286,82 @@ mod tests {
             }
         );
     }
+
+    fn test_get_next_from_distance(
+        graph_upward: LinearGraph,
+        graph_downward: LinearGraph,
+        upper_coordinate: Coordinate,
+        lower_coordinate: Coordinate,
+        distance: f64,
+    ) {
+        assert_eq!(
+            graph_upward.get_next_from_distance(&lower_coordinate, distance),
+            upper_coordinate
+        );
+
+        assert_eq!(
+            graph_downward.get_next_from_distance(&upper_coordinate, distance),
+            lower_coordinate
+        );
+
+        assert_eq!(
+            graph_upward.get_next_from_distance(
+                &graph_upward.get_next_from_distance(&lower_coordinate, distance),
+                -distance
+            ),
+            graph_downward.get_next_from_distance(
+                &graph_upward.get_next_from_distance(&lower_coordinate, distance),
+                distance
+            )
+        );
+
+        assert_eq!(
+            graph_downward.get_next_from_distance(
+                &graph_downward.get_next_from_distance(&lower_coordinate, distance),
+                -distance
+            ),
+            graph_upward.get_next_from_distance(
+                &graph_downward.get_next_from_distance(&lower_coordinate, distance),
+                distance
+            )
+        );
+    }
+
+    #[test]
+    fn get_next_from_distance_straight() {
+        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 2.0);
+        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 3.0 / 2.0);
+
+        let upper_coordinate = Coordinate { x: 3.0, y: 5.0 };
+        let lower_coordinate = Coordinate { x: 3.0, y: 4.0 };
+
+        let distance = 1.0_f64;
+
+        test_get_next_from_distance(
+            graph_upward,
+            graph_downward,
+            upper_coordinate,
+            lower_coordinate,
+            distance,
+        );
+    }
+
+    #[test]
+    fn get_next_from_distance_diagonal() {
+        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 4.0);
+        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 5.0 / 4.0);
+
+        let upper_coordinate = Coordinate { x: 4.0, y: 6.0 };
+        let lower_coordinate = Coordinate { x: 3.0, y: 5.0 };
+
+        let distance = 2.0_f64.sqrt();
+
+        test_get_next_from_distance(
+            graph_upward,
+            graph_downward,
+            upper_coordinate,
+            lower_coordinate,
+            distance,
+        );
+    }
 }
