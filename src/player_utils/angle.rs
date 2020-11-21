@@ -43,7 +43,7 @@ impl Angle {
             return vec![
                 std::ops::Range {
                     start: start.into_rays_index(number_of_rays).floor() as usize,
-                    end: number_of_rays,
+                    end: number_of_rays - 1,
                 },
                 std::ops::Range {
                     start: 0,
@@ -120,42 +120,43 @@ mod test {
 
     #[test]
     fn get_rays_angle_1_range() {
-        let start_angle = 5.1;
-        let end_angle = 5.5;
+        let start_angle = Radians(5.1);
+        let end_angle = Radians(5.5);
         let number_of_rays = 100;
         let angle = Angle {
-            start: Radians(start_angle),
-            end: Radians(end_angle),
+            start: start_angle,
+            end: end_angle,
         };
         let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 1);
         assert_eq!(
             ranges[0],
-            (start_angle * number_of_rays as f64 / PI_2).floor() as usize
-                ..(end_angle * number_of_rays as f64 / PI_2).ceil() as usize
+            ((start_angle - Radians(0.02)).0 * number_of_rays as f64 / PI_2).floor() as usize
+                ..((end_angle + Radians(0.02)).0 * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 
     #[test]
     fn get_rays_angle_2_ranges() {
-        let start_angle = 5.1;
-        let end_angle = 0.5;
+        let start_angle = Radians(5.1);
+        let end_angle = Radians(0.5);
         let number_of_rays = 100;
         let angle = Angle {
-            start: Radians(start_angle),
-            end: Radians(end_angle),
+            start: start_angle,
+            end: end_angle,
         };
         let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 2);
         assert_eq!(
             ranges[0],
-            (start_angle * number_of_rays as f64 / PI_2).floor() as usize..number_of_rays - 1
+            ((start_angle - Radians(0.02)).0 * number_of_rays as f64 / PI_2).floor() as usize
+                ..number_of_rays - 1
         );
         assert_eq!(
             ranges[1],
-            0..(end_angle * number_of_rays as f64 / PI_2).ceil() as usize
+            0..((end_angle + Radians(0.02)).0 * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 

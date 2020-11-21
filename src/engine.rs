@@ -1,4 +1,3 @@
-use crate::graph::Coordinate;
 use crate::map::Map;
 use crate::object_generator::ObjectGenerator;
 use crate::player_utils::Player;
@@ -9,17 +8,9 @@ use glutin_window::GlutinWindow;
 use graphics::{Polygon, Transformed};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{ButtonEvent, MouseCursorEvent, MouseRelativeEvent, RenderEvent};
+use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 use piston::window::{Size, WindowSettings};
 use piston::AdvancedWindow;
-// cfg_if::cfg_if! {
-// if #[cfg(not(test))]{
-// use crate::map::Map;
-// use crate::point_generator::PointGenerator;
-// use crate::polygon_generator::PolygonGenerator;
-
-// }
-// }
 
 pub struct Engine {
     generator: ObjectGenerator,
@@ -66,10 +57,6 @@ impl Engine {
             .unwrap();
         window.ctx.window().set_maximized(false);
         window.set_capture_cursor(true);
-        if let Result::Err(err) = window.ctx.window().grab_cursor(true) {
-            println!("create window grab cursor Error: {}", err);
-        }
-        // window.ctx.window().hide_cursor(true);
         return window;
     }
 
@@ -91,10 +78,6 @@ impl Engine {
                         );
                     }
                 });
-            }
-
-            if let Some(args) = e.mouse_cursor_args() {
-                // println!("naglik mouse_cursor_args {:?}", args);
             }
 
             if let Some(args) = e.mouse_relative_args() {
