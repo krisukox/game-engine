@@ -46,8 +46,6 @@ impl PolygonGenerator {
             [start_point_width, -start_point_height],
         ];
 
-        // println!("generated polygon: {:?} ", ret);
-
         return ret;
     }
 }

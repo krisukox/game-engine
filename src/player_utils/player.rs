@@ -126,4 +126,33 @@ mod test {
         assert_eq!(player.position.x, coordinate_x + change_position_delta.x);
         assert_eq!(player.position.y, coordinate_y + change_position_delta.y);
     }
+
+    #[test]
+    fn move_player() {
+        let angle = Angle {
+            start: Radians(0.0),
+            end: Radians(std::f64::consts::PI / 2.0),
+        };
+        let first_position = graph::Coordinate { x: 5.0, y: 8.0 };
+        let second_position = graph::Coordinate { x: 6.0, y: 9.0 };
+        let third_position = graph::Coordinate { x: 6.0, y: 7.0 };
+        let distance = 2.0_f64.sqrt();
+
+        let mut player = Player {
+            angle,
+            position: first_position.clone(),
+            number_of_rays: 0,
+        };
+        player.move_forward_backward(distance);
+        assert_eq!(player.position, second_position);
+
+        player.move_forward_backward(-distance);
+        assert_eq!(player.position, first_position);
+
+        player.move_right_left(distance);
+        assert_eq!(player.position, third_position);
+
+        player.move_right_left(-distance);
+        assert_eq!(player.position, first_position);
+    }
 }
