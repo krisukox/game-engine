@@ -18,7 +18,7 @@ jobs:
 
       - name:                   Generate code coverage
         run: |
-          RUSTFLAGS=--cfg="tarpaulin_workaround" cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml
+          RUSTFLAGS=--cfg="tarpaulin_workaround" cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml --avoid-cfg-tarpaulin
 
       - name:                   Upload to codecov.io
         uses:                   codecov/codecov-action@v1
