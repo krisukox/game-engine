@@ -38,15 +38,12 @@ impl PolygonGenerator {
         let end_point_height = self
             .point_generator
             .point_height(&position, &wall.end_point);
-
-        let ret = [
+        return [
             [start_point_width, start_point_height],
             [end_point_width, end_point_height],
             [end_point_width, -end_point_height],
             [start_point_width, -start_point_height],
         ];
-
-        return ret;
     }
 }
 

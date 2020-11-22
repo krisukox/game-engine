@@ -1,5 +1,5 @@
 [package]
-name = "game-engine-3d"
+name = "game_engine_3d"
 version = "0.1.0"
 authors = ["krisukox <krzysztofnaglik96@gmail.com>"]
 edition = "2018"

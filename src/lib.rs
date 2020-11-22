@@ -1,10 +1,10 @@
 pub mod engine;
 pub mod graph;
-pub mod map;
-pub mod object_generator;
 pub mod player_utils;
-pub mod point_generator;
-pub mod polygon_generator;
 
-extern crate graphics;
-// extern crate piston_window;
+pub use piston::window::Size;
+
+mod map;
+mod object_generator;
+mod point_generator;
+mod polygon_generator;

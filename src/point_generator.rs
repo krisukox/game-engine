@@ -6,7 +6,7 @@ use piston::window::Size;
 use mockall::{automock, predicate::*};
 
 pub struct PointGenerator {
-    pub resolution: Size, // Size currently contains u32 because of piston_window 0.83.0 instead of f64 in 0.113.0
+    pub resolution: Size,
     pub half_vertical_angle_value: player_utils::Radians,
     pub wall_height: f64,
 }
@@ -31,18 +31,6 @@ impl PointGenerator {
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
     ) -> f64 {
-        // let graph = graph::LinearGraph::from_radians(point_radians.0);
-        // let cross_point = graph::Coordinate {
-        //     x: 1.0 / (graph.tangens + 1.0),
-        //     y: (1.0 / (graph.tangens + 1.0)) * graph.tangens,
-        // };
-        // let distance_between = cross_point.distance(&graph::Coordinate { x: 1.0, y: 0.0 });
-        // let whole_line = 2.0_f64.sqrt();
-        // println!(
-        //     "point_width_inside_field_of_view {}",
-        //     distance_between / whole_line
-        // );
-        // return distance_between / whole_line * self.resolution.width as f64;
         return (point_radians - angle.start) / angle.value() * self.resolution.width as f64;
     }
 
