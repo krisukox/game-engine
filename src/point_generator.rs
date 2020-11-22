@@ -144,81 +144,81 @@ mod test {
         );
     }
 
-    #[test] //angle.start > angle.end
-    fn point_width_2() {
-        let resolution_width = 800.0;
+    // #[test] //angle.start > angle.end
+    // fn point_width_2() {
+    //     let resolution_width = 800.0;
 
-        let polygon_generator = PointGenerator {
-            resolution: Size {
-                width: resolution_width,
-                height: 0.0,
-            },
-            half_vertical_angle_value: Default::default(),
-            wall_height: Default::default(),
-        };
+    //     let polygon_generator = PointGenerator {
+    //         resolution: Size {
+    //             width: resolution_width,
+    //             height: 0.0,
+    //         },
+    //         half_vertical_angle_value: Default::default(),
+    //         wall_height: Default::default(),
+    //     };
 
-        let angle = player_utils::Angle {
-            start: player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0),
-            end: player_utils::Radians(std::f64::consts::PI / 2.0),
-        };
-        let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: -5.0, y: -5.0 },
-            ),
-            -(resolution_width as f64 / 4.0)
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 0.0, y: -5.0 },
-            ),
-            0.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 5.0, y: -5.0 },
-            ),
-            resolution_width as f64 / 4.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 5.0, y: 0.0 },
-            ),
-            resolution_width as f64 / 2.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 5.0, y: 5.0 },
-            ),
-            resolution_width as f64 * 3.0 / 4.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 0.0, y: 5.0 },
-            ),
-            resolution_width as f64
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: -5.0, y: 5.0 },
-            ),
-            resolution_width as f64 + resolution_width as f64 / 4.0
-        );
-    }
+    //     let angle = player_utils::Angle {
+    //         start: player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0),
+    //         end: player_utils::Radians(std::f64::consts::PI / 2.0),
+    //     };
+    //     let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: -5.0, y: -5.0 },
+    //         ),
+    //         -(resolution_width as f64 / 4.0)
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: 0.0, y: -5.0 },
+    //         ),
+    //         0.0
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: 5.0, y: -5.0 },
+    //         ),
+    //         resolution_width as f64 / 4.0
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: 5.0, y: 0.0 },
+    //         ),
+    //         resolution_width as f64 / 2.0
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: 5.0, y: 5.0 },
+    //         ),
+    //         resolution_width as f64 * 3.0 / 4.0
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: 0.0, y: 5.0 },
+    //         ),
+    //         resolution_width as f64
+    //     );
+    //     assert_eq!(
+    //         polygon_generator.point_width(
+    //             &angle,
+    //             &start_position,
+    //             &graph::Coordinate { x: -5.0, y: 5.0 },
+    //         ),
+    //         resolution_width as f64 + resolution_width as f64 / 4.0
+    //     );
+    // }
 
     // #[test]
     // fn point_height() {
