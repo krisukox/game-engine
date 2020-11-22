@@ -10,6 +10,10 @@ impl Wall {
     pub fn point_distance_start(&self, point: &Coordinate) -> f64 {
         point.distance(&self.start_point)
     }
+
+    pub fn point_distance_end(&self, point: &Coordinate) -> f64 {
+        point.distance(&self.end_point)
+    }
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -30,7 +34,6 @@ impl Walls {
                                 && last_wall.end_point.y == second.y)
                         {
                             last_wall.end_point = second.clone();
-                            println!("try_extend_last_wall size {}", self.0.len());
                             return None;
                         }
                     }

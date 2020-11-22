@@ -6,7 +6,7 @@ jobs:
     name:                       coverage
     runs-on:                    ubuntu-latest
     container:
-      image:                    xd009642/tarpaulin
+      image:                    xd009642/tarpaulin:develop
       options:                  --security-opt seccomp=unconfined
     steps:
       - name:                   Checkout repository
@@ -16,12 +16,20 @@ jobs:
         run: |
           rustup install nightly
 
-      - name:                   Generate code coverage
+      - name:                   Build
         run: |
-          cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml
+          cargo build
 
-      - name:                   Upload to codecov.io
-        uses:                   codecov/codecov-action@v1
-        with:
-          token:                ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error:     true
+      - name:                   Run test cases
+        run: |
+          cargo test
+
+      # - name:                   Generate code coverage
+      #   run: |
+      #     RUSTFLAGS=--cfg="tarpaulin_workaround" cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml --avoid-cfg-tarpaulin
+
+      # - name:                   Upload to codecov.io
+      #   uses:                   codecov/codecov-action@v1
+      #   with:
+      #     token:                ${{ secrets.CODECOV_TOKEN }}
+      #     fail_ci_if_error:     true

@@ -66,6 +66,13 @@ impl Div for Radians {
     }
 }
 
+impl Div<f64> for Radians {
+    type Output = f64;
+    fn div(self, rhs: f64) -> Self::Output {
+        self.0 / rhs
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

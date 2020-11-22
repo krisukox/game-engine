@@ -1,6 +1,6 @@
 use super::coordinate::Coordinate;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct LinearGraph {
     pub radians: f64,
     pub tangens: f64,
@@ -42,12 +42,12 @@ impl LinearGraph {
     pub fn from_radians(radians: f64) -> LinearGraph {
         if radians == 0.0 || radians == std::f64::consts::PI {
             return LinearGraph {
-                radians: radians,
+                radians,
                 tangens: 0.0,
             };
         }
         LinearGraph {
-            radians: radians,
+            radians,
             tangens: radians.tan(),
         }
     }
@@ -135,6 +135,57 @@ impl LinearGraph {
         panic!("radians value out of scope");
     }
 
+    pub fn get_next_from_distance(&self, coordinate: &Coordinate, distance: f64) -> Coordinate {
+        if self.radians > std::f64::consts::PI * 3.0 / 2.0
+            || (self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0)
+        {
+            let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
+            if distance > 0.0 {
+                if x_delta < 0.0 {
+                    x_delta *= -1.0;
+                }
+            } else {
+                if x_delta > 0.0 {
+                    x_delta *= -1.0;
+                }
+            }
+            let y_delta = x_delta * self.tangens;
+            return Coordinate {
+                x: coordinate.x + x_delta,
+                y: coordinate.y + y_delta,
+            };
+        } else if self.radians == std::f64::consts::PI / 2.0 {
+            return Coordinate {
+                x: coordinate.x,
+                y: coordinate.y + distance,
+            };
+        } else if self.radians > std::f64::consts::PI / 2.0
+            && self.radians < std::f64::consts::PI * 3.0 / 2.0
+        {
+            let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
+            if distance > 0.0 {
+                if x_delta > 0.0 {
+                    x_delta *= -1.0;
+                }
+            } else {
+                if x_delta < 0.0 {
+                    x_delta *= -1.0;
+                }
+            }
+            let y_delta = x_delta * self.tangens;
+            return Coordinate {
+                x: coordinate.x + x_delta,
+                y: coordinate.y + y_delta,
+            };
+        } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
+            return Coordinate {
+                x: coordinate.x,
+                y: coordinate.y - distance,
+            };
+        }
+        panic!("radians value out of scope");
+    }
+
     pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
         let mut all_rays = Vec::with_capacity(number_of_rays);
         for index in 0..number_of_rays {
@@ -204,7 +255,6 @@ mod tests {
             std::f64::consts::PI * 7.0 / 4.0,
         ];
         for index in 0..NUMBER_OF_RAYS {
-            println!("get_all_rays_8 {:?}", all_rays[index]);
             assert_eq!(all_rays[index], LinearGraph::from_radians(radians[index]));
         }
     }
@@ -234,6 +284,84 @@ mod tests {
                 radians: radians_3,
                 tangens: radians_3.tan()
             }
+        );
+    }
+
+    fn test_get_next_from_distance(
+        graph_upward: LinearGraph,
+        graph_downward: LinearGraph,
+        upper_coordinate: Coordinate,
+        lower_coordinate: Coordinate,
+        distance: f64,
+    ) {
+        assert_eq!(
+            graph_upward.get_next_from_distance(&lower_coordinate, distance),
+            upper_coordinate
+        );
+
+        assert_eq!(
+            graph_downward.get_next_from_distance(&upper_coordinate, distance),
+            lower_coordinate
+        );
+
+        assert_eq!(
+            graph_upward.get_next_from_distance(
+                &graph_upward.get_next_from_distance(&lower_coordinate, distance),
+                -distance
+            ),
+            graph_downward.get_next_from_distance(
+                &graph_upward.get_next_from_distance(&lower_coordinate, distance),
+                distance
+            )
+        );
+
+        assert_eq!(
+            graph_downward.get_next_from_distance(
+                &graph_downward.get_next_from_distance(&lower_coordinate, distance),
+                -distance
+            ),
+            graph_upward.get_next_from_distance(
+                &graph_downward.get_next_from_distance(&lower_coordinate, distance),
+                distance
+            )
+        );
+    }
+
+    #[test]
+    fn get_next_from_distance_straight() {
+        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 2.0);
+        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 3.0 / 2.0);
+
+        let upper_coordinate = Coordinate { x: 3.0, y: 5.0 };
+        let lower_coordinate = Coordinate { x: 3.0, y: 4.0 };
+
+        let distance = 1.0_f64;
+
+        test_get_next_from_distance(
+            graph_upward,
+            graph_downward,
+            upper_coordinate,
+            lower_coordinate,
+            distance,
+        );
+    }
+
+    #[test]
+    fn get_next_from_distance_diagonal() {
+        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 4.0);
+        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 5.0 / 4.0);
+
+        let upper_coordinate = Coordinate { x: 4.0, y: 6.0 };
+        let lower_coordinate = Coordinate { x: 3.0, y: 5.0 };
+
+        let distance = 2.0_f64.sqrt();
+
+        test_get_next_from_distance(
+            graph_upward,
+            graph_downward,
+            upper_coordinate,
+            lower_coordinate,
+            distance,
         );
     }
 }

@@ -157,6 +157,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(tarpaulin_workaround))]
     fn new_map_wrong_format_image() {
         if let Err(image::ImageError::FormatError(err_str)) =
             Map::new("test_resources/map-wrong-format.jpeg")

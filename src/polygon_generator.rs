@@ -1,7 +1,7 @@
 use crate::graph;
 use crate::player_utils;
 use crate::point_generator;
-use piston_window::types::Vec2d;
+use graphics::types::Vec2d;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
