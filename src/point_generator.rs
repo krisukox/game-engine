@@ -26,20 +26,79 @@ impl PointGenerator {
         return self.point_width_outside_field_of_view(angle, &point_radians);
     }
 
+    fn compute_graphs(
+        angle: &player_utils::Angle,
+        point_radians: &player_utils::Radians,
+    ) -> (
+        graph::LinearGraph,
+        graph::LinearGraph,
+        f64,
+        graph::Coordinate,
+    ) {
+        let direction = graph::LinearGraph::from_radians((angle.get_direction() - angle.start).0);
+
+        let perpendicular_direction = graph::LinearGraph::from_radians(
+            (angle.get_direction() + player_utils::Radians(std::f64::consts::PI / 2.0)
+                - angle.start)
+                .0,
+        );
+
+        let cross_point_middle_x = (1.0 / (direction.tangens.powi(2) + 1.0)).sqrt();
+        let cross_point_middle_y = direction.tangens * cross_point_middle_x;
+
+        let perpendicular_direction_b =
+            cross_point_middle_y - perpendicular_direction.tangens * cross_point_middle_x;
+
+        let graph_point_radians = graph::LinearGraph::from_radians((point_radians - angle.start).0);
+        return (
+            graph_point_radians,
+            perpendicular_direction,
+            perpendicular_direction_b,
+            graph::Coordinate {
+                x: cross_point_middle_x,
+                y: cross_point_middle_y,
+            },
+        );
+    }
+
+    fn compute_distances_for_width(
+        angle: &player_utils::Angle,
+        point_radians: &player_utils::Radians,
+    ) -> (f64, f64) {
+        let (
+            graph_point_radians,
+            perpendicular_direction,
+            perpendicular_direction_b,
+            cross_point_middle,
+        ) = Self::compute_graphs(angle, point_radians);
+
+        let cross_point_y_0 = graph::Coordinate {
+            x: -perpendicular_direction_b / perpendicular_direction.tangens,
+            y: 0.0,
+        };
+
+        let whole_distance = cross_point_y_0.distance(&cross_point_middle) * 2.0;
+
+        let cross_point_x = -perpendicular_direction_b
+            / (perpendicular_direction.tangens - graph_point_radians.tangens);
+        let cross_point_y = cross_point_x * graph_point_radians.tangens;
+
+        let short_distance = cross_point_y_0.distance(&graph::Coordinate {
+            x: cross_point_x,
+            y: cross_point_y,
+        });
+        return (short_distance, whole_distance);
+    }
+
     fn point_width_inside_field_of_view(
         &self,
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
     ) -> f64 {
-        let graph = graph::LinearGraph::from_radians((point_radians - angle.start).0);
-        let cross_point = graph::Coordinate {
-            x: 1.0 / (graph.tangens + 1.0),
-            y: (1.0 / (graph.tangens + 1.0)) * graph.tangens,
-        };
-        let distance_between = cross_point.distance(&graph::Coordinate { x: 1.0, y: 0.0 });
-        let whole_line = 2.0_f64.sqrt();
+        let (short_distance, whole_distance) =
+            Self::compute_distances_for_width(angle, point_radians);
 
-        return distance_between / whole_line * self.resolution.width as f64;
+        return short_distance / whole_distance * self.resolution.width as f64;
     }
 
     fn point_width_outside_field_of_view(
@@ -47,17 +106,13 @@ impl PointGenerator {
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
     ) -> f64 {
-        let graph = graph::LinearGraph::from_radians((point_radians - angle.start).0);
-        let cross_point = graph::Coordinate {
-            x: 1.0 / (graph.tangens + 1.0),
-            y: (1.0 / (graph.tangens + 1.0)) * graph.tangens,
-        };
-        let distance_between = cross_point.distance(&graph::Coordinate { x: 1.0, y: 0.0 });
-        let whole_line = 2.0_f64.sqrt();
-        if distance_between < whole_line {
-            return -distance_between / whole_line * self.resolution.width as f64;
+        let (short_distance, whole_distance) =
+            Self::compute_distances_for_width(angle, point_radians);
+
+        if short_distance < whole_distance {
+            return -short_distance / whole_distance * self.resolution.width as f64;
         }
-        return distance_between / whole_line * self.resolution.width as f64;
+        return short_distance / whole_distance * self.resolution.width as f64;
     }
 
     // returns 1/2 of point height
@@ -68,14 +123,19 @@ impl PointGenerator {
         end_position: &graph::Coordinate,
     ) -> f64 {
         let point_radians = start_position.into_radians(end_position);
-        let graph = graph::LinearGraph::from_radians((point_radians - angle.start).0);
-        let cross_point = graph::Coordinate {
-            x: 1.0 / (graph.tangens + 1.0),
-            y: (1.0 / (graph.tangens + 1.0)) * graph.tangens,
-        };
-        let small_distance = graph::ZERO_COORDINATE.distance(&cross_point);
+        let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
+            Self::compute_graphs(angle, &point_radians);
+
+        let cross_point_x = -perpendicular_direction_b
+            / (perpendicular_direction.tangens - graph_point_radians.tangens);
+        let cross_point_y = cross_point_x * graph_point_radians.tangens;
+
+        let short_distance = graph::ZERO_COORDINATE.distance(&graph::Coordinate {
+            x: cross_point_x,
+            y: cross_point_y,
+        });
         let whole_distance = start_position.distance(&end_position);
-        return (small_distance / whole_distance * self.wall_height / 2.0)
+        return (short_distance / whole_distance * self.wall_height / 2.0)
             / graph::LinearGraph::from_radians(self.half_vertical_angle_value.0).tangens
             * self.resolution.height;
     }
