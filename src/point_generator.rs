@@ -224,11 +224,6 @@ mod test {
         let short_distance_2 = 3.0;
         let whole_distance = 2.0;
 
-        println!(
-            "{}",
-            point_generator.point_width(&angle, &start_position, &end_position_1,)
-        );
-
         assert!(approx_eq!(
             f64,
             point_generator.point_width(&angle, &start_position, &end_position_1),
@@ -244,170 +239,41 @@ mod test {
         ));
     }
 
-    // #[test] //angle.start > angle.end
-    // fn point_width_2() {
-    //     let resolution_width = 800.0;
+    #[test]
+    fn point_height() {
+        let resolution_height = 600.0;
+        let wall_height = 4.0;
+        let point_generator = PointGenerator::new(
+            Size {
+                width: Default::default(),
+                height: resolution_height,
+            },
+            player_utils::Radians(std::f64::consts::PI / 2.0),
+            wall_height,
+        );
+        let half_wall_height = wall_height / 2.0;
 
-    //     let polygon_generator = PointGenerator {
-    //         resolution: Size {
-    //             width: resolution_width,
-    //             height: 0.0,
-    //         },
-    //         half_vertical_angle_value: Default::default(),
-    //         wall_height: Default::default(),
-    //     };
+        let angle = player_utils::Angle {
+            start: player_utils::Radians(std::f64::consts::PI / 4.0),
+            end: player_utils::Radians(std::f64::consts::PI * 3.0 / 4.0),
+        };
 
-    //     let angle = player_utils::Angle {
-    //         start: player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0),
-    //         end: player_utils::Radians(std::f64::consts::PI / 2.0),
-    //     };
-    //     let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: -5.0, y: -5.0 },
-    //         ),
-    //         -(resolution_width as f64 / 4.0)
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: 0.0, y: -5.0 },
-    //         ),
-    //         0.0
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: 5.0, y: -5.0 },
-    //         ),
-    //         resolution_width as f64 / 4.0
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: 5.0, y: 0.0 },
-    //         ),
-    //         resolution_width as f64 / 2.0
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: 5.0, y: 5.0 },
-    //         ),
-    //         resolution_width as f64 * 3.0 / 4.0
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: 0.0, y: 5.0 },
-    //         ),
-    //         resolution_width as f64
-    //     );
-    //     assert_eq!(
-    //         polygon_generator.point_width(
-    //             &angle,
-    //             &start_position,
-    //             &graph::Coordinate { x: -5.0, y: 5.0 },
-    //         ),
-    //         resolution_width as f64 + resolution_width as f64 / 4.0
-    //     );
-    // }
+        let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
+        let end_position_1 = graph::Coordinate { x: 8.0, y: 4.0 };
+        let end_position_2 = graph::Coordinate { x: 4.0, y: 5.0 };
 
-    // #[test]
-    // fn point_height() {
-    //     let resolution_height = 600.0;
-    //     let resolution_width = 800.0;
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_height(&angle, &start_position, &end_position_1),
+            half_wall_height / 3.0 * resolution_height,
+            ulps = 3
+        ));
 
-    //     let polygon_generator = PointGenerator {
-    //         resolution: Size {
-    //             width: 0.0,
-    //             height: resolution_height,
-    //         },
-    //         half_vertical_angle_value: player_utils::Radians(std::f64::consts::PI / 2.0),
-    //         wall_height: 5.0,
-    //     };
-
-    //     assert_eq!(
-    //         polygon_generator.point_height(
-    //             &graph::Coordinate { x: 0.0, y: 0.0 },
-    //             &graph::Coordinate { x: 5.0, y: 0.0 },
-    //         ),
-    //         resolution_height as f64 / 4.0
-    //     );
-
-    //     let polygon_generator = PointGenerator {
-    //         resolution: Size {
-    //             width: 0.0,
-    //             height: resolution_height,
-    //         },
-    //         half_vertical_angle_value: player_utils::Radians(std::f64::consts::PI / 3.0),
-    //         wall_height: 5.0,
-    //     };
-
-    //     assert_eq!(
-    //         polygon_generator.point_height(
-    //             &graph::Coordinate { x: 0.0, y: 0.0 },
-    //             &graph::Coordinate { x: 5.0, y: 0.0 },
-    //         ),
-    //         resolution_height as f64 * 3.0 / 8.0
-    //     );
-    // }
-
-    // #[test]
-    // fn new_test() {
-    //     let resolution_width = 800.0;
-    //     let resolution_height = 600.0;
-
-    //     let polygon_generator = PointGenerator {
-    //         resolution: Size {
-    //             width: resolution_width,
-    //             height: resolution_height,
-    //         },
-    //         half_vertical_angle_value: player_utils::Radians(std::f64::consts::PI / 2.0),
-    //         wall_height: 5.0,
-    //     };
-    //     let angle = player_utils::Angle {
-    //         start: player_utils::Radians(std::f64::consts::PI / 4.0),
-    //         end: player_utils::Radians(3.0 * std::f64::consts::PI / 4.0),
-    //     };
-    //     let start_point = graph::Coordinate { x: 5.0, y: 0.0 };
-
-    //     let end_point_1 = graph::Coordinate { x: 6.0, y: 3.0 };
-    //     let end_point_2 = graph::Coordinate { x: 6.0, y: 4.0 };
-    //     let end_point_3 = graph::Coordinate { x: 6.0, y: 5.0 };
-
-    //     let coordinate_1 = graph::Coordinate {
-    //         x: polygon_generator.point_width(&angle, &start_point, &end_point_1),
-    //         y: polygon_generator.point_height(&start_point, &end_point_1),
-    //     };
-    //     let coordinate_2 = graph::Coordinate {
-    //         x: polygon_generator.point_width(&angle, &start_point, &end_point_2),
-    //         y: polygon_generator.point_height(&start_point, &end_point_2),
-    //     };
-    //     let coordinate_3 = graph::Coordinate {
-    //         x: polygon_generator.point_width(&angle, &start_point, &end_point_3),
-    //         y: polygon_generator.point_height(&start_point, &end_point_3),
-    //     };
-    //     println!("{:?}\n{:?}\n{:?}", coordinate_1, coordinate_2, coordinate_3);
-
-    //     let a_graph = (coordinate_1.y - coordinate_2.y) / (coordinate_1.x - coordinate_2.x);
-    //     let b_graph = coordinate_1.y - (a_graph * coordinate_1.x);
-    //     println!("a_graph {:?}\nb_graph {:?}", a_graph, b_graph);
-
-    //     let delta_x_2_3 = coordinate_3.x - coordinate_2.x;
-    //     let delta_y_2_3 = coordinate_3.y - coordinate_2.y;
-    //     let calculated_delta_y = delta_x_2_3 * a_graph;
-
-    //     println!(
-    //         "delta_x_2_3 {:?} delta_y_2_3 {:?} calculated_delta_y {:?}",
-    //         delta_x_2_3, delta_y_2_3, calculated_delta_y
-    //     );
-    // }
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_height(&angle, &start_position, &end_position_2),
+            half_wall_height / 4.0 * resolution_height,
+            ulps = 3
+        ));
+    }
 }
