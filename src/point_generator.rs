@@ -6,13 +6,26 @@ use piston::window::Size;
 use mockall::{automock, predicate::*};
 
 pub struct PointGenerator {
-    pub resolution: Size,
-    pub half_vertical_angle_value: player_utils::Radians,
-    pub wall_height: f64,
+    resolution: Size,
+    vertical_tangens: f64,
+    half_wall_height: f64,
 }
 
 #[cfg_attr(test, automock)]
 impl PointGenerator {
+    pub fn new(
+        resolution: Size,
+        vertical_angle_value: player_utils::Radians,
+        wall_height: f64,
+    ) -> PointGenerator {
+        PointGenerator {
+            resolution,
+            vertical_tangens: graph::LinearGraph::from_radians(vertical_angle_value.0 / 2.0)
+                .tangens,
+            half_wall_height: wall_height / 2.0,
+        }
+    }
+
     pub fn point_width(
         &self,
         angle: &player_utils::Angle,
@@ -135,8 +148,7 @@ impl PointGenerator {
             y: cross_point_y,
         });
         let whole_distance = start_position.distance(&end_position);
-        return (short_distance / whole_distance * self.wall_height / 2.0)
-            / graph::LinearGraph::from_radians(self.half_vertical_angle_value.0).tangens
+        return (short_distance / whole_distance * self.half_wall_height) / self.vertical_tangens
             * self.resolution.height;
     }
 }
@@ -149,14 +161,14 @@ mod test {
     #[test]
     fn point_width_inside_field_of_view() {
         let resolution_width = 800.0;
-        let point_generator = PointGenerator {
-            resolution: Size {
+        let point_generator = PointGenerator::new(
+            Size {
                 width: resolution_width,
                 height: Default::default(),
             },
-            half_vertical_angle_value: Default::default(),
-            wall_height: Default::default(),
-        };
+            Default::default(),
+            Default::default(),
+        );
 
         let angle = player_utils::Angle {
             start: player_utils::Radians(0.0),
@@ -191,14 +203,14 @@ mod test {
     #[test]
     fn point_width_outside_field_of_view() {
         let resolution_width = 800.0;
-        let point_generator = PointGenerator {
-            resolution: Size {
+        let point_generator = PointGenerator::new(
+            Size {
                 width: resolution_width,
                 height: Default::default(),
             },
-            half_vertical_angle_value: Default::default(),
-            wall_height: Default::default(),
-        };
+            Default::default(),
+            Default::default(),
+        );
 
         let angle = player_utils::Angle {
             start: player_utils::Radians(std::f64::consts::PI / 4.0),

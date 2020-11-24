@@ -31,11 +31,7 @@ impl Engine {
     ) -> Result<Engine, image::ImageError> {
         let map = Map::new(path_to_map)?;
         let polygon_generator = PolygonGenerator {
-            point_generator: PointGenerator {
-                resolution,
-                half_vertical_angle_value: Radians(vertical_angle_value / 2.0),
-                wall_height,
-            },
+            point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
         };
         Result::Ok(Engine {
             generator: ObjectGenerator {
