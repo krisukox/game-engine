@@ -144,11 +144,12 @@ impl PointGenerator {
 #[cfg(test)]
 mod test {
     use super::*;
+    use float_cmp::approx_eq;
 
-    #[test] //angle.start < angle.end
-    fn point_width_1() {
+    #[test]
+    fn point_width_inside_field_of_view() {
         let resolution_width = 800.0;
-        let polygon_generator = PointGenerator {
+        let point_generator = PointGenerator {
             resolution: Size {
                 width: resolution_width,
                 height: Default::default(),
@@ -159,49 +160,76 @@ mod test {
 
         let angle = player_utils::Angle {
             start: player_utils::Radians(0.0),
-            end: player_utils::Radians(std::f64::consts::PI),
+            end: player_utils::Radians(std::f64::consts::PI * 2.0 / 3.0),
         };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 5.0, y: -5.0 },
-            ),
-            -(resolution_width as f64 / 4.0)
+        let end_position_1 = graph::Coordinate { x: 0.0, y: 10.0 };
+        let end_position_2 = graph::Coordinate {
+            x: 10.0 * 3.0_f64.sqrt(),
+            y: 10.0,
+        };
+
+        let short_distance_1 = 3.0_f64.sqrt() * 4.0 / 3.0;
+        let short_distance_2 = 3.0_f64.sqrt() * 2.0 / 3.0;
+        let whole_distance = 3.0_f64.sqrt() * 2.0;
+
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_width(&angle, &start_position, &end_position_1),
+            short_distance_1 / whole_distance * resolution_width,
+            ulps = 3
+        ));
+
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_width(&angle, &start_position, &end_position_2),
+            short_distance_2 / whole_distance * resolution_width,
+            ulps = 3
+        ));
+    }
+
+    #[test]
+    fn point_width_outside_field_of_view() {
+        let resolution_width = 800.0;
+        let point_generator = PointGenerator {
+            resolution: Size {
+                width: resolution_width,
+                height: Default::default(),
+            },
+            half_vertical_angle_value: Default::default(),
+            wall_height: Default::default(),
+        };
+
+        let angle = player_utils::Angle {
+            start: player_utils::Radians(std::f64::consts::PI / 4.0),
+            end: player_utils::Radians(std::f64::consts::PI * 3.0 / 4.0),
+        };
+        let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
+        let end_position_1 = graph::Coordinate { x: 14.0, y: 4.0 };
+        let end_position_2 = graph::Coordinate { x: 2.0, y: 4.0 };
+
+        let short_distance_1 = -1.0;
+        let short_distance_2 = 3.0;
+        let whole_distance = 2.0;
+
+        println!(
+            "{}",
+            point_generator.point_width(&angle, &start_position, &end_position_1,)
         );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 5.0, y: 0.0 },
-            ),
-            0.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: 0.0, y: 5.0 },
-            ),
-            resolution_width as f64 / 2.0
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: -5.0, y: 0.0 },
-            ),
-            resolution_width as f64
-        );
-        assert_eq!(
-            polygon_generator.point_width(
-                &angle,
-                &start_position,
-                &graph::Coordinate { x: -5.0, y: -5.0 },
-            ),
-            resolution_width as f64 + resolution_width as f64 / 4.0
-        );
+
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_width(&angle, &start_position, &end_position_1),
+            short_distance_1 / whole_distance * resolution_width,
+            ulps = 3
+        ));
+
+        assert!(approx_eq!(
+            f64,
+            point_generator.point_width(&angle, &start_position, &end_position_2,),
+            short_distance_2 / whole_distance * resolution_width,
+            ulps = 3
+        ));
     }
 
     // #[test] //angle.start > angle.end
