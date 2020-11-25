@@ -7,14 +7,14 @@ use player_utils::{Angle, Player, Radians};
 fn main() {
     let path_to_map = "test_resources/map.png";
     let resolution = Size {
-        width: 800.0,
-        height: 600.0,
+        width: 1280.0,
+        height: 720.0,
     };
     let number_of_rays = 2000;
     let player = Player::new(
         Angle {
             start: Radians(std::f64::consts::PI),
-            end: Radians(5.0 * std::f64::consts::PI / 4.0),
+            end: Radians(3.0 * std::f64::consts::PI / 2.0),
         },
         Coordinate { x: 27.0, y: 9.0 },
         number_of_rays,

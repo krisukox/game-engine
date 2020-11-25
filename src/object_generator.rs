@@ -291,19 +291,6 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn generate_polygons_3() {
-    //     let object_generator = ObjectGenerator {
-    //         map: Map::dummy(),
-    //         rays: Default::default(),
-    //         polygon_generator: object_generator,
-    //     };
-    //     assert_eq!(
-    //         object_generator.generate_polygons_(walls_in_sight, &position, &angle),
-    //         generate_polygons
-    //     );
-    // }
-
     #[test]
     fn get_walls_in_sight() {
         let expected_walls_in_sight = graph::Walls(vec![
