@@ -41,6 +41,7 @@ fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
 impl LinearGraph {
     pub fn from_radians(radians: f64) -> LinearGraph {
         if radians == 0.0 || radians == std::f64::consts::PI {
+            // TODO consider to remove this check
             return LinearGraph {
                 radians,
                 tangens: 0.0,

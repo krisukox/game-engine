@@ -13,14 +13,14 @@ fn main() {
     let number_of_rays = 2000;
     let player = Player::new(
         Angle {
-            start: Radians(1.0 * std::f64::consts::PI / 4.0),
-            end: Radians(3.0 * std::f64::consts::PI / 4.0),
+            start: Radians(std::f64::consts::PI),
+            end: Radians(3.0 * std::f64::consts::PI / 2.0),
         },
-        Coordinate { x: 35.0, y: 11.0 },
+        Coordinate { x: 27.0, y: 9.0 },
         number_of_rays,
     );
-    let vertical_angle_value = Radians(std::f64::consts::PI);
-    let wall_height = 7.0;
+    let vertical_angle_value = Radians(std::f64::consts::PI * 0.375);
+    let wall_height = 5.0;
 
     if let Ok(mut engine) = Engine::new(
         path_to_map,

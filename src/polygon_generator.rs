@@ -29,15 +29,15 @@ impl PolygonGenerator {
         let start_point_width =
             self.point_generator
                 .point_width(angle, position, &wall.start_point);
-        let start_point_height = self
-            .point_generator
-            .point_height(&position, &wall.start_point);
+        let start_point_height =
+            self.point_generator
+                .point_height(angle, position, &wall.start_point);
         let end_point_width = self
             .point_generator
             .point_width(angle, position, &wall.end_point);
         let end_point_height = self
             .point_generator
-            .point_height(&position, &wall.end_point);
+            .point_height(angle, position, &wall.end_point);
         return [
             [start_point_width, start_point_height],
             [end_point_width, end_point_height],
@@ -70,7 +70,7 @@ mod test {
         let end_point_width = 19.0;
         let end_point_height = 21.0;
 
-        let mut point_generator = point_generator::MockPointGenerator::new();
+        let mut point_generator = point_generator::MockPointGenerator::default();
         let mut seq = Sequence::new();
 
         point_generator
@@ -92,8 +92,12 @@ mod test {
             .expect_point_height()
             .times(1)
             .withf(
-                |start_position: &graph::Coordinate, end_position: &graph::Coordinate| {
-                    *start_position == position && *end_position == wall.start_point
+                |angle_: &player_utils::Angle,
+                 start_position: &graph::Coordinate,
+                 end_position: &graph::Coordinate| {
+                    *angle_ == angle
+                        && *start_position == position
+                        && *end_position == wall.start_point
                 },
             )
             .return_const(start_point_height)
@@ -118,8 +122,12 @@ mod test {
             .expect_point_height()
             .times(1)
             .withf(
-                |start_position: &graph::Coordinate, end_position: &graph::Coordinate| {
-                    *start_position == position && *end_position == wall.end_point
+                |angle_: &player_utils::Angle,
+                 start_position: &graph::Coordinate,
+                 end_position: &graph::Coordinate| {
+                    *angle_ == angle
+                        && *start_position == position
+                        && *end_position == wall.end_point
                 },
             )
             .return_const(end_point_height)
