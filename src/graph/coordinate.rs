@@ -79,17 +79,17 @@ impl Coordinate {
         let delta_y = self.y - end_coordinate.y;
         if delta_x == 0.0 {
             if self.y < end_coordinate.y {
-                return player_utils::Radians(std::f64::consts::PI / 2.0);
+                return player_utils::Radians::new(std::f64::consts::PI / 2.0);
             }
-            return player_utils::Radians(std::f64::consts::PI * 3.0 / 2.0);
+            return player_utils::Radians::new(std::f64::consts::PI * 3.0 / 2.0);
         }
         if self.x < end_coordinate.x {
             if self.y > end_coordinate.y {
-                return player_utils::Radians((delta_y / delta_x).atan() + player_utils::PI_2);
+                return player_utils::Radians::new((delta_y / delta_x).atan() + player_utils::PI_2);
             }
-            return player_utils::Radians((delta_y / delta_x).atan());
+            return player_utils::Radians::new((delta_y / delta_x).atan());
         }
-        return player_utils::Radians((delta_y / delta_x).atan() + std::f64::consts::PI);
+        return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
     }
 }
 
@@ -211,11 +211,11 @@ mod tests {
             Coordinate { x: 0.0, y: -1.0 },
             Coordinate { x: 1.0, y: -1.0 },
         ];
-        let mut radian = player_utils::Radians(0.0);
+        let mut radian = player_utils::Radians::new(0.0);
 
         for end_coordinate in end_coordinates {
             assert_eq!(start_coordinate.into_radians(&end_coordinate), radian);
-            radian += player_utils::Radians(std::f64::consts::PI / 4.0);
+            radian += player_utils::Radians::new(std::f64::consts::PI / 4.0);
         }
     }
 }

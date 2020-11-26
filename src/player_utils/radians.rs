@@ -1,8 +1,7 @@
-use std::ops::{Add, AddAssign, Div, Sub};
+use std::ops::{Add, AddAssign, Div, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
-pub struct Radians(pub f64); // Radians range [0, pi*2)
-                             // TODO consider to add a constructor that will be checking if the value is in the range
+pub struct Radians(f64); // Radians range [0, pi*2)
 
 pub const PI_2: f64 = std::f64::consts::PI * 2.0;
 
@@ -17,6 +16,10 @@ fn fix_radians(radians: f64) -> f64 {
 }
 
 impl Radians {
+    pub fn new(radians: f64) -> Radians {
+        Radians(fix_radians(radians))
+    }
+
     pub fn into_rays_index(&self, number_of_rays: usize) -> f64 {
         number_of_rays as f64 / PI_2 * self.0
     }
@@ -24,11 +27,25 @@ impl Radians {
     pub fn min(&self, other: Radians) -> Radians {
         Radians(self.0.min(other.0))
     }
+
+    pub fn tan(&self) -> f64 {
+        self.0.tan()
+    }
+
+    pub const ZERO: Radians = Radians(0.0);
+    pub const PI: Radians = Radians(std::f64::consts::PI);
+    pub const PI_2: Radians = Radians(std::f64::consts::PI * 2.0);
 }
 
 impl AddAssign for Radians {
     fn add_assign(&mut self, rhs: Self) {
         self.0 = fix_radians(self.0 + rhs.0);
+    }
+}
+
+impl SubAssign for Radians {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 = fix_radians(self.0 - rhs.0);
     }
 }
 
@@ -60,16 +77,16 @@ impl Sub<Radians> for &Radians {
 }
 
 impl Div for Radians {
-    type Output = f64;
+    type Output = Radians;
     fn div(self, rhs: Self) -> Self::Output {
-        self.0 / rhs.0
+        Radians(self.0 / rhs.0)
     }
 }
 
 impl Div<f64> for Radians {
-    type Output = f64;
+    type Output = Radians;
     fn div(self, rhs: f64) -> Self::Output {
-        self.0 / rhs
+        Radians(self.0 / rhs)
     }
 }
 
@@ -78,20 +95,20 @@ mod test {
     use super::*;
 
     #[test]
-    fn add_assign() {
+    fn add_sub_assign() {
         let radians_value = 2.5;
         let radians_delta = 3.0;
-        let mut radians = Radians(radians_value);
-        radians += Radians(radians_delta);
+        let mut radians = Radians::new(radians_value);
+        radians += Radians::new(radians_delta);
         assert_eq!(radians, Radians(radians_value + radians_delta));
-        radians += Radians(radians_delta);
+        radians += Radians::new(radians_delta);
         assert_eq!(
             radians,
             Radians(radians_value + radians_delta + radians_delta - PI_2)
         );
-        radians += Radians(-radians_delta);
+        radians -= Radians::new(radians_delta);
         assert_eq!(radians, Radians(radians_value + radians_delta));
-        radians += Radians(-radians_delta);
+        radians -= Radians::new(radians_delta);
         assert_eq!(radians, Radians(radians_value));
     }
 
@@ -112,9 +129,9 @@ mod test {
             Radians(radians_value + radians_value)
         );
         assert_eq!(
-            Radians(radians_value) + Radians(radians_value) + Radians(radians_value)
-                - Radians(radians_value)
-                - Radians(radians_value),
+            Radians::new(radians_value) + Radians::new(radians_value) + Radians::new(radians_value)
+                - Radians::new(radians_value)
+                - Radians::new(radians_value),
             Radians(radians_value)
         );
     }
@@ -124,8 +141,13 @@ mod test {
         let radians_1 = 2.5;
         let radians_2 = 0.5;
         assert_eq!(
-            Radians(radians_1) / Radians(radians_2),
-            radians_1 / radians_2
+            Radians::new(radians_1) / Radians::new(radians_2),
+            Radians(radians_1 / radians_2)
+        );
+
+        assert_eq!(
+            Radians::new(radians_1) / radians_2,
+            Radians(radians_1 / radians_2)
         );
     }
 
@@ -136,11 +158,11 @@ mod test {
         let number_of_rays = 100;
 
         assert_eq!(
-            Radians(radians_value_1).into_rays_index(number_of_rays),
+            Radians::new(radians_value_1).into_rays_index(number_of_rays),
             number_of_rays as f64 / 2.0
         );
         assert_eq!(
-            Radians(radians_value_2).into_rays_index(number_of_rays),
+            Radians::new(radians_value_2).into_rays_index(number_of_rays),
             number_of_rays as f64 * 3.0 / 4.0
         );
     }

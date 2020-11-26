@@ -20,8 +20,7 @@ impl PointGenerator {
     ) -> PointGenerator {
         PointGenerator {
             resolution,
-            vertical_tangens: graph::LinearGraph::from_radians(vertical_angle_value.0 / 2.0)
-                .tangens,
+            vertical_tangens: graph::LinearGraph::from_radians(vertical_angle_value / 2.0).tangens,
             half_wall_height: wall_height / 2.0,
         }
     }
@@ -48,12 +47,11 @@ impl PointGenerator {
         f64,
         graph::Coordinate,
     ) {
-        let direction = graph::LinearGraph::from_radians((angle.get_direction() - angle.start).0);
+        let direction = graph::LinearGraph::from_radians(angle.get_direction() - angle.start);
 
         let perpendicular_direction = graph::LinearGraph::from_radians(
-            (angle.get_direction() + player_utils::Radians(std::f64::consts::PI / 2.0)
-                - angle.start)
-                .0,
+            angle.get_direction() + player_utils::Radians::new(std::f64::consts::PI / 2.0)
+                - angle.start,
         );
 
         let cross_point_middle_x = (1.0 / (direction.tangens.powi(2) + 1.0)).sqrt();
@@ -62,7 +60,7 @@ impl PointGenerator {
         let perpendicular_direction_b =
             cross_point_middle_y - perpendicular_direction.tangens * cross_point_middle_x;
 
-        let graph_point_radians = graph::LinearGraph::from_radians((point_radians - angle.start).0);
+        let graph_point_radians = graph::LinearGraph::from_radians(point_radians - angle.start);
         return (
             graph_point_radians,
             perpendicular_direction,
@@ -171,8 +169,8 @@ mod test {
         );
 
         let angle = player_utils::Angle {
-            start: player_utils::Radians(0.0),
-            end: player_utils::Radians(std::f64::consts::PI * 2.0 / 3.0),
+            start: player_utils::Radians::new(0.0),
+            end: player_utils::Radians::new(std::f64::consts::PI * 2.0 / 3.0),
         };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
         let end_position_1 = graph::Coordinate { x: 0.0, y: 10.0 };
@@ -213,8 +211,8 @@ mod test {
         );
 
         let angle = player_utils::Angle {
-            start: player_utils::Radians(std::f64::consts::PI / 4.0),
-            end: player_utils::Radians(std::f64::consts::PI * 3.0 / 4.0),
+            start: player_utils::Radians::new(std::f64::consts::PI / 4.0),
+            end: player_utils::Radians::new(std::f64::consts::PI * 3.0 / 4.0),
         };
         let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
         let end_position_1 = graph::Coordinate { x: 14.0, y: 4.0 };
@@ -248,14 +246,14 @@ mod test {
                 width: Default::default(),
                 height: resolution_height,
             },
-            player_utils::Radians(std::f64::consts::PI / 2.0),
+            player_utils::Radians::new(std::f64::consts::PI / 2.0),
             wall_height,
         );
         let half_wall_height = wall_height / 2.0;
 
         let angle = player_utils::Angle {
-            start: player_utils::Radians(std::f64::consts::PI / 4.0),
-            end: player_utils::Radians(std::f64::consts::PI * 3.0 / 4.0),
+            start: player_utils::Radians::new(std::f64::consts::PI / 4.0),
+            end: player_utils::Radians::new(std::f64::consts::PI * 3.0 / 4.0),
         };
 
         let start_position = graph::Coordinate { x: 8.0, y: 1.0 };

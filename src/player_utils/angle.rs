@@ -28,17 +28,22 @@ impl Angle {
         self.end - self.start
     }
 
-    pub fn rotate(&mut self, angle_delta: Radians) {
+    pub fn rotate_left(&mut self, angle_delta: Radians) {
         self.start += angle_delta;
         self.end += angle_delta;
+    }
+
+    pub fn rotate_right(&mut self, angle_delta: Radians) {
+        self.start -= angle_delta;
+        self.end -= angle_delta;
     }
 
     pub fn get_rays_angle_range(
         &self,
         number_of_rays: usize,
     ) -> std::vec::Vec<std::ops::Range<usize>> {
-        let start = self.start - Radians(0.02);
-        let end = self.end + Radians(0.02);
+        let start = self.start - Radians::new(0.02);
+        let end = self.end + Radians::new(0.02);
         if start > end {
             return vec![
                 std::ops::Range {
@@ -71,7 +76,7 @@ impl Angle {
     }
 
     pub fn get_direction(&self) -> Radians {
-        self.start + Radians(self.value() / 2.0)
+        self.start + self.value() / 2.0
     }
 }
 
@@ -85,11 +90,14 @@ mod test {
         let start_angle = 5.5;
         let end_angle = 0.4;
         let angle_1 = Angle {
-            start: Radians(start_angle),
-            end: Radians(end_angle),
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
         };
 
-        assert_eq!(angle_1.value(), Radians(end_angle - start_angle + PI_2));
+        assert_eq!(
+            angle_1.value(),
+            Radians::new(end_angle - start_angle + PI_2)
+        );
     }
 
     #[test]
@@ -99,64 +107,67 @@ mod test {
         let start_angle = 4.0;
         let end_angle = 5.5;
         let mut angle = Angle {
-            start: Radians(start_angle),
-            end: Radians(end_angle),
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
         };
-        assert_eq!(angle.start, Radians(start_angle));
-        assert_eq!(angle.end, Radians(end_angle));
+        assert_eq!(angle.start, Radians::new(start_angle));
+        assert_eq!(angle.end, Radians::new(end_angle));
 
-        angle.rotate(Radians(delta));
-        assert_eq!(angle.start, Radians(start_angle + delta));
-        assert_eq!(angle.end, Radians(end_angle + delta - PI_2));
+        angle.rotate_left(Radians::new(delta));
+        assert_eq!(angle.start, Radians::new(start_angle + delta));
+        assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
 
-        angle.rotate(Radians(delta));
-        assert_eq!(angle.start, Radians(start_angle + delta + delta - PI_2));
-        assert_eq!(angle.end, Radians(end_angle + delta + delta - PI_2));
+        angle.rotate_left(Radians::new(delta));
+        assert_eq!(
+            angle.start,
+            Radians::new(start_angle + delta + delta - PI_2)
+        );
+        assert_eq!(angle.end, Radians::new(end_angle + delta + delta - PI_2));
 
-        angle.rotate(Radians(-delta));
-        assert_eq!(angle.start, Radians(start_angle + delta));
-        assert_eq!(angle.end, Radians(end_angle + delta - PI_2));
+        angle.rotate_right(Radians::new(delta));
+        assert_eq!(angle.start, Radians::new(start_angle + delta));
+        assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
     }
 
     #[test]
     fn get_rays_angle_1_range() {
-        let start_angle = Radians(5.1);
-        let end_angle = Radians(5.5);
+        let start_angle = 5.1;
+        let end_angle = 5.5;
         let number_of_rays = 100;
         let angle = Angle {
-            start: start_angle,
-            end: end_angle,
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
         };
         let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 1);
         assert_eq!(
             ranges[0],
-            ((start_angle - Radians(0.02)).0 * number_of_rays as f64 / PI_2).floor() as usize
-                ..((end_angle + Radians(0.02)).0 * number_of_rays as f64 / PI_2).ceil() as usize
+            ((start_angle - 0.02) * number_of_rays as f64 / PI_2).floor() as usize
+                ..((end_angle + 0.02) * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 
     #[test]
     fn get_rays_angle_2_ranges() {
-        let start_angle = Radians(5.1);
-        let end_angle = Radians(0.5);
+        let start_angle = 5.1;
+        let end_angle = 0.5;
         let number_of_rays = 100;
         let angle = Angle {
-            start: start_angle,
-            end: end_angle,
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
         };
         let ranges = angle.get_rays_angle_range(number_of_rays);
 
         assert_eq!(ranges.len(), 2);
         assert_eq!(
             ranges[0],
-            ((start_angle - Radians(0.02)).0 * number_of_rays as f64 / PI_2).floor() as usize
+            ((start_angle - 0.02) * number_of_rays as f64 / PI_2).floor() as usize
                 ..number_of_rays - 1
         );
         assert_eq!(
             ranges[1],
-            0..((end_angle + Radians(0.02)).0 * number_of_rays as f64 / PI_2).ceil() as usize
+            0..((end_angle + 0.02) * number_of_rays as f64 / PI_2).ceil() as usize
         );
     }
 
@@ -165,15 +176,15 @@ mod test {
         let start_angle = 5.2;
         let end_angle = 2.3;
         let angle = Angle {
-            start: Radians(start_angle),
-            end: Radians(end_angle),
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
         };
 
-        assert!(!angle.is_inside(Radians(4.5)));
-        assert!(angle.is_inside(Radians(5.2)));
-        assert!(angle.is_inside(Radians(5.8)));
-        assert!(angle.is_inside(Radians(0.4)));
-        assert!(angle.is_inside(Radians(2.3)));
-        assert!(!angle.is_inside(Radians(2.5)));
+        assert!(!angle.is_inside(Radians::new(4.5)));
+        assert!(angle.is_inside(Radians::new(5.2)));
+        assert!(angle.is_inside(Radians::new(5.8)));
+        assert!(angle.is_inside(Radians::new(0.4)));
+        assert!(angle.is_inside(Radians::new(2.3)));
+        assert!(!angle.is_inside(Radians::new(2.5)));
     }
 }

@@ -147,6 +147,7 @@ impl ObjectGenerator {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::player_utils::Radians;
     use mockall::*;
 
     fn test_generate_polygons(
@@ -159,8 +160,8 @@ mod test {
         let mut seq = Sequence::new();
 
         let angle = player_utils::Angle {
-            start: player_utils::Radians(0.0),
-            end: player_utils::Radians(std::f64::consts::PI / 2.0),
+            start: player_utils::Radians::new(0.0),
+            end: player_utils::Radians::new(std::f64::consts::PI / 2.0),
         };
 
         for (index, polygon) in walls_in_sight_indices
@@ -325,7 +326,7 @@ mod test {
         let mut rays: Vec<graph::LinearGraph> = Vec::new();
         let mut radians = 0.0;
         while radians < std::f64::consts::PI * 2.0 {
-            rays.push(graph::LinearGraph::from_radians(radians));
+            rays.push(graph::LinearGraph::from_radians(Radians::new(radians)));
             radians += 0.05;
         }
         let rays_indexes = 0..rays.len() / 4 + 1;

@@ -9,6 +9,7 @@ pub use self::wall::{Wall, Walls};
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::player_utils::Radians;
 
     fn test_coordinates(
         tangens: f64,
@@ -28,11 +29,11 @@ mod tests {
         };
         let graph_increasing: LinearGraph = LinearGraph {
             tangens,
-            radians: radians_1,
+            radians: Radians::new(radians_1),
         };
         let graph_decreasing: LinearGraph = LinearGraph {
             tangens,
-            radians: radians_2,
+            radians: Radians::new(radians_2),
         };
         let result_second_coordinate = graph_increasing.get_next(&first_coordinate);
         let result_first_coordinate = graph_decreasing.get_next(&second_coordinate);
@@ -147,15 +148,5 @@ mod tests {
             &first_coordinate_2,
             &second_coordinate_2,
         );
-    }
-
-    #[test]
-    #[should_panic]
-    fn next_coordinate_panic() {
-        let graph = LinearGraph {
-            radians: 7.0,
-            tangens: 0.0,
-        };
-        graph.get_next(&Coordinate { x: 0.0, y: 0.0 });
     }
 }

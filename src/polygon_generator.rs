@@ -56,8 +56,8 @@ mod test {
     #[test]
     fn generate_polygon() {
         static angle: player_utils::Angle = player_utils::Angle {
-            start: player_utils::Radians(0.5),
-            end: player_utils::Radians(0.5),
+            start: player_utils::Radians::PI,
+            end: player_utils::Radians::PI_2,
         };
         static position: graph::Coordinate = graph::Coordinate { x: 11.0, y: 13.0 };
         static wall: graph::Wall = graph::Wall {
