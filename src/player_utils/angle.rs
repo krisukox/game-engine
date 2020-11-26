@@ -28,9 +28,14 @@ impl Angle {
         self.end - self.start
     }
 
-    pub fn rotate(&mut self, angle_delta: Radians) {
+    pub fn rotate_left(&mut self, angle_delta: Radians) {
         self.start += angle_delta;
         self.end += angle_delta;
+    }
+
+    pub fn rotate_right(&mut self, angle_delta: Radians) {
+        self.start -= angle_delta;
+        self.end -= angle_delta;
     }
 
     pub fn get_rays_angle_range(
@@ -95,34 +100,34 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn angle_rotate() {
-    //     let delta = 2.0;
+    #[test]
+    fn angle_rotate() {
+        let delta = 2.0;
 
-    //     let start_angle = 4.0;
-    //     let end_angle = 5.5;
-    //     let mut angle = Angle {
-    //         start: Radians::new(start_angle),
-    //         end: Radians::new(end_angle),
-    //     };
-    //     assert_eq!(angle.start, Radians::new(start_angle));
-    //     assert_eq!(angle.end, Radians::new(end_angle));
+        let start_angle = 4.0;
+        let end_angle = 5.5;
+        let mut angle = Angle {
+            start: Radians::new(start_angle),
+            end: Radians::new(end_angle),
+        };
+        assert_eq!(angle.start, Radians::new(start_angle));
+        assert_eq!(angle.end, Radians::new(end_angle));
 
-    //     angle.rotate(Radians::new(delta));
-    //     assert_eq!(angle.start, Radians::new(start_angle + delta));
-    //     assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
+        angle.rotate_left(Radians::new(delta));
+        assert_eq!(angle.start, Radians::new(start_angle + delta));
+        assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
 
-    //     angle.rotate(Radians::new(delta));
-    //     assert_eq!(
-    //         angle.start,
-    //         Radians::new(start_angle + delta + delta - PI_2)
-    //     );
-    //     assert_eq!(angle.end, Radians::new(end_angle + delta + delta - PI_2));
+        angle.rotate_left(Radians::new(delta));
+        assert_eq!(
+            angle.start,
+            Radians::new(start_angle + delta + delta - PI_2)
+        );
+        assert_eq!(angle.end, Radians::new(end_angle + delta + delta - PI_2));
 
-    //     angle.rotate(Radians::new(-delta));
-    //     assert_eq!(angle.start, Radians::new(start_angle + delta));
-    //     assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
-    // }
+        angle.rotate_right(Radians::new(delta));
+        assert_eq!(angle.start, Radians::new(start_angle + delta));
+        assert_eq!(angle.end, Radians::new(end_angle + delta - PI_2));
+    }
 
     #[test]
     fn get_rays_angle_1_range() {

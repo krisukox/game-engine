@@ -30,8 +30,12 @@ impl Player {
         graph::LinearGraph::get_all_rays(self.number_of_rays)
     }
 
-    pub fn rotate(&mut self, angle_delta: Radians) {
-        self.angle.rotate(angle_delta);
+    pub fn rotate_left(&mut self, angle_delta: Radians) {
+        self.angle.rotate_left(angle_delta);
+    }
+
+    pub fn rotate_right(&mut self, angle_delta: Radians) {
+        self.angle.rotate_right(angle_delta);
     }
 
     pub fn move_forward_backward(&mut self, distance: f64) {
@@ -99,7 +103,7 @@ mod test {
             graph::Coordinate { x: 0.0, y: 0.0 },
             100,
         );
-        player.rotate(Radians::new(rotate_delta));
+        player.rotate_left(Radians::new(rotate_delta));
         assert_eq!(player.angle.start, Radians::new(angle_start + rotate_delta));
         assert_eq!(player.angle.end, Radians::new(angle_end + rotate_delta));
     }
