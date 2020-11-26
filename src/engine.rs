@@ -83,7 +83,8 @@ impl Engine {
                 if args[0] > 0.0 {
                     self.player.rotate_left(Radians::new(args[0] / 1000.0));
                 } else {
-                    self.player.rotate_right(Radians::new(args[0] / 1000.0));
+                    self.player
+                        .rotate_right(Radians::new((args[0] / 1000.0).abs()));
                 }
             }
 
