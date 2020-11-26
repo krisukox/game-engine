@@ -2,7 +2,6 @@ use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
 pub struct Radians(f64); // Radians range [0, pi*2)
-                         // TODO consider to add a constructor that will be checking if the value is in the range
 
 pub const PI_2: f64 = std::f64::consts::PI * 2.0;
 
@@ -91,34 +90,27 @@ impl Div<f64> for Radians {
     }
 }
 
-// impl Mul<f64> for Radians {
-//     type Output = Radians;
-//     fn mul(self, rhs: f64) -> Self::Output {
-//         Radians(fix_radians(self.0 * rhs))
-//     }
-// }
-
 #[cfg(test)]
 mod test {
     use super::*;
 
-    // #[test]
-    // fn add_assign() {
-    //     let radians_value = 2.5;
-    //     let radians_delta = 3.0;
-    //     let mut radians = Radians(radians_value);
-    //     radians += Radians(radians_delta);
-    //     assert_eq!(radians, Radians(radians_value + radians_delta));
-    //     radians += Radians(radians_delta);
-    //     assert_eq!(
-    //         radians,
-    //         Radians(radians_value + radians_delta + radians_delta - PI_2)
-    //     );
-    //     radians += Radians(-radians_delta);
-    //     assert_eq!(radians, Radians(radians_value + radians_delta));
-    //     radians += Radians(-radians_delta);
-    //     assert_eq!(radians, Radians(radians_value));
-    // }
+    #[test]
+    fn add_sub_assign() {
+        let radians_value = 2.5;
+        let radians_delta = 3.0;
+        let mut radians = Radians::new(radians_value);
+        radians += Radians::new(radians_delta);
+        assert_eq!(radians, Radians(radians_value + radians_delta));
+        radians += Radians::new(radians_delta);
+        assert_eq!(
+            radians,
+            Radians(radians_value + radians_delta + radians_delta - PI_2)
+        );
+        radians -= Radians::new(radians_delta);
+        assert_eq!(radians, Radians(radians_value + radians_delta));
+        radians -= Radians::new(radians_delta);
+        assert_eq!(radians, Radians(radians_value));
+    }
 
     #[test]
     fn add_sub() {
@@ -140,19 +132,24 @@ mod test {
             Radians::new(radians_value) + Radians::new(radians_value) + Radians::new(radians_value)
                 - Radians::new(radians_value)
                 - Radians::new(radians_value),
-            Radians::new(radians_value)
+            Radians(radians_value)
         );
     }
 
-    // #[test]
-    // fn div() {
-    //     let radians_1 = 2.5;
-    //     let radians_2 = 0.5;
-    //     assert_eq!(
-    //         Radians::new(radians_1) / Radians::new(radians_2),
-    //         radians_1 / radians_2
-    //     );
-    // }
+    #[test]
+    fn div() {
+        let radians_1 = 2.5;
+        let radians_2 = 0.5;
+        assert_eq!(
+            Radians::new(radians_1) / Radians::new(radians_2),
+            Radians(radians_1 / radians_2)
+        );
+
+        assert_eq!(
+            Radians::new(radians_1) / radians_2,
+            Radians(radians_1 / radians_2)
+        );
+    }
 
     #[test]
     fn into_rays_index() {
