@@ -35,14 +35,13 @@ impl Player {
     }
 
     pub fn move_forward_backward(&mut self, distance: f64) {
-        let direction = graph::LinearGraph::from_radians(self.angle.get_direction().0);
+        let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
     pub fn move_right_left(&mut self, distance: f64) {
-        let direction = graph::LinearGraph::from_radians(
-            (self.angle.get_direction() - Radians(std::f64::consts::PI / 2.0)).0,
-        );
+        let direction =
+            graph::LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
@@ -61,13 +60,16 @@ mod test {
         let angle_end = 4.3;
         let player = Player::new(
             Angle {
-                start: Radians(angle_start),
-                end: Radians(angle_end),
+                start: Radians::new(angle_start),
+                end: Radians::new(angle_end),
             },
             graph::Coordinate { x: 0.0, y: 0.0 },
             100,
         );
-        assert_eq!(player.get_angle_value(), Radians(angle_end - angle_start));
+        assert_eq!(
+            player.get_angle_value(),
+            Radians::new(angle_end - angle_start)
+        );
     }
 
     #[test]
@@ -75,8 +77,8 @@ mod test {
         let number_of_rays = 100;
         let player = Player::new(
             Angle {
-                start: Radians(0.0),
-                end: Radians(0.0),
+                start: Default::default(),
+                end: Default::default(),
             },
             graph::Coordinate { x: 0.0, y: 0.0 },
             number_of_rays,
@@ -91,15 +93,15 @@ mod test {
         let angle_end = 4.3;
         let mut player = Player::new(
             Angle {
-                start: Radians(angle_start),
-                end: Radians(angle_end),
+                start: Radians::new(angle_start),
+                end: Radians::new(angle_end),
             },
             graph::Coordinate { x: 0.0, y: 0.0 },
             100,
         );
-        player.rotate(Radians(rotate_delta));
-        assert_eq!(player.angle.start, Radians(angle_start + rotate_delta));
-        assert_eq!(player.angle.end, Radians(angle_end + rotate_delta));
+        player.rotate(Radians::new(rotate_delta));
+        assert_eq!(player.angle.start, Radians::new(angle_start + rotate_delta));
+        assert_eq!(player.angle.end, Radians::new(angle_end + rotate_delta));
     }
 
     #[test]
@@ -110,8 +112,8 @@ mod test {
         let coordinate_y = 4.7;
         let mut player = Player::new(
             Angle {
-                start: Radians(0.0),
-                end: Radians(0.0),
+                start: Default::default(),
+                end: Default::default(),
             },
             graph::Coordinate {
                 x: coordinate_x,
@@ -130,8 +132,8 @@ mod test {
     #[test]
     fn move_player() {
         let angle = Angle {
-            start: Radians(0.0),
-            end: Radians(std::f64::consts::PI / 2.0),
+            start: Radians::ZERO,
+            end: Radians::PI / 2.0,
         };
         let first_position = graph::Coordinate { x: 5.0, y: 8.0 };
         let second_position = graph::Coordinate { x: 6.0, y: 9.0 };

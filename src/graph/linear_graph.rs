@@ -1,8 +1,9 @@
 use super::coordinate::Coordinate;
+use crate::player_utils::Radians;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct LinearGraph {
-    pub radians: f64,
+    pub radians: Radians,
     pub tangens: f64,
 }
 
@@ -24,23 +25,23 @@ fn prev_integer(value: f64) -> f64 {
 
 fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
     if index == 0 {
-        return LinearGraph::from_radians(0.0);
+        return LinearGraph::from_radians(Radians::ZERO);
     } else if index == amount / 4 {
-        return LinearGraph::from_radians(std::f64::consts::PI / 2.0);
+        return LinearGraph::from_radians(Radians::PI / 2.0);
     } else if index == amount / 2 {
-        return LinearGraph::from_radians(std::f64::consts::PI);
+        return LinearGraph::from_radians(Radians::PI);
     } else if index == amount * 3 / 4 {
-        return LinearGraph::from_radians(std::f64::consts::PI * 3.0 / 2.0);
+        return LinearGraph::from_radians(Radians::new(std::f64::consts::PI * 3.0 / 2.0));
     } else {
-        return LinearGraph::from_radians(
+        return LinearGraph::from_radians(Radians::new(
             std::f64::consts::PI * 2.0 * index as f64 / amount as f64,
-        );
+        ));
     }
 }
 
 impl LinearGraph {
-    pub fn from_radians(radians: f64) -> LinearGraph {
-        if radians == 0.0 || radians == std::f64::consts::PI {
+    pub fn from_radians(radians: Radians) -> LinearGraph {
+        if radians == Radians::ZERO || radians == Radians::PI {
             // TODO consider to remove this check
             return LinearGraph {
                 radians,
@@ -54,7 +55,7 @@ impl LinearGraph {
     }
 
     pub fn get_next(&self, current_coordinate: &Coordinate) -> Coordinate {
-        if self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0 {
+        if self.radians >= Radians::ZERO && self.radians < Radians::PI / 2.0 {
             let next_x = next_integer(current_coordinate.x);
             let next_y = next_integer(current_coordinate.y);
             let delta_x = next_x - current_coordinate.x;
@@ -70,12 +71,12 @@ impl LinearGraph {
                     y: next_y,
                 };
             }
-        } else if self.radians == std::f64::consts::PI / 2.0 {
+        } else if self.radians == Radians::PI / 2.0 {
             return Coordinate {
                 x: current_coordinate.x,
                 y: next_integer(current_coordinate.y),
             };
-        } else if self.radians > std::f64::consts::PI / 2.0 && self.radians < std::f64::consts::PI {
+        } else if self.radians > Radians::PI / 2.0 && self.radians < Radians::PI {
             let prev_x = prev_integer(current_coordinate.x);
             let next_y = next_integer(current_coordinate.y);
             let delta_x = prev_x - current_coordinate.x; // negative
@@ -91,8 +92,8 @@ impl LinearGraph {
                     y: next_y,
                 };
             }
-        } else if self.radians >= std::f64::consts::PI
-            && self.radians < std::f64::consts::PI * 3.0 / 2.0
+        } else if self.radians >= Radians::PI
+            && self.radians < Radians::new(std::f64::consts::PI * 3.0 / 2.0)
         {
             let prev_x = prev_integer(current_coordinate.x);
             let prev_y = prev_integer(current_coordinate.y);
@@ -109,13 +110,13 @@ impl LinearGraph {
                     y: prev_y,
                 };
             }
-        } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
+        } else if self.radians == Radians::new(std::f64::consts::PI * 3.0 / 2.0) {
             return Coordinate {
                 x: current_coordinate.x,
                 y: prev_integer(current_coordinate.y),
             };
-        } else if self.radians > std::f64::consts::PI * 3.0 / 2.0
-            && self.radians < std::f64::consts::PI * 2.0
+        } else if self.radians > Radians::new(std::f64::consts::PI * 3.0 / 2.0)
+            && self.radians < Radians::PI_2
         {
             let next_x = next_integer(current_coordinate.x);
             let prev_y = prev_integer(current_coordinate.y);
@@ -137,8 +138,8 @@ impl LinearGraph {
     }
 
     pub fn get_next_from_distance(&self, coordinate: &Coordinate, distance: f64) -> Coordinate {
-        if self.radians > std::f64::consts::PI * 3.0 / 2.0
-            || (self.radians >= 0.0 && self.radians < std::f64::consts::PI / 2.0)
+        if self.radians > Radians::new(std::f64::consts::PI * 3.0 / 2.0)
+            || (self.radians >= Radians::ZERO && self.radians < Radians::PI / 2.0)
         {
             let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
             if distance > 0.0 {
@@ -155,13 +156,13 @@ impl LinearGraph {
                 x: coordinate.x + x_delta,
                 y: coordinate.y + y_delta,
             };
-        } else if self.radians == std::f64::consts::PI / 2.0 {
+        } else if self.radians == Radians::PI / 2.0 {
             return Coordinate {
                 x: coordinate.x,
                 y: coordinate.y + distance,
             };
-        } else if self.radians > std::f64::consts::PI / 2.0
-            && self.radians < std::f64::consts::PI * 3.0 / 2.0
+        } else if self.radians > Radians::PI / 2.0
+            && self.radians < Radians::new(std::f64::consts::PI * 3.0 / 2.0)
         {
             let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
             if distance > 0.0 {
@@ -178,7 +179,7 @@ impl LinearGraph {
                 x: coordinate.x + x_delta,
                 y: coordinate.y + y_delta,
             };
-        } else if self.radians == std::f64::consts::PI * 3.0 / 2.0 {
+        } else if self.radians == Radians::new(std::f64::consts::PI * 3.0 / 2.0) {
             return Coordinate {
                 x: coordinate.x,
                 y: coordinate.y - distance,
@@ -245,15 +246,15 @@ mod tests {
         const NUMBER_OF_RAYS: usize = 8_usize;
 
         let all_rays = LinearGraph::get_all_rays(NUMBER_OF_RAYS);
-        let radians: [f64; NUMBER_OF_RAYS] = [
-            0.0,
-            std::f64::consts::PI / 4.0,
-            std::f64::consts::PI / 2.0,
-            std::f64::consts::PI * 3.0 / 4.0,
-            std::f64::consts::PI,
-            std::f64::consts::PI * 5.0 / 4.0,
-            std::f64::consts::PI * 6.0 / 4.0,
-            std::f64::consts::PI * 7.0 / 4.0,
+        let radians: [Radians; NUMBER_OF_RAYS] = [
+            Radians::ZERO,
+            Radians::new(std::f64::consts::PI / 4.0),
+            Radians::new(std::f64::consts::PI / 2.0),
+            Radians::new(std::f64::consts::PI * 3.0 / 4.0),
+            Radians::new(std::f64::consts::PI),
+            Radians::new(std::f64::consts::PI * 5.0 / 4.0),
+            Radians::new(std::f64::consts::PI * 6.0 / 4.0),
+            Radians::new(std::f64::consts::PI * 7.0 / 4.0),
         ];
         for index in 0..NUMBER_OF_RAYS {
             assert_eq!(all_rays[index], LinearGraph::from_radians(radians[index]));
@@ -262,9 +263,9 @@ mod tests {
 
     #[test]
     fn from_radians() {
-        let radians_1 = 0.0_f64;
-        let radians_2 = std::f64::consts::PI;
-        let radians_3 = 3.0;
+        let radians_1 = Radians::ZERO;
+        let radians_2 = Radians::PI;
+        let radians_3 = Radians::new(3.0);
         assert_eq!(
             LinearGraph::from_radians(radians_1),
             LinearGraph {
@@ -330,8 +331,9 @@ mod tests {
 
     #[test]
     fn get_next_from_distance_straight() {
-        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 2.0);
-        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 3.0 / 2.0);
+        let graph_upward = LinearGraph::from_radians(Radians::PI / 2.0);
+        let graph_downward =
+            LinearGraph::from_radians(Radians::new(std::f64::consts::PI * 3.0 / 2.0));
 
         let upper_coordinate = Coordinate { x: 3.0, y: 5.0 };
         let lower_coordinate = Coordinate { x: 3.0, y: 4.0 };
@@ -349,8 +351,9 @@ mod tests {
 
     #[test]
     fn get_next_from_distance_diagonal() {
-        let graph_upward = LinearGraph::from_radians(std::f64::consts::PI / 4.0);
-        let graph_downward = LinearGraph::from_radians(std::f64::consts::PI * 5.0 / 4.0);
+        let graph_upward = LinearGraph::from_radians(Radians::PI / 4.0);
+        let graph_downward =
+            LinearGraph::from_radians(Radians::new(std::f64::consts::PI * 5.0 / 4.0));
 
         let upper_coordinate = Coordinate { x: 4.0, y: 6.0 };
         let lower_coordinate = Coordinate { x: 3.0, y: 5.0 };

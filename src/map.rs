@@ -80,6 +80,7 @@ impl Map {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::player_utils::Radians;
 
     #[test]
     fn is_black_pixel() {
@@ -181,9 +182,9 @@ mod tests {
 
             let start_position = graph::Coordinate { x: 31.0, y: 29.0 };
             let rays = vec![
-                graph::LinearGraph::from_radians(std::f64::consts::PI * 2.0 - 0.5),
-                graph::LinearGraph::from_radians(std::f64::consts::PI / 4.0),
-                graph::LinearGraph::from_radians(std::f64::consts::PI / 2.0 + 0.5),
+                graph::LinearGraph::from_radians(Radians::new(std::f64::consts::PI * 2.0 - 0.5)),
+                graph::LinearGraph::from_radians(Radians::new(std::f64::consts::PI / 4.0)),
+                graph::LinearGraph::from_radians(Radians::new(std::f64::consts::PI / 2.0 + 0.5)),
             ];
             let mut black_points: Vec<graph::Coordinate> = Vec::new();
 
@@ -209,12 +210,12 @@ mod tests {
                 graph::Coordinate { x: 31.0, y: 30.0 },
             ];
             let rays_1 = vec![
-                graph::LinearGraph::from_radians(std::f64::consts::PI / 4.0 + 0.01),
-                graph::LinearGraph::from_radians(std::f64::consts::PI / 4.0 - 0.01),
+                graph::LinearGraph::from_radians(Radians::PI / 4.0 + Radians::new(0.01)),
+                graph::LinearGraph::from_radians(Radians::PI / 4.0 - Radians::new(0.01)),
             ];
 
             let expected_black_point_2 = graph::Coordinate { x: 32.0, y: 30.0 };
-            let ray_2 = graph::LinearGraph::from_radians(std::f64::consts::PI / 4.0);
+            let ray_2 = graph::LinearGraph::from_radians(Radians::PI / 4.0);
 
             let mut black_points_1: Vec<graph::Coordinate> = Vec::new();
             for ray in rays_1 {

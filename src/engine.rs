@@ -80,7 +80,7 @@ impl Engine {
             }
 
             if let Some(args) = e.mouse_relative_args() {
-                self.player.rotate(Radians(args[0] / 1000.0));
+                self.player.rotate(Radians::new(args[0] / 1000.0));
             }
 
             if let Some(args) = e.button_args() {
