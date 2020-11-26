@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Sub, SubAssign};
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
 pub struct Radians(f64); // Radians range [0, pi*2)
