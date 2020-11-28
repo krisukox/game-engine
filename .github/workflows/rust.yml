@@ -22,7 +22,7 @@ jobs:
 
       - name:                   Run test cases
         run: |
-          cargo test
+          cargo test -- --test-threads=1
 
       # - name:                   Generate code coverage
       #   run: |

@@ -1,5 +1,4 @@
 use crate::map::Map;
-use crate::object_generator::ObjectGenerator;
 use crate::player_utils::Player;
 use crate::player_utils::Radians;
 use crate::point_generator::PointGenerator;
@@ -24,12 +23,14 @@ use graphics::DrawState;
 
 use crate::painter::Painter;
 
-use crate::graphics_wrapper::GraphicsWrapper;
+// use crate::graphics_wrapper::GraphicsWrapper;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
+        use crate::object_generator::MockObjectGenerator as ObjectGenerator;
         use crate::events::MockEvents as Events;
     } else {
+        use crate::object_generator::ObjectGenerator;
         use crate::events::Events;
     }
 }
@@ -39,121 +40,27 @@ pub struct Engine {
     player: Player,
     window: GlutinWindow,
     events: Events,
+    graphics: GlGraphics,
 }
 
 #[cfg(test)]
 use mockall::{mock, predicate::*};
 
-// #[cfg(test)]
-// mock! {
-//     MyWindow {}
-//     trait Window {
-//         fn set_should_close(&mut self, value: bool);
-//         fn should_close(&self) -> bool;
-//         fn size(&self) -> Size;
-//         fn swap_buffers(&mut self);
-//         fn wait_event(&mut self) -> Event;
-//         fn wait_event_timeout(&mut self, timeout: Duration) -> Option<Event>;
-//         fn poll_event(&mut self) -> Option<Event>;
-//         fn draw_size(&self) -> Size;
-//     }
-// }
-
-// trait Cos {
-//     type Texture;
-//     fn clear_color(&mut self, color: Color);
-//     fn clear_stencil(&mut self, value: u8);
-//     fn tri_list<F>(&mut self, draw_state: &DrawState, color: &[f32; 4], f: F)
-//     where
-//         F: FnMut(&mut dyn FnMut(&[[f32; 2]]));
-//     fn tri_list_c<F>(&mut self, draw_state: &DrawState, f: F)
-//     where
-//         F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 4]]));
-//     fn tri_list_uv<F>(
-//         &mut self,
-//         draw_state: &DrawState,
-//         color: &[f32; 4],
-//         texture: &<Self as Cos>::Texture,
-//         f: F,
-//     ) where
-//         F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 2]]));
-//     fn tri_list_uv_c<F>(&mut self, draw_state: &DrawState, texture: &<Self as Cos>::Texture, f: F)
-//     where
-//         F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 2]], &[[f32; 4]]));
-// }
-
-// #[cfg(test)]
-// mock! {
-//     MyGraphics {}
-//     trait Graphics {
-//         type Texture = Texture;
-//         fn clear_color(&mut self, color: Color);
-//     fn clear_stencil(&mut self, value: u8);
-//     fn tri_list<F>(&mut self, draw_state: &DrawState, color: &[f32; 4], f: F)
-//         where F: FnMut(&mut dyn FnMut(&[[f32; 2]]));
-//     fn tri_list_c<F>(&mut self, draw_state: &DrawState, f: F)
-//         where F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 4]]));
-//     fn tri_list_uv<F>(&mut self,
-//                       draw_state: &DrawState,
-//                       color: &[f32; 4],
-//                       texture: &Texture,
-//                       f: F)
-//         where F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 2]]));
-//     fn tri_list_uv_c<F>(&mut self,
-//                       draw_state: &DrawState,
-//                       texture: &Texture,
-//                       f: F)
-//         where F: FnMut(&mut dyn FnMut(&[[f32; 2]], &[[f32; 2]], &[[f32; 4]]));
-//     }
-// }
-
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
-
-// #[cfg(not(test))]
-// impl Engine<GlutinWindow> {
-//     pub fn new(
-//         path_to_map: &str,
-//         resolution: Size,
-//         player: Player,
-//         vertical_angle_value: Radians,
-//         wall_height: f64,
-//     ) -> Result<Engine<GlutinWindow>, image::ImageError> {
-//         let map = Map::new(path_to_map)?;
-//         let polygon_generator = PolygonGenerator {
-//             point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
-//         };
-//         Result::Ok(Engine {
-//             generator: ObjectGenerator {
-//                 map,
-//                 rays: player.get_all_rays(),
-//                 polygon_generator,
-//             },
-//             player,
-//             window: Self::create_window(resolution),
-//         })
-//     }
-
-//     fn create_window(resolution: Size) -> GlutinWindow {
-//         let mut window: GlutinWindow = WindowSettings::new("game", resolution)
-//             .graphics_api(OPENGL_VERSION)
-//             .fullscreen(false)
-//             .exit_on_esc(true)
-//             .build()
-//             .unwrap();
-//         window.ctx.window().set_maximized(false);
-//         window.set_capture_cursor(true);
-//         return window;
-//     }
-// }
-
-// fn cos(window: &mut GlGraphics) {}
+const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
+const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
 
 use graphics::Context;
 
-impl Engine
-// where
-//     W: Window,
-{
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        use crate::graphics_wrapper::MockGraphicsWrapper as GraphicsWrapper;
+    } else {
+        use crate::graphics_wrapper::GraphicsWrapper;
+    }
+}
+
+impl Engine {
     #[cfg(not(test))]
     pub fn new(
         path_to_map: &str,
@@ -175,6 +82,7 @@ impl Engine
             player,
             window: Self::create_window(resolution),
             events: crate::events::Events::new(),
+            graphics: GlGraphics::new(OPENGL_VERSION),
         })
     }
 
@@ -204,20 +112,19 @@ impl Engine
     }
 
     pub fn start(&mut self) {
-        let mut gl = GlGraphics::new(OPENGL_VERSION);
         while let Some(e) = self.events.next_event(&mut self.window) {
             if let Some(args) = e.render_args() {
                 let polygons = self.generator.generate_polygons(&self.player);
-                GraphicsWrapper::draw(&mut gl, args.viewport(), |c, g| {
+                GraphicsWrapper::draw(&mut self.graphics, args.viewport(), |c, g| {
                     let transform = c
                         .transform
                         .flip_v()
                         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                    GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
+                    GraphicsWrapper::clear(g, BACKGROUND_COLOR);
                     for polygon_ in polygons {
                         GraphicsWrapper::draw_polygon(
                             g,
-                            [1.0, 0.0, 0.5, 1.0],
+                            WALL_COLOR,
                             polygon_,
                             &c.draw_state,
                             transform,
@@ -266,39 +173,110 @@ mod test {
     use crate::graph::Coordinate;
     // use crate::graphics_wrapper::MockGraphics;
     use crate::player_utils::{Angle, Player, Radians};
-    use crate::polygon_generator::MockPolygonGenerator;
+    use graphics::types::Vec2d;
+    use mockall::*;
+    use opengl_graphics::GlGraphics;
 
     #[test]
-    fn start() {
-        if let Ok(map) = Map::new("test_resources/map.png") {
-            let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
-            let wall_height = 5.0;
-            let polygon_generator = MockPolygonGenerator::new();
-            let number_of_rays = 2000;
-            let player = Player::new(
-                Angle {
-                    start: Radians::new(std::f64::consts::PI),
-                    end: Radians::new(3.0 * std::f64::consts::PI / 2.0),
-                },
-                Coordinate { x: 27.0, y: 9.0 },
-                number_of_rays,
-            );
+    fn start_render() {
+        let mut seq = Sequence::new();
 
-            let generator = ObjectGenerator {
-                map,
-                rays: player.get_all_rays(),
-                polygon_generator,
-            };
+        let mut generator = crate::object_generator::MockObjectGenerator::new();
+        let player = Player::new(
+            Angle {
+                start: Radians::new(std::f64::consts::PI),
+                end: Radians::new(3.0 * std::f64::consts::PI / 2.0),
+            },
+            Coordinate { x: 27.0, y: 9.0 },
+            2000,
+        );
+        let window = Engine::default_window();
+        let mut events = crate::events::MockEvents::default();
+        let graphics = GlGraphics::new(OPENGL_VERSION);
 
-            let events = crate::events::MockEvents::default();
-
-            let window = Engine::default_window();
-            let engine = Engine {
-                generator,
-                player,
-                window,
-                events,
-            };
+        let draw_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_context();
+        let clear_ctx = crate::graphics_wrapper::MockGraphicsWrapper::clear_context();
+        let draw_polygon_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_polygon_context();
+        lazy_static! {
+            static ref polygons: Vec<[Vec2d; 4]> =
+                vec![[[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]]];
         }
+        static render_args: piston::input::RenderArgs = piston::input::RenderArgs {
+            ext_dt: 1.0,
+            window_size: [2.0, 3.0],
+            draw_size: [1, 2],
+        };
+
+        let event = piston::Event::Loop(piston::input::Loop::Render(render_args));
+
+        static graphic_context: graphics::Context = graphics::Context {
+            viewport: Some(graphics::Viewport {
+                rect: [1, 2, 3, 4],
+                draw_size: [1, 2],
+                window_size: [1.0, 2.0],
+            }),
+            view: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            transform: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            draw_state: graphics::DrawState {
+                scissor: None,
+                stencil: None,
+                blend: None,
+            },
+        };
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event))
+            .in_sequence(&mut seq);
+
+        generator
+            .expect_generate_polygons()
+            .times(1)
+            .return_const(polygons.clone())
+            .in_sequence(&mut seq);
+
+        draw_ctx
+            .expect()
+            .times(1)
+            .withf(move |_, view, _| *view == render_args.viewport())
+            .returning(move |gl, _, f| {
+                f(graphic_context, gl);
+            })
+            .in_sequence(&mut seq);
+
+        clear_ctx
+            .expect()
+            .times(1)
+            .withf(|_, color| *color == BACKGROUND_COLOR)
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        draw_polygon_ctx
+            .expect()
+            .times(1)
+            .withf(move |_, color, polygon, draw_state, _| {
+                *color == WALL_COLOR
+                    && *polygon == polygons[0]
+                    && *draw_state == graphic_context.draw_state
+            })
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(None)
+            .in_sequence(&mut seq);
+
+        let mut engine = Engine {
+            generator,
+            player,
+            window,
+            events,
+            graphics,
+        };
+
+        engine.start();
     }
 }

@@ -3,6 +3,8 @@ use crate::map::Map;
 use crate::player_utils;
 use crate::polygon_generator;
 use graphics::types::Vec2d;
+#[cfg(test)]
+use mockall::automock;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
@@ -46,6 +48,7 @@ fn handle_points(
     }
 }
 
+#[cfg_attr(test, automock)]
 impl ObjectGenerator {
     fn get_walls_in_sight(
         &self,
