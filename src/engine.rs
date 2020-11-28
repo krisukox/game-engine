@@ -22,6 +22,10 @@ use graphics::types::Color;
 
 use graphics::DrawState;
 
+use crate::painter::Painter;
+
+use crate::graphics_wrapper::GraphicsWrapper;
+
 pub struct Engine {
     generator: ObjectGenerator,
     player: Player,
@@ -135,6 +139,8 @@ const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 
 // fn cos(window: &mut GlGraphics) {}
 
+use graphics::Context;
+
 impl Engine
 // where
 //     W: Window,
@@ -179,46 +185,64 @@ impl Engine
         let mut gl = GlGraphics::new(OPENGL_VERSION);
         while let Some(e) = events.next(&mut self.window) {
             if let Some(args) = e.render_args() {
-                // cos(&mut self.window);
-                // graphics::clear([0.8, 0.8, 0.8, 1.0], &mut gl);
-                // let polygons = self.generator.generate_polygons(&self.player);
-                // let my_draw_state = graphics::DrawState {
-                //     scissor: None,
-                //     stencil: None,
-                //     blend: Some(graphics::draw_state::Blend::Alpha),
-                // };
-                // let my_transform = [[0.0015625, 0.0, -1.0], [0.0, 0.002777777777777778, 0.0]];
-                // for polygon_ in polygons {
-                //     Polygon::new([1.0, 0.0, 0.5, 1.0]).draw(
-                //         &polygon_,
-                //         &my_draw_state,
-                //         my_transform,
-                //         &mut gl,
-                //     );
-                // }
-                gl.draw(args.viewport(), |c, g| {
-                    let transform = c
-                        .transform
-                        .flip_v()
-                        .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                    graphics::clear([0.8, 0.8, 0.8, 1.0], g);
-                    let polygons = self.generator.generate_polygons(&self.player);
-                    println!("draw_state: {:?} transform: {:?}", c.draw_state, transform);
-                    let my_draw_state = graphics::DrawState {
-                        scissor: None,
-                        stencil: None,
-                        blend: Some(graphics::draw_state::Blend::Alpha),
-                    };
-                    let my_transform = [[0.0015625, 0.0, -1.0], [0.0, 0.002777777777777778, 0.0]];
-                    for polygon_ in polygons {
-                        Polygon::new([1.0, 0.0, 0.5, 1.0]).draw(
-                            &polygon_,
-                            &my_draw_state,
-                            my_transform,
-                            g,
-                        );
-                    }
-                });
+                // gl.draw(viewport, f)
+                let polygons = self.generator.generate_polygons(&self.player);
+                // static callback: Fn() + 'static = || {};
+                // GraphicsWrapper::my_fn(|c: Context, g: &mut GlGraphics| {
+                //     let transform = c
+                //         .transform
+                //         .flip_v()
+                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
+                //     GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
+                //     for polygon_ in polygons {
+                //         GraphicsWrapper::draw_polygon(
+                //             g,
+                //             [1.0, 0.0, 0.5, 1.0],
+                //             polygon_,
+                //             &c.draw_state,
+                //             transform,
+                //         );
+                //     }
+                // });
+                GraphicsWrapper::draw(
+                    &mut gl,
+                    args.viewport(),
+                    |c: Context, g: &mut GlGraphics| {
+                        let transform = c
+                            .transform
+                            .flip_v()
+                            .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
+                        GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
+                        for polygon_ in polygons {
+                            GraphicsWrapper::draw_polygon(
+                                g,
+                                [1.0, 0.0, 0.5, 1.0],
+                                polygon_,
+                                &c.draw_state,
+                                transform,
+                            );
+                        }
+                    },
+                );
+                // gl.draw(args.viewport(), |c, g| {
+                //     let transform = c
+                //         .transform
+                //         .flip_v()
+                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
+                //     g.clear([0.8, 0.8, 0.8, 1.0]);
+                //     // graphics::clear([0.8, 0.8, 0.8, 1.0], g);
+                //     // let polygons = self.generator.generate_polygons(&self.player);
+                //     // for polygon_ in polygons {
+                //     //     // g.draw_polygon([1.0, 0.0, 0.5, 1.0], polygon_, &c.draw_state, transform);
+                //     //     // Painter::draw_polygon(
+                //     //     //     [1.0, 0.0, 0.5, 1.0],
+                //     //     //     polygon_,
+                //     //     //     &c.draw_state,
+                //     //     //     transform,
+                //     //     //     g,
+                //     //     // );
+                //     // }
+                // });
             }
 
             if let Some(args) = e.mouse_relative_args() {
@@ -259,12 +283,16 @@ impl Engine
 mod test {
     use super::*;
     use crate::graph::Coordinate;
+    // use crate::graphics_wrapper::MockGraphics;
     use crate::player_utils::{Angle, Player, Radians};
     use crate::polygon_generator::MockPolygonGenerator;
 
     #[test]
     fn start() {
         if let Ok(map) = Map::new("test_resources/map.png") {
+            // let my_cos = MockGraphics::default();
+            // my_cos.c();
+
             let resolution = Size {
                 width: 1280.0,
                 height: 720.0,
@@ -293,6 +321,7 @@ mod test {
                 generator,
                 player,
                 window: window_mock,
+                // graphics: GlGraphics::new(OPENGL_VERSION),
             };
         }
     }
