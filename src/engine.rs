@@ -7,7 +7,7 @@ use crate::polygon_generator::PolygonGenerator;
 use glutin_window::GlutinWindow;
 use graphics::{Polygon, Transformed};
 use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
+use piston::event_loop::EventSettings;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 use piston::window::{Size, WindowSettings};
 use piston::AdvancedWindow;
@@ -26,10 +26,19 @@ use crate::painter::Painter;
 
 use crate::graphics_wrapper::GraphicsWrapper;
 
+cfg_if::cfg_if! {
+    if #[cfg(test)]{
+        use crate::events::MockEvents as Events;
+    } else {
+        use crate::events::Events;
+    }
+}
+
 pub struct Engine {
     generator: ObjectGenerator,
     player: Player,
     window: GlutinWindow,
+    events: Events,
 }
 
 #[cfg(test)]
@@ -165,6 +174,7 @@ impl Engine
             },
             player,
             window: Self::create_window(resolution),
+            events: crate::events::Events::new(),
         })
     }
 
@@ -181,68 +191,26 @@ impl Engine
     }
 
     pub fn start(&mut self) {
-        let mut events = Events::new(EventSettings::new());
         let mut gl = GlGraphics::new(OPENGL_VERSION);
-        while let Some(e) = events.next(&mut self.window) {
+        while let Some(e) = self.events.next_event(&mut self.window) {
             if let Some(args) = e.render_args() {
-                // gl.draw(viewport, f)
                 let polygons = self.generator.generate_polygons(&self.player);
-                // static callback: Fn() + 'static = || {};
-                // GraphicsWrapper::my_fn(|c: Context, g: &mut GlGraphics| {
-                //     let transform = c
-                //         .transform
-                //         .flip_v()
-                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                //     GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
-                //     for polygon_ in polygons {
-                //         GraphicsWrapper::draw_polygon(
-                //             g,
-                //             [1.0, 0.0, 0.5, 1.0],
-                //             polygon_,
-                //             &c.draw_state,
-                //             transform,
-                //         );
-                //     }
-                // });
-                GraphicsWrapper::draw(
-                    &mut gl,
-                    args.viewport(),
-                    |c: Context, g: &mut GlGraphics| {
-                        let transform = c
-                            .transform
-                            .flip_v()
-                            .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                        GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
-                        for polygon_ in polygons {
-                            GraphicsWrapper::draw_polygon(
-                                g,
-                                [1.0, 0.0, 0.5, 1.0],
-                                polygon_,
-                                &c.draw_state,
-                                transform,
-                            );
-                        }
-                    },
-                );
-                // gl.draw(args.viewport(), |c, g| {
-                //     let transform = c
-                //         .transform
-                //         .flip_v()
-                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                //     g.clear([0.8, 0.8, 0.8, 1.0]);
-                //     // graphics::clear([0.8, 0.8, 0.8, 1.0], g);
-                //     // let polygons = self.generator.generate_polygons(&self.player);
-                //     // for polygon_ in polygons {
-                //     //     // g.draw_polygon([1.0, 0.0, 0.5, 1.0], polygon_, &c.draw_state, transform);
-                //     //     // Painter::draw_polygon(
-                //     //     //     [1.0, 0.0, 0.5, 1.0],
-                //     //     //     polygon_,
-                //     //     //     &c.draw_state,
-                //     //     //     transform,
-                //     //     //     g,
-                //     //     // );
-                //     // }
-                // });
+                GraphicsWrapper::draw(&mut gl, args.viewport(), |c, g| {
+                    let transform = c
+                        .transform
+                        .flip_v()
+                        .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
+                    GraphicsWrapper::clear(g, [0.8, 0.8, 0.8, 1.0]);
+                    for polygon_ in polygons {
+                        GraphicsWrapper::draw_polygon(
+                            g,
+                            [1.0, 0.0, 0.5, 1.0],
+                            polygon_,
+                            &c.draw_state,
+                            transform,
+                        );
+                    }
+                });
             }
 
             if let Some(args) = e.mouse_relative_args() {
@@ -316,12 +284,14 @@ mod test {
                 polygon_generator,
             };
 
+            let events = crate::events::MockEvents::default();
+
             let window_mock = Engine::create_window(resolution);
             let engine = Engine {
                 generator,
                 player,
                 window: window_mock,
-                // graphics: GlGraphics::new(OPENGL_VERSION),
+                events,
             };
         }
     }
