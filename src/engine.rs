@@ -190,6 +190,19 @@ impl Engine
         return window;
     }
 
+    fn default_window() -> GlutinWindow {
+        let mut window: GlutinWindow = WindowSettings::new(
+            "game",
+            Size {
+                width: 100.0,
+                height: 100.0,
+            },
+        )
+        .build()
+        .unwrap();
+        return window;
+    }
+
     pub fn start(&mut self) {
         let mut gl = GlGraphics::new(OPENGL_VERSION);
         while let Some(e) = self.events.next_event(&mut self.window) {
@@ -258,13 +271,6 @@ mod test {
     #[test]
     fn start() {
         if let Ok(map) = Map::new("test_resources/map.png") {
-            // let my_cos = MockGraphics::default();
-            // my_cos.c();
-
-            let resolution = Size {
-                width: 1280.0,
-                height: 720.0,
-            };
             let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
             let wall_height = 5.0;
             let polygon_generator = MockPolygonGenerator::new();
@@ -286,11 +292,11 @@ mod test {
 
             let events = crate::events::MockEvents::default();
 
-            let window_mock = Engine::create_window(resolution);
+            let window = Engine::default_window();
             let engine = Engine {
                 generator,
                 player,
-                window: window_mock,
+                window,
                 events,
             };
         }
