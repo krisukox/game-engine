@@ -175,7 +175,7 @@ mod test {
     }
 
     #[test]
-    fn start_render() {
+    fn start_render_event() {
         let mut seq = Sequence::new();
 
         let mut generator = MockObjectGenerator::new();
@@ -274,7 +274,7 @@ mod test {
     }
 
     #[test]
-    fn start_mouse() {
+    fn start_mouse_event() {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
@@ -318,6 +318,111 @@ mod test {
             .expect_rotate_right()
             .times(1)
             .withf(|radians| *radians == Radians::new(motion_right[0].abs() / 1000.0))
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(None)
+            .in_sequence(&mut seq);
+
+        let mut engine = Engine {
+            generator,
+            player,
+            window,
+            events,
+            graphics,
+        };
+
+        engine.start();
+    }
+
+    #[test]
+    fn start_key_event() {
+        let mut seq = Sequence::new();
+
+        let generator = MockObjectGenerator::new();
+        let mut player = MockPlayer::default();
+        let window = default_window();
+        let mut events = MockEvents::default();
+        let graphics = GlGraphics::new(OPENGL_VERSION);
+
+        static key_w: piston::input::ButtonArgs = piston::input::ButtonArgs {
+            state: piston::input::ButtonState::Press,
+            button: piston::input::Button::Keyboard(piston::input::Key::W),
+            scancode: None,
+        };
+        static key_s: piston::input::ButtonArgs = piston::input::ButtonArgs {
+            state: piston::input::ButtonState::Press,
+            button: piston::input::Button::Keyboard(piston::input::Key::S),
+            scancode: None,
+        };
+        static key_a: piston::input::ButtonArgs = piston::input::ButtonArgs {
+            state: piston::input::ButtonState::Press,
+            button: piston::input::Button::Keyboard(piston::input::Key::A),
+            scancode: None,
+        };
+        static key_d: piston::input::ButtonArgs = piston::input::ButtonArgs {
+            state: piston::input::ButtonState::Press,
+            button: piston::input::Button::Keyboard(piston::input::Key::D),
+            scancode: None,
+        };
+
+        let event_key_w = piston::Event::Input(piston::input::Input::Button(key_w), None);
+        let event_key_s = piston::Event::Input(piston::input::Input::Button(key_s), None);
+        let event_key_a = piston::Event::Input(piston::input::Input::Button(key_a), None);
+        let event_key_d = piston::Event::Input(piston::input::Input::Button(key_d), None);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event_key_w))
+            .in_sequence(&mut seq);
+
+        player
+            .expect_move_forward_backward()
+            .times(1)
+            .withf(|distance| *distance == 0.5)
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event_key_s))
+            .in_sequence(&mut seq);
+
+        player
+            .expect_move_forward_backward()
+            .times(1)
+            .withf(|distance| *distance == -0.5)
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event_key_a))
+            .in_sequence(&mut seq);
+
+        player
+            .expect_move_right_left()
+            .times(1)
+            .withf(|distance| *distance == 0.5)
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event_key_d))
+            .in_sequence(&mut seq);
+
+        player
+            .expect_move_right_left()
+            .times(1)
+            .withf(|distance| *distance == -0.5)
             .return_const(())
             .in_sequence(&mut seq);
 
