@@ -16,13 +16,13 @@ jobs:
         run: |
           rustup install nightly
 
-      - name:                   Build
-        run: |
-          cargo build
+      # - name:                   Build
+      #   run: |
+      #     cargo build
 
       - name:                   Run test cases
         run: |
-          cargo test -- --test-threads=1
+          RUST_BACKTRACE=1 cargo test -- --test-threads=1
 
       # - name:                   Generate code coverage
       #   run: |

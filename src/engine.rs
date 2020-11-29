@@ -33,9 +33,6 @@ pub struct Engine {
     graphics: GlGraphics,
 }
 
-#[cfg(test)]
-use mockall::{mock, predicate::*};
-
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
 const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
