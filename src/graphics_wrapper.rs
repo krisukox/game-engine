@@ -1,11 +1,6 @@
-use graphics::types::Color;
-use graphics::types::Matrix2d;
-use graphics::types::Vec2d;
-use graphics::Context;
-use graphics::DrawState;
-use graphics::Viewport;
-use image::flat::Error;
-use opengl_graphics::{GlGraphics, OpenGL};
+use graphics::types::{Color, Matrix2d, Vec2d};
+use graphics::{DrawState, Viewport};
+use opengl_graphics::GlGraphics;
 
 pub struct GraphicsWrapper();
 
@@ -47,28 +42,3 @@ impl GraphicsWrapper {
         graphics::Polygon::new(color).draw(&polygon, draw_state, transform, graphics);
     }
 }
-
-// #[cfg(test)]
-// impl MockGraphicsWrapper {
-//     pub fn draw<F: FnOnce(graphics::Context, &mut GlGraphics) + 'static>(
-//         graphics: &mut GlGraphics,
-//         viewport: Viewport,
-//         f: F,
-//     ) {
-//         static graphic_context: graphics::Context = graphics::Context {
-//             viewport: Some(graphics::Viewport {
-//                 rect: [1, 2, 3, 4],
-//                 draw_size: [1, 2],
-//                 window_size: [1.0, 2.0],
-//             }),
-//             view: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-//             transform: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-//             draw_state: graphics::DrawState {
-//                 scissor: None,
-//                 stencil: None,
-//                 blend: None,
-//             },
-//         };
-//         f(graphic_context, graphics);
-//     }
-// }

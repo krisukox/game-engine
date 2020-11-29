@@ -3,26 +3,13 @@ use crate::player_utils::Radians;
 use crate::point_generator::PointGenerator;
 use crate::polygon_generator::PolygonGenerator;
 use glutin_window::GlutinWindow;
-use graphics::{Polygon, Transformed};
+use graphics::Transformed;
 use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::EventSettings;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 use piston::window::{Size, WindowSettings};
 use piston::AdvancedWindow;
-use piston::{Event, Window};
-use std::time::Duration;
-
-use graphics::Graphics;
-
-use opengl_graphics::Texture;
 
 use graphics::types::Color;
-
-use graphics::DrawState;
-
-use crate::painter::Painter;
-
-// use crate::graphics_wrapper::GraphicsWrapper;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
@@ -52,8 +39,6 @@ use mockall::{mock, predicate::*};
 const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
 const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
-
-use graphics::Context;
 
 impl Engine {
     #[cfg(not(test))]
@@ -162,7 +147,7 @@ mod test {
     use opengl_graphics::GlGraphics;
 
     fn default_window() -> GlutinWindow {
-        let mut window: GlutinWindow = WindowSettings::new(
+        WindowSettings::new(
             "game",
             Size {
                 width: 100.0,
@@ -170,8 +155,59 @@ mod test {
             },
         )
         .build()
-        .unwrap();
-        return window;
+        .unwrap()
+    }
+
+    fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(None)
+            .in_sequence(seq);
+    }
+
+    fn call_move_event(events: &mut MockEvents, seq: &mut Sequence, motion_value: [f64; 2]) {
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(piston::Event::Input(
+                piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_value)),
+                None,
+            )))
+            .in_sequence(seq);
+    }
+
+    fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: piston::input::Key) {
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(piston::Event::Input(
+                piston::input::Input::Button(piston::input::ButtonArgs {
+                    state: piston::input::ButtonState::Press,
+                    button: piston::input::Button::Keyboard(key),
+                    scancode: None,
+                }),
+                None,
+            )))
+            .in_sequence(seq);
+    }
+
+    fn expect_move_forward_backward(player: &mut MockPlayer, seq: &mut Sequence, distance: f64) {
+        player
+            .expect_move_forward_backward()
+            .times(1)
+            .withf(move |_distance| *_distance == distance)
+            .return_const(())
+            .in_sequence(seq);
+    }
+
+    fn expect_move_right_left(player: &mut MockPlayer, seq: &mut Sequence, distance: f64) {
+        player
+            .expect_move_right_left()
+            .times(1)
+            .withf(move |_distance| *_distance == distance)
+            .return_const(())
+            .in_sequence(seq);
     }
 
     #[test]
@@ -256,11 +292,7 @@ mod test {
                 .in_sequence(&mut seq);
         }
 
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(None)
-            .in_sequence(&mut seq);
+        call_none_event(&mut events, &mut seq);
 
         let mut engine = Engine {
             generator,
@@ -286,21 +318,7 @@ mod test {
         static motion_left: [f64; 2] = [3.0, 5.0];
         static motion_right: [f64; 2] = [-7.0, 9.0];
 
-        let event_left = piston::Event::Input(
-            piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_left)),
-            None,
-        );
-        let event_right = piston::Event::Input(
-            piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_right)),
-            None,
-        );
-
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_left))
-            .in_sequence(&mut seq);
-
+        call_move_event(&mut events, &mut seq, motion_left);
         player
             .expect_rotate_left()
             .times(1)
@@ -308,12 +326,7 @@ mod test {
             .return_const(())
             .in_sequence(&mut seq);
 
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_right))
-            .in_sequence(&mut seq);
-
+        call_move_event(&mut events, &mut seq, motion_right);
         player
             .expect_rotate_right()
             .times(1)
@@ -321,11 +334,7 @@ mod test {
             .return_const(())
             .in_sequence(&mut seq);
 
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(None)
-            .in_sequence(&mut seq);
+        call_none_event(&mut events, &mut seq);
 
         let mut engine = Engine {
             generator,
@@ -348,89 +357,19 @@ mod test {
         let mut events = MockEvents::default();
         let graphics = GlGraphics::new(OPENGL_VERSION);
 
-        static key_w: piston::input::ButtonArgs = piston::input::ButtonArgs {
-            state: piston::input::ButtonState::Press,
-            button: piston::input::Button::Keyboard(piston::input::Key::W),
-            scancode: None,
-        };
-        static key_s: piston::input::ButtonArgs = piston::input::ButtonArgs {
-            state: piston::input::ButtonState::Press,
-            button: piston::input::Button::Keyboard(piston::input::Key::S),
-            scancode: None,
-        };
-        static key_a: piston::input::ButtonArgs = piston::input::ButtonArgs {
-            state: piston::input::ButtonState::Press,
-            button: piston::input::Button::Keyboard(piston::input::Key::A),
-            scancode: None,
-        };
-        static key_d: piston::input::ButtonArgs = piston::input::ButtonArgs {
-            state: piston::input::ButtonState::Press,
-            button: piston::input::Button::Keyboard(piston::input::Key::D),
-            scancode: None,
-        };
+        call_press_event(&mut events, &mut seq, piston::input::Key::W);
+        expect_move_forward_backward(&mut player, &mut seq, 0.5);
 
-        let event_key_w = piston::Event::Input(piston::input::Input::Button(key_w), None);
-        let event_key_s = piston::Event::Input(piston::input::Input::Button(key_s), None);
-        let event_key_a = piston::Event::Input(piston::input::Input::Button(key_a), None);
-        let event_key_d = piston::Event::Input(piston::input::Input::Button(key_d), None);
+        call_press_event(&mut events, &mut seq, piston::input::Key::S);
+        expect_move_forward_backward(&mut player, &mut seq, -0.5);
 
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_key_w))
-            .in_sequence(&mut seq);
+        call_press_event(&mut events, &mut seq, piston::input::Key::A);
+        expect_move_right_left(&mut player, &mut seq, 0.5);
 
-        player
-            .expect_move_forward_backward()
-            .times(1)
-            .withf(|distance| *distance == 0.5)
-            .return_const(())
-            .in_sequence(&mut seq);
+        call_press_event(&mut events, &mut seq, piston::input::Key::D);
+        expect_move_right_left(&mut player, &mut seq, -0.5);
 
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_key_s))
-            .in_sequence(&mut seq);
-
-        player
-            .expect_move_forward_backward()
-            .times(1)
-            .withf(|distance| *distance == -0.5)
-            .return_const(())
-            .in_sequence(&mut seq);
-
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_key_a))
-            .in_sequence(&mut seq);
-
-        player
-            .expect_move_right_left()
-            .times(1)
-            .withf(|distance| *distance == 0.5)
-            .return_const(())
-            .in_sequence(&mut seq);
-
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(Some(event_key_d))
-            .in_sequence(&mut seq);
-
-        player
-            .expect_move_right_left()
-            .times(1)
-            .withf(|distance| *distance == -0.5)
-            .return_const(())
-            .in_sequence(&mut seq);
-
-        events
-            .expect_next_event::<GlutinWindow>()
-            .times(1)
-            .return_const(None)
-            .in_sequence(&mut seq);
+        call_none_event(&mut events, &mut seq);
 
         let mut engine = Engine {
             generator,
