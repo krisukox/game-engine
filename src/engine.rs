@@ -76,7 +76,7 @@ impl Engine {
             },
             player,
             window: Self::create_window(resolution),
-            events: crate::events::Events::new(),
+            events: Events::new(),
             graphics: GlGraphics::new(OPENGL_VERSION),
         })
     }
@@ -90,19 +90,6 @@ impl Engine {
             .unwrap();
         window.ctx.window().set_maximized(false);
         window.set_capture_cursor(true);
-        return window;
-    }
-
-    fn default_window() -> GlutinWindow {
-        let mut window: GlutinWindow = WindowSettings::new(
-            "game",
-            Size {
-                width: 100.0,
-                height: 100.0,
-            },
-        )
-        .build()
-        .unwrap();
         return window;
     }
 
@@ -164,28 +151,42 @@ impl Engine {
 
 #[cfg(test)]
 mod test {
+    #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::graph::Coordinate;
-    // use crate::graphics_wrapper::MockGraphics;
-    use crate::player_utils::MockPlayer;
-    use crate::player_utils::{Angle, Player, Radians};
+    use crate::events::MockEvents;
+    use crate::graphics_wrapper::MockGraphicsWrapper;
+    use crate::object_generator::MockObjectGenerator;
+    use crate::player_utils::{MockPlayer, Radians};
     use graphics::types::Vec2d;
     use mockall::*;
     use opengl_graphics::GlGraphics;
+
+    fn default_window() -> GlutinWindow {
+        let mut window: GlutinWindow = WindowSettings::new(
+            "game",
+            Size {
+                width: 100.0,
+                height: 100.0,
+            },
+        )
+        .build()
+        .unwrap();
+        return window;
+    }
 
     #[test]
     fn start_render() {
         let mut seq = Sequence::new();
 
-        let mut generator = crate::object_generator::MockObjectGenerator::new();
+        let mut generator = MockObjectGenerator::new();
         let player = MockPlayer::default();
-        let window = Engine::default_window();
-        let mut events = crate::events::MockEvents::default();
+        let window = default_window();
+        let mut events = MockEvents::default();
         let graphics = GlGraphics::new(OPENGL_VERSION);
 
-        let draw_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_context();
-        let clear_ctx = crate::graphics_wrapper::MockGraphicsWrapper::clear_context();
-        let draw_polygon_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_polygon_context();
+        let draw_ctx = MockGraphicsWrapper::draw_context();
+        let clear_ctx = MockGraphicsWrapper::clear_context();
+        let draw_polygon_ctx = MockGraphicsWrapper::draw_polygon_context();
 
         lazy_static! {
             static ref polygons: Vec<[Vec2d; 4]> = vec![
@@ -276,83 +277,49 @@ mod test {
     fn start_mouse() {
         let mut seq = Sequence::new();
 
-        let mut generator = crate::object_generator::MockObjectGenerator::new();
-        let player = MockPlayer::default();
-        let window = Engine::default_window();
-        let mut events = crate::events::MockEvents::default();
+        let generator = MockObjectGenerator::new();
+        let mut player = MockPlayer::default();
+        let window = default_window();
+        let mut events = MockEvents::default();
         let graphics = GlGraphics::new(OPENGL_VERSION);
 
-        let draw_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_context();
-        let clear_ctx = crate::graphics_wrapper::MockGraphicsWrapper::clear_context();
-        let draw_polygon_ctx = crate::graphics_wrapper::MockGraphicsWrapper::draw_polygon_context();
+        static motion_left: [f64; 2] = [3.0, 5.0];
+        static motion_right: [f64; 2] = [-7.0, 9.0];
 
-        lazy_static! {
-            static ref polygons: Vec<[Vec2d; 4]> = vec![
-                [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]],
-                [[8.0, 9.0], [10.0, 11.0], [12.0, 13.0], [14.0, 15.0]]
-            ];
-        }
-        static graphic_context: graphics::Context = graphics::Context {
-            viewport: Some(graphics::Viewport {
-                rect: [1, 2, 3, 4],
-                draw_size: [1, 2],
-                window_size: [1.0, 2.0],
-            }),
-            view: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-            transform: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-            draw_state: graphics::DrawState {
-                scissor: None,
-                stencil: None,
-                blend: None,
-            },
-        };
-        static render_args: piston::input::RenderArgs = piston::input::RenderArgs {
-            ext_dt: 1.0,
-            window_size: [2.0, 3.0],
-            draw_size: [1, 2],
-        };
-        let event = piston::Event::Loop(piston::input::Loop::Render(render_args));
+        let event_left = piston::Event::Input(
+            piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_left)),
+            None,
+        );
+        let event_right = piston::Event::Input(
+            piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_right)),
+            None,
+        );
 
         events
             .expect_next_event::<GlutinWindow>()
             .times(1)
-            .return_const(Some(event))
+            .return_const(Some(event_left))
             .in_sequence(&mut seq);
 
-        generator
-            .expect_generate_polygons()
+        player
+            .expect_rotate_left()
             .times(1)
-            .return_const(polygons.clone())
-            .in_sequence(&mut seq);
-
-        draw_ctx
-            .expect()
-            .times(1)
-            .withf(move |_, view, _| *view == render_args.viewport())
-            .returning(move |gl, _, f| {
-                f(graphic_context, gl);
-            })
-            .in_sequence(&mut seq);
-
-        clear_ctx
-            .expect()
-            .times(1)
-            .withf(|_, color| *color == BACKGROUND_COLOR)
+            .withf(|radians| *radians == Radians::new(motion_left[0] / 1000.0))
             .return_const(())
             .in_sequence(&mut seq);
 
-        for _polygon in polygons.iter() {
-            draw_polygon_ctx
-                .expect()
-                .times(1)
-                .withf(move |_, color, polygon, draw_state, _| {
-                    *color == WALL_COLOR
-                        && *polygon == *_polygon
-                        && *draw_state == graphic_context.draw_state
-                })
-                .return_const(())
-                .in_sequence(&mut seq);
-        }
+        events
+            .expect_next_event::<GlutinWindow>()
+            .times(1)
+            .return_const(Some(event_right))
+            .in_sequence(&mut seq);
+
+        player
+            .expect_rotate_right()
+            .times(1)
+            .withf(|radians| *radians == Radians::new(motion_right[0].abs() / 1000.0))
+            .return_const(())
+            .in_sequence(&mut seq);
 
         events
             .expect_next_event::<GlutinWindow>()
