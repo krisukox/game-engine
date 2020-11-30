@@ -16,6 +16,10 @@ jobs:
         run: |
           rustup install nightly
 
+      - name:                   Install libXCursor
+        run: |
+          apt-get install -y libxcursor-dev
+
       # - name:                   Build
       #   run: |
       #     cargo build
