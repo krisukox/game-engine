@@ -18,6 +18,10 @@ jobs:
 
       - name:                   Install libXCursor
         run: |
+          apt-get update -y
+
+      - name:                   Install libXCursor
+        run: |
           apt-get install -y libxcursor-dev
 
       # - name:                   Build
