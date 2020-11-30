@@ -42,7 +42,7 @@ jobs:
 
       - name:                   Run test cases
         run: |
-          RUST_BACKTRACE=1 cargo test -- --test-threads=1
+          XDG_RUNTIME_DIR=/run/user/1000 RUST_BACKTRACE=1 cargo test -- --test-threads=1
 
       # - name:                   Generate code coverage
       #   run: |
