@@ -44,6 +44,7 @@ jobs:
         run: |
           XDG_RUNTIME_DIR=/run/user/1000 RUST_BACKTRACE=1 cargo test --verbose -- --test-threads=1
 
+
       # - name:                   Generate code coverage
       #   run: |
       #     RUSTFLAGS=--cfg="tarpaulin_workaround" cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml --avoid-cfg-tarpaulin
