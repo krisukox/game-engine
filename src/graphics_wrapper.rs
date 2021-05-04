@@ -14,6 +14,8 @@ pub struct GraphicsWrapper();
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
+#[allow(dead_code)]
+#[allow(unused_variables)]
 #[cfg_attr(test, automock)]
 impl GraphicsWrapper {
     pub fn clear(graphics: &mut GlGraphics, color: Color) {
@@ -21,7 +23,6 @@ impl GraphicsWrapper {
         graphics::clear(color, graphics);
     }
 
-    #[allow(dead_code)]
     pub fn draw_polygon(
         graphics: &mut GlGraphics,
         color: Color,

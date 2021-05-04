@@ -184,7 +184,7 @@ mod test {
 
     fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
         events
-            .expect_next_event::<GlutinWindow>()
+            .expect_next_event()
             .times(1)
             .return_const(None)
             .in_sequence(seq);
@@ -192,7 +192,7 @@ mod test {
 
     fn call_move_event(events: &mut MockEvents, seq: &mut Sequence, motion_value: [f64; 2]) {
         events
-            .expect_next_event::<GlutinWindow>()
+            .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Input(
                 piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_value)),
@@ -203,7 +203,7 @@ mod test {
 
     fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: piston::input::Key) {
         events
-            .expect_next_event::<GlutinWindow>()
+            .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Input(
                 piston::input::Input::Button(piston::input::ButtonArgs {
@@ -236,7 +236,6 @@ mod test {
 
     #[test]
     fn start_render_event() {
-        println!("NAGLIK 123!!!!!!!!!!");
         let mut seq = Sequence::new();
 
         let mut generator = MockObjectGenerator::new();
@@ -276,7 +275,7 @@ mod test {
         let event = piston::Event::Loop(piston::input::Loop::Render(render_args));
 
         events
-            .expect_next_event::<GlutinWindow>()
+            .expect_next_event()
             .times(1)
             .return_const(Some(event))
             .in_sequence(&mut seq);

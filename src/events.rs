@@ -1,28 +1,30 @@
-use piston::{event_loop, Event, Window};
+use piston::{event_loop, Event};
+
+cfg_if::cfg_if! {
+    if #[cfg(test)]{
+        use crate::test_utils::Window;
+    } else {
+        use glutin_window::GlutinWindow as Window;
+    }
+}
 
 pub struct Events(event_loop::Events);
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
+#[allow(dead_code)]
+#[allow(unused_variables)]
 #[cfg_attr(test, automock)]
 impl Events {
-    #[cfg(not(test))]
     pub fn new() -> Self {
         Self(event_loop::Events::new(event_loop::EventSettings::new()))
     }
 
-    // TODO consider to add two W types instead of two implementation of draw function
-    #[cfg(not(test))]
-    pub fn next_event<W>(&mut self, window: &mut W) -> Option<Event>
-    where
-        W: Window,
-    {
-        self.0.next(window)
-    }
-    #[cfg(test)]
-    #[allow(dead_code)]
-    pub fn next_event<W: 'static>(&mut self, _window: &mut W) -> Option<Event> {
-        None
+    pub fn next_event(&mut self, window: &mut Window) -> Option<Event> {
+        #[cfg(not(test))]
+        return self.0.next(window);
+        #[cfg(test)]
+        return None;
     }
 }

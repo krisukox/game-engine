@@ -196,7 +196,7 @@ mod test {
         }
 
         let object_generator = ObjectGenerator {
-            map: Map::dummy(),
+            map: Default::default(),
             rays: Default::default(),
             polygon_generator: object_generator,
         };
