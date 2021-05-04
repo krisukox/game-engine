@@ -83,10 +83,13 @@ impl Engine {
     }
 
     pub fn start(&mut self) {
+        println!("start 1");
         while let Some(e) = self.events.next_event(&mut self.window) {
+            println!("start 2");
             if let Some(args) = e.render_args() {
                 let polygons = self.generator.generate_polygons(&self.player);
                 GraphicsWrapper::draw(&mut self.graphics, args.viewport(), |c, g| {
+                    println!("start 3");
                     let transform = c
                         .transform
                         .flip_v()
@@ -218,6 +221,7 @@ mod test {
 
     #[test]
     fn start_render_event() {
+        println!("NAGLIK 123!!!!!!!!!!");
         let mut seq = Sequence::new();
 
         let mut generator = MockObjectGenerator::new();

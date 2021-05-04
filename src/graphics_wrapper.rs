@@ -7,24 +7,9 @@ pub struct GraphicsWrapper();
 
 pub struct Graphics {}
 
-#[cfg(test)]
-use mockall::{automock, predicate::*};
-
-#[cfg_attr(test, automock)]
-impl GraphicsWrapper {
-    #[cfg(not(test))]
-    pub fn draw<F: FnOnce(graphics::Context, &mut GlGraphics)>(
-        graphics: &mut GlGraphics,
-        viewport: Viewport,
-        f: F,
-    ) {
-        graphics.draw(viewport, f);
-    }
-
-    // TODO consider to add two F types instead of two implementation of draw function
-    #[cfg(test)]
-    pub fn draw<F: FnOnce(graphics::Context, &mut Graphics) + 'static>(
-        graphics: &mut Graphics,
+impl Graphics {
+    fn draw<F: FnOnce(graphics::Context, &mut Graphics) + 'static>(
+        &mut self,
         viewport: Viewport,
         f: F,
     ) {
@@ -38,8 +23,45 @@ impl GraphicsWrapper {
                 blend: None,
             },
         };
-        f(context, graphics);
-        // graphics.draw(viewport, f);
+        f(context, self);
+    }
+}
+
+#[cfg(test)]
+use mockall::{automock, predicate::*};
+
+#[cfg_attr(test, automock)]
+impl GraphicsWrapper {
+    #[cfg(not(test))]
+    pub fn draw<F: FnOnce(graphics::Context, &mut GlGraphics)>(
+        graphics: &mut GlGraphics,
+        viewport: Viewport,
+        f: F,
+    ) {
+        println!("NAGLIK draw!!!!!!!!!!");
+        graphics.draw(viewport, f);
+    }
+
+    // TODO consider to add two F types instead of two implementation of draw function
+    #[cfg(test)]
+    pub fn draw<F: FnOnce(graphics::Context, &mut Graphics) + 'static>(
+        graphics: &mut Graphics,
+        viewport: Viewport,
+        f: F,
+    ) {
+        // println!("NAGLIK draw!!!!!!!!!!");
+        // let context = Context {
+        //     viewport: None,
+        //     view: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        //     transform: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+        //     draw_state: graphics::DrawState {
+        //         scissor: None,
+        //         stencil: None,
+        //         blend: None,
+        //     },
+        // };
+        // f(context, graphics);
+        graphics.draw(viewport, f);
     }
     #[cfg(not(test))]
     pub fn clear(graphics: &mut GlGraphics, color: Color) {
@@ -66,5 +88,6 @@ impl GraphicsWrapper {
         draw_state: &DrawState,
         transform: Matrix2d,
     ) {
+        println!("NAGLIK!!!!!!!!!!");
     }
 }
