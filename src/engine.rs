@@ -217,7 +217,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn start_render_event() {
         let mut seq = Sequence::new();
 
@@ -313,7 +312,6 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn start_mouse_event() {
         let mut seq = Sequence::new();
 
