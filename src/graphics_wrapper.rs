@@ -21,6 +21,7 @@ impl GraphicsWrapper {
         graphics::clear(color, graphics);
     }
 
+    #[allow(dead_code)]
     pub fn draw_polygon(
         graphics: &mut GlGraphics,
         color: Color,

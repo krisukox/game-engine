@@ -7,6 +7,7 @@ use mockall::{automock, predicate::*};
 
 #[cfg_attr(test, automock)]
 impl Events {
+    #[cfg(not(test))]
     pub fn new() -> Self {
         Self(event_loop::Events::new(event_loop::EventSettings::new()))
     }
@@ -20,7 +21,8 @@ impl Events {
         self.0.next(window)
     }
     #[cfg(test)]
-    pub fn next_event<W: 'static>(&mut self, window: &mut W) -> Option<Event> {
+    #[allow(dead_code)]
+    pub fn next_event<W: 'static>(&mut self, _window: &mut W) -> Option<Event> {
         None
     }
 }

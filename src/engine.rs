@@ -241,7 +241,7 @@ mod test {
 
         let mut generator = MockObjectGenerator::new();
         let player = MockPlayer::default();
-        let window = GlutinWindow {};
+        let window = crate::test_utils::Window {};
         let mut events = MockEvents::default();
         let graphics = GlGraphics {};
 
