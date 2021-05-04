@@ -1,15 +1,8 @@
-use crate::map::Map;
 use crate::player_utils::Radians;
-use crate::point_generator::PointGenerator;
-use crate::polygon_generator::PolygonGenerator;
-// use glutin_window::GlutinWindow;
+use graphics::types::Color;
 use graphics::Transformed;
 use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
-use piston::window::{Size, WindowSettings};
-use piston::AdvancedWindow;
-
-use graphics::types::Color;
 
 pub struct MyWindow {}
 
@@ -17,17 +10,22 @@ cfg_if::cfg_if! {
     if #[cfg(test)]{
         use crate::object_generator::MockObjectGenerator as ObjectGenerator;
         use crate::player_utils::MockPlayer as Player;
-        use crate::events::MockEvents as Events;
+        use crate::events::test_utils::MockEvents as Events;
         use crate::graphics_wrapper::MockGraphicsWrapper as GraphicsWrapper;
         use crate::engine::MyWindow as GlutinWindow;
         use crate::graphics_wrapper::Graphics as GlGraphics;
     } else {
-        use crate::object_generator::ObjectGenerator;
-        use crate::player_utils::Player;
         use crate::events::Events;
         use crate::graphics_wrapper::GraphicsWrapper;
+        use crate::map::Map;
+        use crate::object_generator::ObjectGenerator;
+        use crate::player_utils::Player;
+        use crate::polygon_generator::PolygonGenerator;
+        use crate::point_generator::PointGenerator;
         use glutin_window::GlutinWindow;
         use opengl_graphics::GlGraphics;
+        use piston::AdvancedWindow;
+        use piston::window::{Size, WindowSettings};
     }
 }
 
@@ -163,7 +161,7 @@ mod test {
     #![allow(non_upper_case_globals)]
     use super::*;
     use crate::engine::MyWindow as GlutinWindow;
-    use crate::events::MockEvents;
+    use crate::events::test_utils::MockEvents;
     use crate::graphics_wrapper::MockGraphicsWrapper;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
