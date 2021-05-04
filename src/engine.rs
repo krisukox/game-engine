@@ -4,16 +4,16 @@ use graphics::Transformed;
 use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 
-pub struct MyWindow {}
+// pub struct MyWindow {}
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
         use crate::object_generator::MockObjectGenerator as ObjectGenerator;
         use crate::player_utils::MockPlayer as Player;
-        use crate::events::test_utils::MockEvents as Events;
+        use crate::events::MockEvents as Events;
         use crate::graphics_wrapper::MockGraphicsWrapper as GraphicsWrapper;
-        use crate::engine::MyWindow as GlutinWindow;
-        use crate::graphics_wrapper::Graphics as GlGraphics;
+        use crate::test_utils::Window as GlutinWindow;
+        use crate::test_utils::Graphics as GlGraphics;
     } else {
         use crate::events::Events;
         use crate::graphics_wrapper::GraphicsWrapper;
@@ -160,15 +160,15 @@ impl Engine {
 mod test {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::engine::MyWindow as GlutinWindow;
-    use crate::events::test_utils::MockEvents;
+    use crate::events::MockEvents;
     use crate::graphics_wrapper::MockGraphicsWrapper;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
+    use crate::test_utils::Window as GlutinWindow;
     use graphics::types::Vec2d;
     use mockall::*;
     // use opengl_graphics::GlGraphics;
-    use crate::graphics_wrapper::Graphics as GlGraphics;
+    use crate::test_utils::Graphics as GlGraphics;
 
     // fn default_window() -> GlutinWindow {
     //     WindowSettings::new(
@@ -241,11 +241,10 @@ mod test {
 
         let mut generator = MockObjectGenerator::new();
         let player = MockPlayer::default();
-        let window = MyWindow {};
+        let window = GlutinWindow {};
         let mut events = MockEvents::default();
         let graphics = GlGraphics {};
 
-        // let draw_ctx = MockGraphicsWrapper::draw_context();
         let clear_ctx = MockGraphicsWrapper::clear_context();
         let draw_polygon_ctx = MockGraphicsWrapper::draw_polygon_context();
 
@@ -288,15 +287,6 @@ mod test {
             .return_const(polygons.clone())
             .in_sequence(&mut seq);
 
-        // draw_ctx
-        //     .expect()
-        //     .times(1)
-        //     .withf(move |_, view, _| *view == render_args.viewport())
-        //     .returning(move |gl, _, f| {
-        //         f(graphic_context, gl);
-        //     })
-        //     .in_sequence(&mut seq);
-
         clear_ctx
             .expect()
             .times(1)
@@ -336,7 +326,7 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = MyWindow {};
+        let window = GlutinWindow {};
         let mut events = MockEvents::default();
         let graphics = GlGraphics {};
 
@@ -378,7 +368,7 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = MyWindow {};
+        let window = GlutinWindow {};
         let mut events = MockEvents::default();
         let graphics = GlGraphics {};
 

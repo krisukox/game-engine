@@ -1,33 +1,9 @@
 use graphics::types::{Color, Matrix2d, Vec2d};
-use graphics::Context;
-use graphics::{DrawState, Viewport};
-// use opengl_graphics::GlGraphics;
-
-pub struct Graphics {}
-
-impl Graphics {
-    pub fn draw<F: FnOnce(graphics::Context, &mut Self) + 'static>(
-        &mut self,
-        viewport: Viewport,
-        f: F,
-    ) {
-        let context = Context {
-            viewport: Some(viewport),
-            view: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-            transform: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-            draw_state: graphics::DrawState {
-                scissor: None,
-                stencil: None,
-                blend: None,
-            },
-        };
-        f(context, self);
-    }
-}
+use graphics::DrawState;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
-        use Graphics as GlGraphics;
+        use super::test_utils::Graphics as GlGraphics;
     } else {
         use opengl_graphics::GlGraphics;
     }

@@ -10,3 +10,4 @@ mod map;
 mod object_generator;
 mod point_generator;
 mod polygon_generator;
+mod test_utils;
