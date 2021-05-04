@@ -208,6 +208,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn start_render_event() {
         let mut seq = Sequence::new();
 
@@ -351,7 +352,7 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = default_window();
+        // let window = default_window();
         // let mut events = MockEvents::default();
         // let graphics = GlGraphics::new(OPENGL_VERSION);
 
