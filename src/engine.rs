@@ -88,7 +88,7 @@ impl Engine {
             println!("start 2");
             if let Some(args) = e.render_args() {
                 let polygons = self.generator.generate_polygons(&self.player);
-                GraphicsWrapper::draw(&mut self.graphics, args.viewport(), |c, g| {
+                self.graphics.draw(args.viewport(), |c, g| {
                     println!("start 3");
                     let transform = c
                         .transform
@@ -105,6 +105,23 @@ impl Engine {
                         );
                     }
                 });
+                // GraphicsWrapper::draw(&mut self.graphics, args.viewport(), |c, g| {
+                //     println!("start 3");
+                //     let transform = c
+                //         .transform
+                //         .flip_v()
+                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
+                //     GraphicsWrapper::clear(g, BACKGROUND_COLOR);
+                //     for polygon_ in polygons {
+                //         GraphicsWrapper::draw_polygon(
+                //             g,
+                //             WALL_COLOR,
+                //             polygon_,
+                //             &c.draw_state,
+                //             transform,
+                //         );
+                //     }
+                // });
             }
 
             if let Some(args) = e.mouse_relative_args() {
@@ -230,7 +247,7 @@ mod test {
         let mut events = MockEvents::default();
         let graphics = GlGraphics {};
 
-        let draw_ctx = MockGraphicsWrapper::draw_context();
+        // let draw_ctx = MockGraphicsWrapper::draw_context();
         let clear_ctx = MockGraphicsWrapper::clear_context();
         let draw_polygon_ctx = MockGraphicsWrapper::draw_polygon_context();
 
@@ -273,14 +290,14 @@ mod test {
             .return_const(polygons.clone())
             .in_sequence(&mut seq);
 
-        draw_ctx
-            .expect()
-            .times(1)
-            .withf(move |_, view, _| *view == render_args.viewport())
-            .returning(move |gl, _, f| {
-                f(graphic_context, gl);
-            })
-            .in_sequence(&mut seq);
+        // draw_ctx
+        //     .expect()
+        //     .times(1)
+        //     .withf(move |_, view, _| *view == render_args.viewport())
+        //     .returning(move |gl, _, f| {
+        //         f(graphic_context, gl);
+        //     })
+        //     .in_sequence(&mut seq);
 
         clear_ctx
             .expect()
