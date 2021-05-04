@@ -16,33 +16,13 @@ jobs:
         run: |
           rustup install nightly
 
-      - name:                   Update
+      - name:                   Build
         run: |
-          apt-get update -y
-
-      - name:                   Install libxcursor
-        run: |
-          apt-get install -y libxcursor-dev
-
-      - name:                   Install libxrandr
-        run: |
-          apt-get install -y libxrandr-dev
-
-      - name:                   Install x11-utils
-        run: |
-          apt-get install -y x11-utils
-
-      - name:                   Install x11-common
-        run: |
-          apt-get install -y x11-common
-
-      # - name:                   Build
-      #   run: |
-      #     cargo build
+          cargo build
 
       - name:                   Run test cases
         run: |
-          XDG_RUNTIME_DIR=/run/user/1000 RUST_BACKTRACE=1 cargo test --verbose -- --test-threads=1
+          cargo test
 
 
       # - name:                   Generate code coverage

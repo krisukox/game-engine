@@ -1,9 +1,9 @@
 use graphics::Context;
 use graphics::Viewport;
 
-pub struct Window {}
+pub struct Window();
 
-pub struct Graphics {}
+pub struct Graphics();
 
 impl Graphics {
     pub fn draw<F: FnOnce(graphics::Context, &mut Self) + 'static>(

@@ -4,8 +4,6 @@ use graphics::Transformed;
 use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 
-// pub struct MyWindow {}
-
 cfg_if::cfg_if! {
     if #[cfg(test)]{
         use crate::object_generator::MockObjectGenerator as ObjectGenerator;
@@ -81,13 +79,10 @@ impl Engine {
     }
 
     pub fn start(&mut self) {
-        println!("start 1");
         while let Some(e) = self.events.next_event(&mut self.window) {
-            println!("start 2");
             if let Some(args) = e.render_args() {
                 let polygons = self.generator.generate_polygons(&self.player);
                 self.graphics.draw(args.viewport(), |c, g| {
-                    println!("start 3");
                     let transform = c
                         .transform
                         .flip_v()
@@ -103,23 +98,6 @@ impl Engine {
                         );
                     }
                 });
-                // GraphicsWrapper::draw(&mut self.graphics, args.viewport(), |c, g| {
-                //     println!("start 3");
-                //     let transform = c
-                //         .transform
-                //         .flip_v()
-                //         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                //     GraphicsWrapper::clear(g, BACKGROUND_COLOR);
-                //     for polygon_ in polygons {
-                //         GraphicsWrapper::draw_polygon(
-                //             g,
-                //             WALL_COLOR,
-                //             polygon_,
-                //             &c.draw_state,
-                //             transform,
-                //         );
-                //     }
-                // });
             }
 
             if let Some(args) = e.mouse_relative_args() {
@@ -164,23 +142,10 @@ mod test {
     use crate::graphics_wrapper::MockGraphicsWrapper;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
-    use crate::test_utils::Window as GlutinWindow;
+    use crate::test_utils::Graphics;
+    use crate::test_utils::Window;
     use graphics::types::Vec2d;
     use mockall::*;
-    // use opengl_graphics::GlGraphics;
-    use crate::test_utils::Graphics as GlGraphics;
-
-    // fn default_window() -> GlutinWindow {
-    //     WindowSettings::new(
-    //         "game",
-    //         Size {
-    //             width: 100.0,
-    //             height: 100.0,
-    //         },
-    //     )
-    //     .build()
-    //     .unwrap()
-    // }
 
     fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
         events
@@ -242,7 +207,7 @@ mod test {
         let player = MockPlayer::default();
         let window = crate::test_utils::Window {};
         let mut events = MockEvents::default();
-        let graphics = GlGraphics {};
+        let graphics = Graphics {};
 
         let clear_ctx = MockGraphicsWrapper::clear_context();
         let draw_polygon_ctx = MockGraphicsWrapper::draw_polygon_context();
@@ -325,9 +290,9 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = GlutinWindow {};
+        let window = Window {};
         let mut events = MockEvents::default();
-        let graphics = GlGraphics {};
+        let graphics = Graphics {};
 
         static motion_left: [f64; 2] = [3.0, 5.0];
         static motion_right: [f64; 2] = [-7.0, 9.0];
@@ -367,9 +332,9 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = GlutinWindow {};
+        let window = Window {};
         let mut events = MockEvents::default();
-        let graphics = GlGraphics {};
+        let graphics = Graphics {};
 
         call_press_event(&mut events, &mut seq, piston::input::Key::W);
         expect_move_forward_backward(&mut player, &mut seq, 0.5);
