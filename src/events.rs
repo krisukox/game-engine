@@ -20,10 +20,7 @@ impl Events {
         self.0.next(window)
     }
     #[cfg(test)]
-    pub fn next_event<W: 'static>(&mut self, window: &mut W) -> Option<Event>
-    where
-        W: Window,
-    {
-        self.0.next(window)
+    pub fn next_event<W: 'static>(&mut self, window: &mut W) -> Option<Event> {
+        None
     }
 }

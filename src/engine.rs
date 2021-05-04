@@ -2,14 +2,16 @@ use crate::map::Map;
 use crate::player_utils::Radians;
 use crate::point_generator::PointGenerator;
 use crate::polygon_generator::PolygonGenerator;
-use glutin_window::GlutinWindow;
+// use glutin_window::GlutinWindow;
 use graphics::Transformed;
-use opengl_graphics::{GlGraphics, OpenGL};
+use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
 use piston::window::{Size, WindowSettings};
 use piston::AdvancedWindow;
 
 use graphics::types::Color;
+
+pub struct MyWindow {}
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
@@ -17,11 +19,15 @@ cfg_if::cfg_if! {
         use crate::player_utils::MockPlayer as Player;
         use crate::events::MockEvents as Events;
         use crate::graphics_wrapper::MockGraphicsWrapper as GraphicsWrapper;
+        use crate::engine::MyWindow as GlutinWindow;
+        use crate::graphics_wrapper::Graphics as GlGraphics;
     } else {
         use crate::object_generator::ObjectGenerator;
         use crate::player_utils::Player;
         use crate::events::Events;
         use crate::graphics_wrapper::GraphicsWrapper;
+        use glutin_window::GlutinWindow;
+        use opengl_graphics::GlGraphics;
     }
 }
 
@@ -63,6 +69,7 @@ impl Engine {
         })
     }
 
+    #[cfg(not(test))]
     fn create_window(resolution: Size) -> GlutinWindow {
         let mut window: GlutinWindow = WindowSettings::new("game", resolution)
             .graphics_api(OPENGL_VERSION)
@@ -135,25 +142,27 @@ impl Engine {
 mod test {
     #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::engine::MyWindow as GlutinWindow;
     use crate::events::MockEvents;
     use crate::graphics_wrapper::MockGraphicsWrapper;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
     use graphics::types::Vec2d;
     use mockall::*;
-    use opengl_graphics::GlGraphics;
+    // use opengl_graphics::GlGraphics;
+    use crate::graphics_wrapper::Graphics as GlGraphics;
 
-    fn default_window() -> GlutinWindow {
-        WindowSettings::new(
-            "game",
-            Size {
-                width: 100.0,
-                height: 100.0,
-            },
-        )
-        .build()
-        .unwrap()
-    }
+    // fn default_window() -> GlutinWindow {
+    //     WindowSettings::new(
+    //         "game",
+    //         Size {
+    //             width: 100.0,
+    //             height: 100.0,
+    //         },
+    //     )
+    //     .build()
+    //     .unwrap()
+    // }
 
     fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
         events
@@ -214,9 +223,9 @@ mod test {
 
         let mut generator = MockObjectGenerator::new();
         let player = MockPlayer::default();
-        let window = default_window();
+        let window = MyWindow {};
         let mut events = MockEvents::default();
-        let graphics = GlGraphics::new(OPENGL_VERSION);
+        let graphics = GlGraphics {};
 
         let draw_ctx = MockGraphicsWrapper::draw_context();
         let clear_ctx = MockGraphicsWrapper::clear_context();
@@ -310,9 +319,9 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        let window = default_window();
+        let window = MyWindow {};
         let mut events = MockEvents::default();
-        let graphics = GlGraphics::new(OPENGL_VERSION);
+        let graphics = GlGraphics {};
 
         static motion_left: [f64; 2] = [3.0, 5.0];
         static motion_right: [f64; 2] = [-7.0, 9.0];
@@ -352,32 +361,32 @@ mod test {
 
         let generator = MockObjectGenerator::new();
         let mut player = MockPlayer::default();
-        // let window = default_window();
-        // let mut events = MockEvents::default();
-        // let graphics = GlGraphics::new(OPENGL_VERSION);
+        let window = MyWindow {};
+        let mut events = MockEvents::default();
+        let graphics = GlGraphics {};
 
-        // call_press_event(&mut events, &mut seq, piston::input::Key::W);
-        // expect_move_forward_backward(&mut player, &mut seq, 0.5);
+        call_press_event(&mut events, &mut seq, piston::input::Key::W);
+        expect_move_forward_backward(&mut player, &mut seq, 0.5);
 
-        // call_press_event(&mut events, &mut seq, piston::input::Key::S);
-        // expect_move_forward_backward(&mut player, &mut seq, -0.5);
+        call_press_event(&mut events, &mut seq, piston::input::Key::S);
+        expect_move_forward_backward(&mut player, &mut seq, -0.5);
 
-        // call_press_event(&mut events, &mut seq, piston::input::Key::A);
-        // expect_move_right_left(&mut player, &mut seq, 0.5);
+        call_press_event(&mut events, &mut seq, piston::input::Key::A);
+        expect_move_right_left(&mut player, &mut seq, 0.5);
 
-        // call_press_event(&mut events, &mut seq, piston::input::Key::D);
-        // expect_move_right_left(&mut player, &mut seq, -0.5);
+        call_press_event(&mut events, &mut seq, piston::input::Key::D);
+        expect_move_right_left(&mut player, &mut seq, -0.5);
 
-        // call_none_event(&mut events, &mut seq);
+        call_none_event(&mut events, &mut seq);
 
-        // let mut engine = Engine {
-        //     generator,
-        //     player,
-        //     window,
-        //     events,
-        //     graphics,
-        // };
+        let mut engine = Engine {
+            generator,
+            player,
+            window,
+            events,
+            graphics,
+        };
 
-        // engine.start();
+        engine.start();
     }
 }
