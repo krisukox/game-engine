@@ -8,13 +8,13 @@ cfg_if::cfg_if! {
     if #[cfg(test)]{
         use crate::object_generator::MockObjectGenerator as ObjectGenerator;
         use crate::player_utils::MockPlayer as Player;
-        use crate::events::MockEvents as Events;
-        use crate::graphics_wrapper::MockGraphicsWrapper as GraphicsWrapper;
+        use crate::events_wrapper::MockEvents as Events;
+        use crate::graphics_wrapper::MockGraphics as Graphics;
         use crate::test_utils::Window as GlutinWindow;
         use crate::test_utils::Graphics as GlGraphics;
     } else {
-        use crate::events::Events;
-        use crate::graphics_wrapper::GraphicsWrapper;
+        use crate::events_wrapper::Events;
+        use crate::graphics_wrapper::Graphics;
         use crate::map::Map;
         use crate::object_generator::ObjectGenerator;
         use crate::player_utils::Player;
@@ -40,6 +40,7 @@ const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
 const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
 
 impl Engine {
+    #[cfg(not(tarpaulin_include))]
     #[cfg(not(test))]
     pub fn new(
         path_to_map: &str,
@@ -65,6 +66,7 @@ impl Engine {
         })
     }
 
+    #[cfg(not(tarpaulin_include))]
     #[cfg(not(test))]
     fn create_window(resolution: Size) -> GlutinWindow {
         let mut window: GlutinWindow = WindowSettings::new("game", resolution)
@@ -87,15 +89,9 @@ impl Engine {
                         .transform
                         .flip_v()
                         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
-                    GraphicsWrapper::clear(g, BACKGROUND_COLOR);
+                    Graphics::clear(g, BACKGROUND_COLOR);
                     for polygon_ in polygons {
-                        GraphicsWrapper::draw_polygon(
-                            g,
-                            WALL_COLOR,
-                            polygon_,
-                            &c.draw_state,
-                            transform,
-                        );
+                        Graphics::draw_polygon(g, WALL_COLOR, polygon_, &c.draw_state, transform);
                     }
                 });
             }
@@ -138,8 +134,8 @@ impl Engine {
 mod test {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::events::MockEvents;
-    use crate::graphics_wrapper::MockGraphicsWrapper;
+    use crate::events_wrapper::MockEvents;
+    use crate::graphics_wrapper::MockGraphics;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
     use crate::test_utils::Graphics;
@@ -209,8 +205,8 @@ mod test {
         let mut events = MockEvents::default();
         let graphics = Graphics {};
 
-        let clear_ctx = MockGraphicsWrapper::clear_context();
-        let draw_polygon_ctx = MockGraphicsWrapper::draw_polygon_context();
+        let clear_ctx = MockGraphics::clear_context();
+        let draw_polygon_ctx = MockGraphics::draw_polygon_context();
 
         lazy_static! {
             static ref polygons: Vec<[Vec2d; 4]> = vec![

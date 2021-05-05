@@ -9,15 +9,16 @@ cfg_if::cfg_if! {
     }
 }
 
-pub struct GraphicsWrapper();
+pub struct Graphics();
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
+#[cfg(not(tarpaulin_include))]
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[cfg_attr(test, automock)]
-impl GraphicsWrapper {
+impl Graphics {
     pub fn clear(graphics: &mut GlGraphics, color: Color) {
         #[cfg(not(test))]
         graphics::clear(color, graphics);

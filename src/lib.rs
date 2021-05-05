@@ -4,7 +4,7 @@ pub mod player_utils;
 
 pub use piston::window::Size;
 
-mod events;
+mod events_wrapper;
 mod graphics_wrapper;
 mod map;
 mod object_generator;

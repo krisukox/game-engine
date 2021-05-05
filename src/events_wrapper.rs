@@ -13,6 +13,7 @@ pub struct Events(event_loop::Events);
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
+#[cfg(not(tarpaulin_include))]
 #[allow(dead_code)]
 #[allow(unused_variables)]
 #[cfg_attr(test, automock)]
