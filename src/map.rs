@@ -16,6 +16,7 @@ impl Map {
         )));
     }
 
+    #[cfg(test)]
     fn validate_coordinate(&self, coordinate: &graph::Coordinate) -> bool {
         if coordinate.x < 0.0
             || coordinate.y < 0.0
@@ -67,8 +68,10 @@ impl Map {
             last_position = next_position;
         }
     }
+}
 
-    pub fn dummy() -> Map {
+impl Default for Map {
+    fn default() -> Map {
         Map(image::ImageBuffer::from_pixel(
             1,
             1,

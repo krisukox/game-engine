@@ -2,6 +2,9 @@ use super::angle::Angle;
 use super::radians::Radians;
 use crate::graph;
 
+#[cfg(test)]
+use mockall::{automock, predicate::*};
+
 #[derive(Debug)]
 pub struct Player {
     pub angle: Angle,
@@ -9,6 +12,7 @@ pub struct Player {
     number_of_rays: usize,
 }
 
+#[cfg_attr(test, automock)]
 impl Player {
     pub fn new(angle: Angle, position: graph::Coordinate, number_of_rays: usize) -> Player {
         Player {

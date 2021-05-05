@@ -3,12 +3,16 @@ use crate::map::Map;
 use crate::player_utils;
 use crate::polygon_generator;
 use graphics::types::Vec2d;
+#[cfg(test)]
+use mockall::automock;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
         use self::polygon_generator::MockPolygonGenerator as PolygonGenerator;
+        use crate::player_utils::MockPlayer as Player;
     } else {
         use self::polygon_generator::PolygonGenerator;
+        use crate::player_utils::Player as Player;
     }
 }
 
@@ -46,6 +50,7 @@ fn handle_points(
     }
 }
 
+#[cfg_attr(test, automock)]
 impl ObjectGenerator {
     fn get_walls_in_sight(
         &self,
@@ -135,12 +140,15 @@ impl ObjectGenerator {
         return polygons;
     }
 
-    pub fn generate_polygons(&self, player: &player_utils::Player) -> Vec<[Vec2d; 4]> {
+    pub fn generate_polygons(&self, player: &Player) -> Vec<[Vec2d; 4]> {
+        #[cfg(not(test))]
         return self.generate_polygons_(
             self.get_walls_in_sight(&player.position, player.get_rays_angle_range()),
             &player.position,
             &player.angle,
         );
+        #[cfg(test)]
+        return vec![];
     }
 }
 
@@ -188,7 +196,7 @@ mod test {
         }
 
         let object_generator = ObjectGenerator {
-            map: Map::dummy(),
+            map: Default::default(),
             rays: Default::default(),
             polygon_generator: object_generator,
         };
