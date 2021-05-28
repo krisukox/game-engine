@@ -1,5 +1,4 @@
 use crate::player_utils;
-// use float_cmp::approx_eq;
 
 #[derive(PartialEq, Default, Clone, Debug)]
 pub struct Coordinate {

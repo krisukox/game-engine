@@ -39,7 +39,7 @@ impl Player {
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
-    fn move_right_left(&mut self, distance: f64) {
+    fn move_left_right(&mut self, distance: f64) {
         let direction =
             graph::LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
         self.position = direction.get_next_from_distance(&self.position, distance);
@@ -86,8 +86,8 @@ impl Player {
             self.move_forward_backward(forward_backward_value)
         }
 
-        if let Some(right_left_value) = self.move_handler.get_move_right_left_value() {
-            self.move_right_left(right_left_value)
+        if let Some(right_left_value) = self.move_handler.get_move_left_right_value() {
+            self.move_left_right(right_left_value)
         }
     }
 
@@ -118,7 +118,7 @@ mod test {
             .times(1)
             .return_const(forward_backward_value);
         move_handler
-            .expect_get_move_right_left_value()
+            .expect_get_move_left_right_value()
             .times(1)
             .return_const(right_left_value);
 
@@ -231,10 +231,10 @@ mod test {
         player.move_forward_backward(-distance);
         assert_eq!(player.position, first_position);
 
-        player.move_right_left(distance);
+        player.move_left_right(distance);
         assert_eq!(player.position, third_position);
 
-        player.move_right_left(-distance);
+        player.move_left_right(-distance);
         assert_eq!(player.position, first_position);
     }
 

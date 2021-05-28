@@ -93,7 +93,7 @@ impl MoveHandler {
         return None;
     }
 
-    pub fn get_move_right_left_value(&mut self) -> Option<f64> {
+    pub fn get_move_left_right_value(&mut self) -> Option<f64> {
         if self.move_right == true && self.move_left == true {
             self.move_right_last_time = SystemTime::now();
             self.move_left_last_time = SystemTime::now();
@@ -117,8 +117,61 @@ impl MoveHandler {
 
 #[cfg(test)]
 mod test {
-    // #[test]
-    // fn move_() {
-    //     let move_handler = MoveHandler::new();
-    // }
+    use super::*;
+    use std::{thread, time};
+
+    type AssertValue = fn(Option<f64>);
+
+    fn check_move(
+        move_left: bool,
+        move_right: bool,
+        move_forward: bool,
+        move_backward: bool,
+        assert_left_right: AssertValue,
+        assert_forward_backward: AssertValue,
+    ) {
+        let mut move_handler = MoveHandler::new();
+
+        move_handler.move_left(move_left);
+        move_handler.move_right(move_right);
+        move_handler.move_forward(move_forward);
+        move_handler.move_backward(move_backward);
+        thread::sleep(time::Duration::from_millis(50));
+
+        assert_left_right(move_handler.get_move_left_right_value());
+        assert_forward_backward(move_handler.get_move_forward_backward_value());
+    }
+
+    #[test]
+    fn handle_move() {
+        let assert_greater = |value_option| {
+            if let Some(value) = value_option {
+                assert!(value > 0.0);
+            } else {
+                panic!("assert_greater value contains None");
+            }
+        };
+
+        let assert_less = |value_option| {
+            if let Some(value) = value_option {
+                assert!(value < 0.0);
+            } else {
+                panic!("assert_less value contains None");
+            }
+        };
+
+        let assert_none = |option_forward_backward_value| {
+            assert_eq!(option_forward_backward_value, None);
+        };
+
+        check_move(true, false, false, false, assert_greater, assert_none);
+        check_move(false, true, false, false, assert_less, assert_none);
+        check_move(true, true, false, false, assert_none, assert_none);
+
+        check_move(false, false, true, false, assert_none, assert_greater);
+        check_move(false, false, false, true, assert_none, assert_less);
+        check_move(false, false, true, true, assert_none, assert_none);
+
+        check_move(true, true, true, true, assert_none, assert_none);
+    }
 }
