@@ -1,4 +1,5 @@
 use crate::player_utils;
+// use float_cmp::approx_eq;
 
 #[derive(PartialEq, Default, Clone, Debug)]
 pub struct Coordinate {
@@ -99,6 +100,12 @@ impl std::ops::AddAssign<&Coordinate> for Coordinate {
         self.y += rhs.y;
     }
 }
+
+// impl PartialEq for Coordinate {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.isbn == other.isbn
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
