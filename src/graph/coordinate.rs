@@ -101,12 +101,6 @@ impl std::ops::AddAssign<&Coordinate> for Coordinate {
     }
 }
 
-// impl PartialEq for Coordinate {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.isbn == other.isbn
-//     }
-// }
-
 #[cfg(test)]
 mod tests {
     use super::*;
