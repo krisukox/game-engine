@@ -1,4 +1,5 @@
 mod angle;
+mod move_handler;
 mod player;
 mod radians;
 

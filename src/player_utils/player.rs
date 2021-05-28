@@ -5,11 +5,19 @@ use crate::graph;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
-#[derive(Debug)]
+cfg_if::cfg_if! {
+    if #[cfg(test)]{
+        use super::move_handler::MockMoveHandler as MoveHandler;
+    } else {
+        use super::move_handler::MoveHandler;
+    }
+}
+#[cfg_attr(not(test), derive(Debug))]
 pub struct Player {
     pub angle: Angle,
     pub position: graph::Coordinate,
     number_of_rays: usize,
+    move_handler: MoveHandler,
 }
 
 #[cfg_attr(test, automock)]
@@ -19,7 +27,22 @@ impl Player {
             angle,
             position,
             number_of_rays,
+            #[cfg(not(test))]
+            move_handler: MoveHandler::new(),
+            #[cfg(test)]
+            move_handler: MoveHandler::default(),
         }
+    }
+
+    fn move_forward_backward(&mut self, distance: f64) {
+        let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
+        self.position = direction.get_next_from_distance(&self.position, distance);
+    }
+
+    fn move_left_right(&mut self, distance: f64) {
+        let direction =
+            graph::LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
+        self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
     pub fn get_angle_value(&self) -> Radians {
@@ -42,15 +65,30 @@ impl Player {
         self.angle.rotate_right(angle_delta);
     }
 
-    pub fn move_forward_backward(&mut self, distance: f64) {
-        let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
-        self.position = direction.get_next_from_distance(&self.position, distance);
+    pub fn move_right(&mut self, is_move: bool) {
+        self.move_handler.move_right(is_move)
     }
 
-    pub fn move_right_left(&mut self, distance: f64) {
-        let direction =
-            graph::LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
-        self.position = direction.get_next_from_distance(&self.position, distance);
+    pub fn move_left(&mut self, is_move: bool) {
+        self.move_handler.move_left(is_move)
+    }
+
+    pub fn move_forward(&mut self, is_move: bool) {
+        self.move_handler.move_forward(is_move)
+    }
+
+    pub fn move_backward(&mut self, is_move: bool) {
+        self.move_handler.move_backward(is_move)
+    }
+
+    pub fn update(&mut self) {
+        if let Some(forward_backward_value) = self.move_handler.get_move_forward_backward_value() {
+            self.move_forward_backward(forward_backward_value)
+        }
+
+        if let Some(right_left_value) = self.move_handler.get_move_left_right_value() {
+            self.move_left_right(right_left_value)
+        }
     }
 
     pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
@@ -61,6 +99,38 @@ impl Player {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    fn check_update(
+        forward_backward_value: Option<f64>,
+        right_left_value: Option<f64>,
+        start_position: graph::Coordinate,
+        updated_postion: graph::Coordinate,
+    ) {
+        let angle = Angle {
+            start: Radians::PI / 4.0,
+            end: Radians::new(std::f64::consts::PI * 3.0 / 4.0),
+        };
+        let mut move_handler = MoveHandler::default();
+
+        move_handler
+            .expect_get_move_forward_backward_value()
+            .times(1)
+            .return_const(forward_backward_value);
+        move_handler
+            .expect_get_move_left_right_value()
+            .times(1)
+            .return_const(right_left_value);
+
+        let mut player = Player {
+            angle,
+            position: start_position,
+            number_of_rays: 0,
+            move_handler,
+        };
+        player.update();
+
+        assert_eq!(player.position, updated_postion);
+    }
 
     #[test]
     fn player_get_angle_value() {
@@ -152,6 +222,7 @@ mod test {
             angle,
             position: first_position.clone(),
             number_of_rays: 0,
+            move_handler: MoveHandler::default(),
         };
         player.move_forward_backward(distance);
         assert_eq!(player.position, second_position);
@@ -159,10 +230,105 @@ mod test {
         player.move_forward_backward(-distance);
         assert_eq!(player.position, first_position);
 
-        player.move_right_left(distance);
+        player.move_left_right(distance);
         assert_eq!(player.position, third_position);
 
-        player.move_right_left(-distance);
+        player.move_left_right(-distance);
         assert_eq!(player.position, first_position);
+    }
+
+    #[test]
+    fn move_player_2() {
+        let angle = Angle {
+            start: Radians::ZERO,
+            end: Radians::PI / 2.0,
+        };
+        let position = graph::Coordinate { x: 5.0, y: 8.0 };
+        let mut move_handler = MoveHandler::default();
+
+        move_handler
+            .expect_move_right()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == true);
+        move_handler
+            .expect_move_right()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == false);
+        move_handler
+            .expect_move_left()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == true);
+        move_handler
+            .expect_move_left()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == false);
+        move_handler
+            .expect_move_forward()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == true);
+        move_handler
+            .expect_move_forward()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == false);
+        move_handler
+            .expect_move_backward()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == true);
+        move_handler
+            .expect_move_backward()
+            .times(1)
+            .return_const(())
+            .withf(|is_move| *is_move == false);
+
+        let mut player = Player {
+            angle,
+            position: position.clone(),
+            number_of_rays: 0,
+            move_handler,
+        };
+
+        player.move_right(true);
+        player.move_right(false);
+        player.move_left(true);
+        player.move_left(false);
+        player.move_forward(true);
+        player.move_forward(false);
+        player.move_backward(true);
+        player.move_backward(false);
+    }
+
+    #[test]
+    fn update_postion() {
+        check_update(
+            Some(1.0),
+            None,
+            graph::Coordinate { x: 5.0, y: 8.0 },
+            graph::Coordinate { x: 5.0, y: 9.0 },
+        );
+        check_update(
+            Some(-1.0),
+            None,
+            graph::Coordinate { x: 5.0, y: 8.0 },
+            graph::Coordinate { x: 5.0, y: 7.0 },
+        );
+        check_update(
+            None,
+            Some(1.0),
+            graph::Coordinate { x: 5.0, y: 8.0 },
+            graph::Coordinate { x: 6.0, y: 8.0 },
+        );
+        check_update(
+            None,
+            Some(-1.0),
+            graph::Coordinate { x: 5.0, y: 8.0 },
+            graph::Coordinate { x: 4.0, y: 8.0 },
+        );
     }
 }

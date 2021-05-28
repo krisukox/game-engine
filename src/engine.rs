@@ -2,7 +2,7 @@ use crate::player_utils::Radians;
 use graphics::types::Color;
 use graphics::Transformed;
 use opengl_graphics::OpenGL;
-use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent};
+use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent, UpdateEvent};
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
@@ -106,28 +106,37 @@ impl Engine {
             }
 
             if let Some(args) = e.button_args() {
-                if piston::input::ButtonState::Press == args.state {
-                    if let piston::input::Button::Keyboard(key) = args.button {
-                        match key {
-                            piston::input::Key::W => {
-                                self.player.move_forward_backward(0.5);
-                            }
-                            piston::input::Key::S => {
-                                self.player.move_forward_backward(-0.5);
-                            }
-                            piston::input::Key::A => {
-                                self.player.move_right_left(0.5);
-                            }
-                            piston::input::Key::D => {
-                                self.player.move_right_left(-0.5);
-                            }
-                            _ => {}
+                if let piston::input::Button::Keyboard(key) = args.button {
+                    match key {
+                        piston::input::Key::W => {
+                            self.player.move_forward(into_bool(args.state));
                         }
+                        piston::input::Key::S => {
+                            self.player.move_backward(into_bool(args.state));
+                        }
+                        piston::input::Key::A => {
+                            self.player.move_left(into_bool(args.state));
+                        }
+                        piston::input::Key::D => {
+                            self.player.move_right(into_bool(args.state));
+                        }
+                        _ => {}
                     }
                 }
             }
+
+            if let Some(_) = e.update_args() {
+                self.player.update();
+            }
         }
     }
+}
+
+fn into_bool(state: piston::input::ButtonState) -> bool {
+    if state == piston::input::ButtonState::Press {
+        return true;
+    }
+    false
 }
 
 #[cfg(test)]
@@ -142,6 +151,8 @@ mod test {
     use crate::test_utils::Window;
     use graphics::types::Vec2d;
     use mockall::*;
+    use piston::input::*;
+    use piston::*;
 
     fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
         events
@@ -156,20 +167,20 @@ mod test {
             .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Input(
-                piston::input::Input::Move(piston::input::Motion::MouseRelative(motion_value)),
+                Input::Move(Motion::MouseRelative(motion_value)),
                 None,
             )))
             .in_sequence(seq);
     }
 
-    fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: piston::input::Key) {
+    fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: input::Key) {
         events
             .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Input(
-                piston::input::Input::Button(piston::input::ButtonArgs {
-                    state: piston::input::ButtonState::Press,
-                    button: piston::input::Button::Keyboard(key),
+                Input::Button(ButtonArgs {
+                    state: ButtonState::Press,
+                    button: Button::Keyboard(key),
                     scancode: None,
                 }),
                 None,
@@ -177,20 +188,58 @@ mod test {
             .in_sequence(seq);
     }
 
-    fn expect_move_forward_backward(player: &mut MockPlayer, seq: &mut Sequence, distance: f64) {
-        player
-            .expect_move_forward_backward()
+    fn call_key_event(
+        events: &mut MockEvents,
+        seq: &mut Sequence,
+        key: input::Key,
+        state: ButtonState,
+    ) {
+        events
+            .expect_next_event()
             .times(1)
-            .withf(move |_distance| *_distance == distance)
+            .return_const(Some(piston::Event::Input(
+                Input::Button(ButtonArgs {
+                    state,
+                    button: Button::Keyboard(key),
+                    scancode: None,
+                }),
+                None,
+            )))
+            .in_sequence(seq);
+    }
+
+    fn expect_move_right(player: &mut MockPlayer, seq: &mut Sequence, is_move: bool) {
+        player
+            .expect_move_right()
+            .times(1)
+            .withf(move |_is_move| *_is_move == is_move)
             .return_const(())
             .in_sequence(seq);
     }
 
-    fn expect_move_right_left(player: &mut MockPlayer, seq: &mut Sequence, distance: f64) {
+    fn expect_move_left(player: &mut MockPlayer, seq: &mut Sequence, is_move: bool) {
         player
-            .expect_move_right_left()
+            .expect_move_left()
             .times(1)
-            .withf(move |_distance| *_distance == distance)
+            .withf(move |_is_move| *_is_move == is_move)
+            .return_const(())
+            .in_sequence(seq);
+    }
+
+    fn expect_move_forward(player: &mut MockPlayer, seq: &mut Sequence, is_move: bool) {
+        player
+            .expect_move_forward()
+            .times(1)
+            .withf(move |_is_move| *_is_move == is_move)
+            .return_const(())
+            .in_sequence(seq);
+    }
+
+    fn expect_move_backward(player: &mut MockPlayer, seq: &mut Sequence, is_move: bool) {
+        player
+            .expect_move_backward()
+            .times(1)
+            .withf(move |_is_move| *_is_move == is_move)
             .return_const(())
             .in_sequence(seq);
     }
@@ -228,12 +277,12 @@ mod test {
                 blend: None,
             },
         };
-        static render_args: piston::input::RenderArgs = piston::input::RenderArgs {
+        static render_args: RenderArgs = RenderArgs {
             ext_dt: 1.0,
             window_size: [2.0, 3.0],
             draw_size: [1, 2],
         };
-        let event = piston::Event::Loop(piston::input::Loop::Render(render_args));
+        let event = piston::Event::Loop(Loop::Render(render_args));
 
         events
             .expect_next_event()
@@ -332,17 +381,65 @@ mod test {
         let mut events = MockEvents::default();
         let graphics = Graphics {};
 
-        call_press_event(&mut events, &mut seq, piston::input::Key::W);
-        expect_move_forward_backward(&mut player, &mut seq, 0.5);
+        call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Press);
+        expect_move_forward(&mut player, &mut seq, true);
 
-        call_press_event(&mut events, &mut seq, piston::input::Key::S);
-        expect_move_forward_backward(&mut player, &mut seq, -0.5);
+        call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Release);
+        expect_move_forward(&mut player, &mut seq, false);
 
-        call_press_event(&mut events, &mut seq, piston::input::Key::A);
-        expect_move_right_left(&mut player, &mut seq, 0.5);
+        call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Press);
+        expect_move_backward(&mut player, &mut seq, true);
 
-        call_press_event(&mut events, &mut seq, piston::input::Key::D);
-        expect_move_right_left(&mut player, &mut seq, -0.5);
+        call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Release);
+        expect_move_backward(&mut player, &mut seq, false);
+
+        call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Press);
+        expect_move_left(&mut player, &mut seq, true);
+
+        call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Release);
+        expect_move_left(&mut player, &mut seq, false);
+
+        call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Press);
+        expect_move_right(&mut player, &mut seq, true);
+
+        call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Release);
+        expect_move_right(&mut player, &mut seq, false);
+
+        call_none_event(&mut events, &mut seq);
+
+        let mut engine = Engine {
+            generator,
+            player,
+            window,
+            events,
+            graphics,
+        };
+
+        engine.start();
+    }
+
+    #[test]
+    fn start_update_event() {
+        let mut seq = Sequence::new();
+
+        let generator = MockObjectGenerator::new();
+        let mut player = MockPlayer::default();
+        let window = Window {};
+        let mut events = MockEvents::default();
+        let graphics = Graphics {};
+
+        events
+            .expect_next_event()
+            .times(1)
+            .return_const(Some(piston::Event::Loop(piston::Loop::Update(
+                UpdateArgs { dt: 0.0 },
+            ))))
+            .in_sequence(&mut seq);
+        player
+            .expect_update()
+            .times(1)
+            .return_const(())
+            .in_sequence(&mut seq);
 
         call_none_event(&mut events, &mut seq);
 
