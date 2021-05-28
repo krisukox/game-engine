@@ -106,41 +106,21 @@ impl Engine {
             }
 
             if let Some(args) = e.button_args() {
-                if piston::input::ButtonState::Press == args.state {
-                    if let piston::input::Button::Keyboard(key) = args.button {
-                        match key {
-                            piston::input::Key::W => {
-                                self.player.move_forward(true);
-                            }
-                            piston::input::Key::S => {
-                                self.player.move_backward(true);
-                            }
-                            piston::input::Key::A => {
-                                self.player.move_left(true);
-                            }
-                            piston::input::Key::D => {
-                                self.player.move_right(true);
-                            }
-                            _ => {}
+                if let piston::input::Button::Keyboard(key) = args.button {
+                    match key {
+                        piston::input::Key::W => {
+                            self.player.move_forward(into_bool(args.state));
                         }
-                    }
-                } else {
-                    if let piston::input::Button::Keyboard(key) = args.button {
-                        match key {
-                            piston::input::Key::W => {
-                                self.player.move_forward(false);
-                            }
-                            piston::input::Key::S => {
-                                self.player.move_backward(false);
-                            }
-                            piston::input::Key::A => {
-                                self.player.move_left(false);
-                            }
-                            piston::input::Key::D => {
-                                self.player.move_right(false);
-                            }
-                            _ => {}
+                        piston::input::Key::S => {
+                            self.player.move_backward(into_bool(args.state));
                         }
+                        piston::input::Key::A => {
+                            self.player.move_left(into_bool(args.state));
+                        }
+                        piston::input::Key::D => {
+                            self.player.move_right(into_bool(args.state));
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -150,6 +130,13 @@ impl Engine {
             }
         }
     }
+}
+
+fn into_bool(state: piston::input::ButtonState) -> bool {
+    if state == piston::input::ButtonState::Press {
+        return true;
+    }
+    false
 }
 
 #[cfg(test)]

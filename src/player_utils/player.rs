@@ -99,7 +99,6 @@ impl Player {
 #[cfg(test)]
 mod test {
     use super::*;
-    // use float_cmp::approx_eq;
 
     fn check_update(
         forward_backward_value: Option<f64>,
