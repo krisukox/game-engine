@@ -34,6 +34,14 @@ impl Player {
         }
     }
 
+    pub fn angle(&self) -> &Angle {
+        &self.angle
+    }
+
+    pub fn position(&self) -> &graph::Coordinate {
+        &self.position
+    }
+
     fn move_forward_backward(&mut self, distance: f64) {
         let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
         self.position = direction.get_next_from_distance(&self.position, distance);
@@ -49,7 +57,7 @@ impl Player {
         self.angle.value()
     }
 
-    pub fn get_rays_angle_range(&self) -> std::vec::Vec<std::ops::Range<usize>> {
+    pub fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
         self.angle.get_rays_angle_range(self.number_of_rays)
     }
 
@@ -81,14 +89,18 @@ impl Player {
         self.move_handler.move_backward(is_move)
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> bool {
+        let mut is_updated = false;
         if let Some(forward_backward_value) = self.move_handler.get_move_forward_backward_value() {
+            is_updated = true;
             self.move_forward_backward(forward_backward_value)
         }
 
         if let Some(right_left_value) = self.move_handler.get_move_left_right_value() {
+            is_updated = true;
             self.move_left_right(right_left_value)
         }
+        return is_updated;
     }
 
     pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
@@ -97,7 +109,7 @@ impl Player {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     fn check_update(

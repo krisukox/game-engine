@@ -7,6 +7,9 @@ pub use self::linear_graph::LinearGraph;
 pub use self::wall::{Wall, Walls};
 
 #[cfg(test)]
+pub use self::linear_graph::MockLinearGraph;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::player_utils::Radians;

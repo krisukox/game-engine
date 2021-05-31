@@ -91,7 +91,7 @@ impl Div<f64> for Radians {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
