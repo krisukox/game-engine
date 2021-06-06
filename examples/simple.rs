@@ -32,17 +32,6 @@ fn main() {
 
     match engine {
         Ok(mut engine) => engine.start(),
-        Err(err) => println!("MAP ERROR: {}", err),
+        Err(err) => println!("MAP CREATE ERROR: {}", err),
     }
-
-    // if let Ok(mut engine) = Engine::new(
-    //     path_to_map,
-    //     resolution,
-    //     player,
-    //     vertical_angle_value,
-    //     wall_height,
-    // ) {
-    //     engine.start()
-    // } else {
-    // }
 }

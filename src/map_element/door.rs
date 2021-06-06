@@ -438,4 +438,17 @@ mod tests {
         check_on_position_update(DoorState::Opened, DoorState::Closing, false);
         check_on_position_update(DoorState::Opening, DoorState::Closing, false);
     }
+
+    #[test]
+    fn velocity_into_f64() {
+        let very_slow = DoorVelocity::VerySlow;
+        let slow = DoorVelocity::Slow;
+        let fast = DoorVelocity::Fast;
+        let very_fast = DoorVelocity::VeryFast;
+
+        assert_eq!(200.0, very_slow.into());
+        assert_eq!(150.0, slow.into());
+        assert_eq!(100.0, fast.into());
+        assert_eq!(50.0, very_fast.into());
+    }
 }

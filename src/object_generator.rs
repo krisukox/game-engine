@@ -172,62 +172,8 @@ mod tests {
     use crate::player_utils::Angle;
     use crate::player_utils::MockPlayer;
     use crate::player_utils::Radians;
-    use crate::wall_map::WallMap;
     use mockall::*;
     use polygon_generator::MockPolygonGenerator;
-
-    // fn test_generate_polygons(
-    //     walls_in_sight: graph::Walls,
-    //     generate_polygons: Vec<[Vec2d; 4]>,
-    //     walls_in_sight_indices: Vec<usize>,
-    //     position: graph::Coordinate,
-    // ) {
-    //     let mut polygon_generator = MockPolygonGenerator::new();
-    //     let mut map = MockMap::new();
-    //     let mut player = MockPlayer::default();
-    //     let mut seq = Sequence::new();
-
-    //     let mut map_element = Box::new(MockMapElement::new());
-    //     let mut map_elements = vec![map_element];
-
-    //     let angle = player_utils::Angle {
-    //         start: player_utils::Radians::new(0.0),
-    //         end: player_utils::Radians::new(std::f64::consts::PI / 2.0),
-    //     };
-
-    //     for (index, polygon) in walls_in_sight_indices
-    //         .iter()
-    //         .zip(generate_polygons.iter().cloned())
-    //     {
-    //         let cloned_wall = walls_in_sight.0[*index].clone();
-    //         let cloned_angle = angle.clone();
-    //         let cloned_position = position.clone();
-    //         polygon_generator
-    //             .expect_generate_polygon()
-    //             .times(1)
-    //             .withf(
-    //                 move |wall: &graph::Wall,
-    //                       position: &graph::Coordinate,
-    //                       angle: &player_utils::Angle| {
-    //                     *wall == cloned_wall
-    //                         && *position == cloned_position
-    //                         && *angle == cloned_angle
-    //                 },
-    //             )
-    //             .return_const(polygon)
-    //             .in_sequence(&mut seq);
-    //     }
-
-    //     let object_generator = ObjectGenerator {
-    //         map,
-    //         rays: Default::default(),
-    //         polygon_generator,
-    //     };
-    //     assert_eq!(
-    //         object_generator.generate_polygons(&player, &map_elements),
-    //         generate_polygons
-    //     );
-    // }
 
     #[test]
     fn generate_polygons() {

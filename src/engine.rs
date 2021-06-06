@@ -506,11 +506,15 @@ mod tests {
 
         let mut map_element = Box::new(MockMapElement::new());
 
+        let delta_time = 2.0;
+
         events
             .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Loop(piston::Loop::Update(
-                UpdateArgs { dt: 2.0 },
+                UpdateArgs {
+                    dt: delta_time.clone(),
+                },
             ))))
             .in_sequence(&mut seq);
         player
@@ -521,7 +525,7 @@ mod tests {
         map_element
             .expect_update()
             .times(1)
-            .withf(|time_elapsed| *time_elapsed == 2.0)
+            .withf(move |time_elapsed| *time_elapsed == delta_time)
             .return_const(())
             .in_sequence(&mut seq);
 

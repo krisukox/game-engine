@@ -33,16 +33,6 @@ impl MapElement for WallMap {
     }
 }
 
-impl Default for WallMap {
-    fn default() -> Self {
-        Self(image::ImageBuffer::from_pixel(
-            1,
-            1,
-            image::Rgba([255 as u8, 255, 255, 255]),
-        ))
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
