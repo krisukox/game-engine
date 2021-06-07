@@ -53,7 +53,10 @@ impl Player {
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
-    #[cfg(not(tarpaulin_include))]
+    pub fn get_angle_value(&self) -> Radians {
+        self.angle.value()
+    }
+
     #[allow(dead_code)]
     pub(crate) fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
         self.angle.get_rays_angle_range(self.number_of_rays)
@@ -143,23 +146,23 @@ mod tests {
         assert_eq!(player.position, updated_postion);
     }
 
-    // #[test]
-    // fn player_get_angle_value() {
-    //     let angle_start = 1.3;
-    //     let angle_end = 4.3;
-    //     let player = Player::new(
-    //         Angle {
-    //             start: Radians::new(angle_start),
-    //             end: Radians::new(angle_end),
-    //         },
-    //         graph::Coordinate { x: 0.0, y: 0.0 },
-    //         100,
-    //     );
-    //     assert_eq!(
-    //         player.get_angle_value(),
-    //         Radians::new(angle_end - angle_start)
-    //     );
-    // }
+    #[test]
+    fn player_get_angle_value() {
+        let angle_start = 1.3;
+        let angle_end = 4.3;
+        let player = Player::new(
+            Angle {
+                start: Radians::new(angle_start),
+                end: Radians::new(angle_end),
+            },
+            graph::Coordinate { x: 0.0, y: 0.0 },
+            100,
+        );
+        assert_eq!(
+            player.get_angle_value(),
+            Radians::new(angle_end - angle_start)
+        );
+    }
 
     #[test]
     fn get_all_rays() {

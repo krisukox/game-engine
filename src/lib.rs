@@ -4,7 +4,6 @@ pub mod map_element;
 pub mod player_utils;
 
 pub use map::Map;
-// pub use map_element::{Door, DoorType, MapElement, Point, Rectangle, WallMap};
 pub use piston::window::Size;
 
 mod events_wrapper;
