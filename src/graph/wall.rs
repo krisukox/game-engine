@@ -17,7 +17,7 @@ impl Wall {
     }
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub struct Walls(pub Vec<Wall>);
 
 impl Walls {
@@ -59,5 +59,43 @@ impl Walls {
             }
         }
         return None;
+    }
+
+    pub fn merge(&mut self, mut walls_to_merge: Walls) {
+        if let Some(wall) = self.0.last_mut() {
+            if walls_to_merge.0.len() > 0 {
+                let wall_to_merge = walls_to_merge.0.remove(0);
+                if wall.start_point.x == wall.end_point.x
+                    && wall.end_point.x == wall_to_merge.start_point.x
+                    && wall_to_merge.start_point.x == wall_to_merge.end_point.x
+                {
+                    if wall.start_point.y <= wall_to_merge.start_point.y
+                        && wall_to_merge.start_point.y <= wall.end_point.y
+                    {
+                        wall.end_point = wall_to_merge.end_point;
+                    } else if wall.end_point.y <= wall_to_merge.start_point.y
+                        && wall_to_merge.start_point.y <= wall.start_point.y
+                    {
+                        wall.end_point = wall_to_merge.end_point;
+                    }
+                } else if wall.start_point.y == wall.end_point.y
+                    && wall.end_point.y == wall_to_merge.start_point.y
+                    && wall_to_merge.start_point.y == wall_to_merge.end_point.y
+                {
+                    if wall.start_point.x <= wall_to_merge.start_point.x
+                        && wall_to_merge.start_point.x <= wall.end_point.x
+                    {
+                        wall.end_point = wall_to_merge.end_point;
+                    } else if wall.end_point.x <= wall_to_merge.start_point.x
+                        && wall_to_merge.start_point.x <= wall.start_point.x
+                    {
+                        wall.end_point = wall_to_merge.end_point;
+                    }
+                } else {
+                    self.0.push(wall_to_merge);
+                }
+            }
+        }
+        self.0.append(&mut walls_to_merge.0);
     }
 }

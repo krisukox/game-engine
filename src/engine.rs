@@ -3,6 +3,9 @@ use crate::player_utils::Radians;
 use graphics::types::Color;
 use graphics::Transformed;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent, UpdateEvent};
+use std::sync::mpsc::{channel, Sender};
+use std::sync::{Arc, RwLock};
+use std::thread::JoinHandle;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
@@ -15,11 +18,13 @@ cfg_if::cfg_if! {
     } else {
         use crate::events_wrapper::Events;
         use crate::graphics_wrapper::Graphics;
+        use crate::graph::Walls;
         use crate::map::Map;
         use crate::object_generator::ObjectGenerator;
         use crate::player_utils::Player;
         use crate::polygon_generator::PolygonGenerator;
         use crate::point_generator::PointGenerator;
+        use crate::render_thread::RenderThread;
         use glutin_window::GlutinWindow;
         use opengl_graphics::GlGraphics;
         use piston::AdvancedWindow;
@@ -32,11 +37,13 @@ cfg_if::cfg_if! {
 
 pub struct Engine {
     generator: ObjectGenerator,
-    player: Player,
     window: GlutinWindow,
-    events: Events,
     graphics: GlGraphics,
-    map_elements: Vec<Box<dyn MapElement>>,
+    events: Events,
+    player: Arc<RwLock<Player>>,
+    map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>>,
+    start_render_notifiers: Vec<Sender<bool>>,
+    render_threads: Vec<JoinHandle<()>>,
 }
 
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
@@ -47,26 +54,54 @@ impl Engine {
     #[cfg(not(test))]
     pub fn new(
         resolution: Size,
-        player: Player,
         vertical_angle_value: Radians,
         wall_height: f64,
-        map_elements: Vec<Box<dyn MapElement>>,
         map: Map,
+        player: Player,
+        map_elements: Vec<Box<dyn MapElement>>,
+        render_threads_amount: usize,
     ) -> Engine {
         let polygon_generator = PolygonGenerator {
             point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
         };
+        let map = Arc::new(map);
+        let rays = Arc::new(player.get_all_rays());
+        let player = Arc::new(RwLock::new(player));
+        let map_elements = Arc::new(RwLock::new(map_elements));
+        let mut start_render_notifiers = vec![];
+        let mut render_threads = Vec::with_capacity(render_threads_amount);
+
+        let (sender_walls, receiver_walls) = channel::<(Walls, usize)>();
+
+        for thread_index in 0..render_threads_amount {
+            let (start_render_notifier, start_render_receiver) = channel::<bool>();
+            let render_thread = RenderThread {
+                map_elements: Arc::clone(&map_elements),
+                player: Arc::clone(&player),
+                map: Arc::clone(&map),
+                rays: Arc::clone(&rays),
+                start_render_receiver,
+                sender_walls: sender_walls.clone(),
+                thread_index,
+                threads_amount: render_threads_amount,
+            };
+            render_threads.push(RenderThread::start_thread(render_thread));
+            start_render_notifiers.push(start_render_notifier);
+        }
+
         Engine {
             generator: ObjectGenerator {
-                rays: player.get_all_rays(),
                 polygon_generator,
-                map,
+                receiver_walls,
+                render_threads_amount,
             },
-            player,
             window: Self::create_window(resolution),
-            events: Events::new(),
             graphics: GlGraphics::new(OPENGL_VERSION),
+            events: Events::new(),
+            player,
             map_elements,
+            start_render_notifiers,
+            render_threads,
         }
     }
 
@@ -84,15 +119,13 @@ impl Engine {
         return window;
     }
 
-    pub(crate) fn cos() {}
-
     pub fn start(&mut self) {
-        Self::cos();
         while let Some(e) = self.events.next_event(&mut self.window) {
             if let Some(args) = e.render_args() {
-                let polygons = self
-                    .generator
-                    .generate_polygons(&self.player, &self.map_elements);
+                for start_render_notifier in &self.start_render_notifiers {
+                    start_render_notifier.send(true).unwrap();
+                }
+                let polygons = self.generator.generate_polygons(&self.player);
                 self.graphics.draw(args.viewport(), |c, g| {
                     let transform = c
                         .transform
@@ -106,28 +139,29 @@ impl Engine {
             }
 
             if let Some(args) = e.mouse_relative_args() {
+                let mut player = self.player.write().unwrap();
                 if args[0] > 0.0 {
-                    self.player.rotate_left(Radians::new(args[0] / 1000.0));
+                    player.rotate_left(Radians::new(args[0] / 1000.0));
                 } else {
-                    self.player
-                        .rotate_right(Radians::new((args[0] / 1000.0).abs()));
+                    player.rotate_right(Radians::new((args[0] / 1000.0).abs()));
                 }
             }
 
             if let Some(args) = e.button_args() {
                 if let piston::input::Button::Keyboard(key) = args.button {
+                    let mut player = self.player.write().unwrap();
                     match key {
                         piston::input::Key::W => {
-                            self.player.move_forward(into_bool(args.state));
+                            player.move_forward(into_bool(args.state));
                         }
                         piston::input::Key::S => {
-                            self.player.move_backward(into_bool(args.state));
+                            player.move_backward(into_bool(args.state));
                         }
                         piston::input::Key::A => {
-                            self.player.move_left(into_bool(args.state));
+                            player.move_left(into_bool(args.state));
                         }
                         piston::input::Key::D => {
-                            self.player.move_right(into_bool(args.state));
+                            player.move_right(into_bool(args.state));
                         }
                         _ => {}
                     }
@@ -135,17 +169,25 @@ impl Engine {
             }
 
             if let Some(args) = e.update_args() {
-                if self.player.update() {
-                    for map_element in &mut self.map_elements {
-                        map_element
-                            .as_mut()
-                            .on_position_update(&self.player.position());
+                let mut map_elements = self.map_elements.write().unwrap();
+                let mut player = self.player.write().unwrap();
+                if player.update() {
+                    for map_element in &mut *map_elements {
+                        map_element.as_mut().on_position_update(player.position());
                     }
                 }
-                for map_element in &mut self.map_elements {
+                for map_element in &mut *map_elements {
                     map_element.as_mut().update(args.dt);
                 }
             }
+        }
+
+        for sender_notifier in &self.start_render_notifiers {
+            sender_notifier.send(false).unwrap();
+        }
+
+        for thread in self.render_threads.drain(0..).collect::<Vec<_>>() {
+            thread.join().unwrap();
         }
     }
 }
@@ -169,10 +211,11 @@ mod tests {
     use crate::player_utils::{MockPlayer, Radians};
     use crate::test_utils::Graphics;
     use crate::test_utils::Window;
-    use graphics::types::Vec2d;
     use mockall::*;
     use piston::input::*;
     use piston::*;
+
+    const RENDER_THREADS_AMOUNT: usize = 2;
 
     fn call_none_event(events: &mut MockEvents, seq: &mut Sequence) {
         events
@@ -254,42 +297,35 @@ mod tests {
         let mut seq = Sequence::new();
 
         let mut generator = MockObjectGenerator::new();
-        let player = MockPlayer::default();
         let window = crate::test_utils::Window {};
-        let mut events = MockEvents::default();
         let graphics = Graphics {};
-        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
+        let mut events = MockEvents::default();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
+        let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
+            Arc::new(RwLock::new(vec![Box::new(MockMapElement::new())]));
+
+        let mut start_render_notifiers = vec![];
+        let mut start_render_receivers = vec![];
+
+        for _ in 0..RENDER_THREADS_AMOUNT {
+            let (start_render_notifier, start_render_receiver) = channel::<bool>();
+            start_render_notifiers.push(start_render_notifier);
+            start_render_receivers.push(start_render_receiver);
+        }
 
         let clear_ctx = MockGraphics::clear_context();
         let draw_polygon_ctx = MockGraphics::draw_polygon_context();
 
-        lazy_static! {
-            static ref polygons: Vec<[Vec2d; 4]> = vec![
-                [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]],
-                [[8.0, 9.0], [10.0, 11.0], [12.0, 13.0], [14.0, 15.0]]
-            ];
-        }
-        static graphic_context: graphics::Context = graphics::Context {
-            viewport: Some(graphics::Viewport {
-                rect: [1, 2, 3, 4],
-                draw_size: [1, 2],
-                window_size: [1.0, 2.0],
-            }),
-            view: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-            transform: [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-            draw_state: graphics::DrawState {
-                scissor: None,
-                stencil: None,
-                blend: None,
-            },
-        };
-        static render_args: RenderArgs = RenderArgs {
+        let polygons = vec![
+            [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]],
+            [[8.0, 9.0], [10.0, 11.0], [12.0, 13.0], [14.0, 15.0]],
+        ];
+
+        let event = piston::Event::Loop(Loop::Render(RenderArgs {
             ext_dt: 1.0,
             window_size: [2.0, 3.0],
             draw_size: [1, 2],
-        };
-        let event = piston::Event::Loop(Loop::Render(render_args));
-
+        }));
         events
             .expect_next_event()
             .times(1)
@@ -309,15 +345,11 @@ mod tests {
             .return_const(())
             .in_sequence(&mut seq);
 
-        for _polygon in polygons.iter() {
+        for polygon in polygons.into_iter() {
             draw_polygon_ctx
                 .expect()
                 .times(1)
-                .withf(move |_, color, polygon, draw_state, _| {
-                    *color == WALL_COLOR
-                        && *polygon == *_polygon
-                        && *draw_state == graphic_context.draw_state
-                })
+                .withf(move |_, color, polygon_, _, _| *color == WALL_COLOR && *polygon_ == polygon)
                 .return_const(())
                 .in_sequence(&mut seq);
         }
@@ -326,14 +358,20 @@ mod tests {
 
         let mut engine = Engine {
             generator,
-            player,
             window,
-            events,
             graphics,
+            events,
+            player,
             map_elements,
+            start_render_notifiers,
+            render_threads: vec![],
         };
 
         engine.start();
+
+        for start_render_receiver in &start_render_receivers {
+            assert_eq!(start_render_receiver.recv().unwrap(), true);
+        }
     }
 
     #[test]
@@ -341,40 +379,47 @@ mod tests {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
-        let mut player = MockPlayer::default();
         let window = Window {};
-        let mut events = MockEvents::default();
         let graphics = Graphics {};
-        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
+        let mut events = MockEvents::default();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
+        let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
+            Arc::new(RwLock::new(vec![Box::new(MockMapElement::new())]));
 
         static motion_left: [f64; 2] = [3.0, 5.0];
         static motion_right: [f64; 2] = [-7.0, 9.0];
 
-        call_move_event(&mut events, &mut seq, motion_left);
-        player
-            .expect_rotate_left()
-            .times(1)
-            .withf(|radians| *radians == Radians::new(motion_left[0] / 1000.0))
-            .return_const(())
-            .in_sequence(&mut seq);
+        {
+            let mut player_write = player.write().unwrap();
 
-        call_move_event(&mut events, &mut seq, motion_right);
-        player
-            .expect_rotate_right()
-            .times(1)
-            .withf(|radians| *radians == Radians::new(motion_right[0].abs() / 1000.0))
-            .return_const(())
-            .in_sequence(&mut seq);
+            call_move_event(&mut events, &mut seq, motion_left);
+            player_write
+                .expect_rotate_left()
+                .times(1)
+                .withf(|radians| *radians == Radians::new(motion_left[0] / 1000.0))
+                .return_const(())
+                .in_sequence(&mut seq);
 
-        call_none_event(&mut events, &mut seq);
+            call_move_event(&mut events, &mut seq, motion_right);
+            player_write
+                .expect_rotate_right()
+                .times(1)
+                .withf(|radians| *radians == Radians::new(motion_right[0].abs() / 1000.0))
+                .return_const(())
+                .in_sequence(&mut seq);
+
+            call_none_event(&mut events, &mut seq);
+        }
 
         let mut engine = Engine {
             generator,
-            player,
             window,
-            events,
             graphics,
+            events,
+            player,
             map_elements,
+            start_render_notifiers: vec![],
+            render_threads: vec![],
         };
 
         engine.start();
@@ -385,45 +430,51 @@ mod tests {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
-        let mut player = MockPlayer::default();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
         let window = Window {};
         let mut events = MockEvents::default();
         let graphics = Graphics {};
-        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
+        let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
+            Arc::new(RwLock::new(vec![Box::new(MockMapElement::new())]));
+        {
+            let mut player_write = player.write().unwrap();
 
-        call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Press);
-        expect_move_forward(&mut player, &mut seq, true);
+            call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Press);
+            expect_move_forward(&mut player_write, &mut seq, true);
 
-        call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Release);
-        expect_move_forward(&mut player, &mut seq, false);
+            call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Release);
+            expect_move_forward(&mut player_write, &mut seq, false);
 
-        call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Press);
-        expect_move_backward(&mut player, &mut seq, true);
+            call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Press);
+            expect_move_backward(&mut player_write, &mut seq, true);
 
-        call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Release);
-        expect_move_backward(&mut player, &mut seq, false);
+            call_key_event(&mut events, &mut seq, input::Key::S, ButtonState::Release);
+            expect_move_backward(&mut player_write, &mut seq, false);
 
-        call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Press);
-        expect_move_left(&mut player, &mut seq, true);
+            call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Press);
+            expect_move_left(&mut player_write, &mut seq, true);
 
-        call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Release);
-        expect_move_left(&mut player, &mut seq, false);
+            call_key_event(&mut events, &mut seq, input::Key::A, ButtonState::Release);
+            expect_move_left(&mut player_write, &mut seq, false);
 
-        call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Press);
-        expect_move_right(&mut player, &mut seq, true);
+            call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Press);
+            expect_move_right(&mut player_write, &mut seq, true);
 
-        call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Release);
-        expect_move_right(&mut player, &mut seq, false);
+            call_key_event(&mut events, &mut seq, input::Key::D, ButtonState::Release);
+            expect_move_right(&mut player_write, &mut seq, false);
 
-        call_none_event(&mut events, &mut seq);
+            call_none_event(&mut events, &mut seq);
+        }
 
         let mut engine = Engine {
             generator,
-            player,
             window,
-            events,
             graphics,
+            events,
+            player,
             map_elements,
+            start_render_notifiers: vec![],
+            render_threads: vec![],
         };
 
         engine.start();
@@ -434,46 +485,52 @@ mod tests {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
-        let mut player = MockPlayer::default();
         let window = Window {};
-        let mut events = MockEvents::default();
         let graphics = Graphics {};
+        let mut events = MockEvents::default();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
 
         let mut map_element = Box::new(MockMapElement::new());
 
         let delta_time = 2.0;
 
-        events
-            .expect_next_event()
-            .times(1)
-            .return_const(Some(piston::Event::Loop(piston::Loop::Update(
-                UpdateArgs {
-                    dt: delta_time.clone(),
-                },
-            ))))
-            .in_sequence(&mut seq);
-        player
-            .expect_update()
-            .times(1)
-            .return_const(false)
-            .in_sequence(&mut seq);
-        map_element
-            .expect_update()
-            .times(1)
-            .withf(move |time_elapsed| *time_elapsed == delta_time)
-            .return_const(())
-            .in_sequence(&mut seq);
+        {
+            let mut player_write = player.write().unwrap();
+            events
+                .expect_next_event()
+                .times(1)
+                .return_const(Some(piston::Event::Loop(piston::Loop::Update(
+                    UpdateArgs {
+                        dt: delta_time.clone(),
+                    },
+                ))))
+                .in_sequence(&mut seq);
+            player_write
+                .expect_update()
+                .times(1)
+                .return_const(false)
+                .in_sequence(&mut seq);
+            map_element
+                .expect_update()
+                .times(1)
+                .withf(move |time_elapsed| *time_elapsed == delta_time)
+                .return_const(())
+                .in_sequence(&mut seq);
 
-        call_none_event(&mut events, &mut seq);
+            call_none_event(&mut events, &mut seq);
+        }
 
-        let map_elements: Vec<Box<dyn MapElement>> = vec![map_element];
+        let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
+            Arc::new(RwLock::new(vec![map_element]));
         let mut engine = Engine {
             generator,
-            player,
             window,
-            events,
             graphics,
+            events,
+            player,
             map_elements,
+            start_render_notifiers: vec![],
+            render_threads: vec![],
         };
 
         engine.start();
@@ -484,57 +541,65 @@ mod tests {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
-        let mut player = MockPlayer::default();
         let window = Window {};
-        let mut events = MockEvents::default();
         let graphics = Graphics {};
+        let mut events = MockEvents::default();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
 
         let mut map_element = Box::new(MockMapElement::new());
 
         let delta_time = 2.0;
+        let position = Coordinate { x: 10.0, y: 20.0 };
 
-        events
-            .expect_next_event()
-            .times(1)
-            .return_const(Some(piston::Event::Loop(piston::Loop::Update(
-                UpdateArgs {
-                    dt: delta_time.clone(),
-                },
-            ))))
-            .in_sequence(&mut seq);
-        player
-            .expect_update()
-            .times(1)
-            .return_const(true)
-            .in_sequence(&mut seq);
-        player
-            .expect_position()
-            .times(1)
-            .return_const(Coordinate { x: 10.0, y: 20.0 })
-            .in_sequence(&mut seq);
-        map_element
-            .expect_on_position_update()
-            .times(1)
-            .withf(|position| *position == Coordinate { x: 10.0, y: 20.0 })
-            .return_const(())
-            .in_sequence(&mut seq);
-        map_element
-            .expect_update()
-            .times(1)
-            .withf(move |time_elapsed| *time_elapsed == delta_time)
-            .return_const(())
-            .in_sequence(&mut seq);
+        {
+            let mut player_write = player.write().unwrap();
+            events
+                .expect_next_event()
+                .times(1)
+                .return_const(Some(piston::Event::Loop(piston::Loop::Update(
+                    UpdateArgs {
+                        dt: delta_time.clone(),
+                    },
+                ))))
+                .in_sequence(&mut seq);
+            player_write
+                .expect_update()
+                .times(1)
+                .return_const(true)
+                .in_sequence(&mut seq);
+            player_write
+                .expect_position()
+                .times(1)
+                .return_const(position.clone())
+                .in_sequence(&mut seq);
+            map_element
+                .expect_on_position_update()
+                .times(1)
+                .withf(move |position_| *position_ == position)
+                .return_const(())
+                .in_sequence(&mut seq);
+            map_element
+                .expect_update()
+                .times(1)
+                .withf(move |time_elapsed| *time_elapsed == delta_time)
+                .return_const(())
+                .in_sequence(&mut seq);
+        }
 
         call_none_event(&mut events, &mut seq);
 
-        let map_elements: Vec<Box<dyn MapElement>> = vec![map_element];
+        let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
+            Arc::new(RwLock::new(vec![map_element]));
+
         let mut engine = Engine {
             generator,
-            player,
             window,
-            events,
             graphics,
+            events,
+            player,
             map_elements,
+            start_render_notifiers: vec![],
+            render_threads: vec![],
         };
 
         engine.start();
