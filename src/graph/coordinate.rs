@@ -7,16 +7,16 @@ pub struct Coordinate {
     pub y: f64,
 }
 
-pub const ZERO_COORDINATE: Coordinate = Coordinate { x: 0.0, y: 0.0 };
-
 impl Coordinate {
-    pub fn distance(&self, coordinate: &Coordinate) -> f64 {
+    pub const ZERO: Coordinate = Coordinate { x: 0.0, y: 0.0 };
+
+    pub(crate) fn distance(&self, coordinate: &Coordinate) -> f64 {
         return (((self.x - coordinate.x).powf(2_f64) + (self.y - coordinate.y).powf(2_f64))
             as f64)
             .sqrt();
     }
 
-    pub fn get_nearest_points(&self, last_coordinate: &Coordinate) -> Vec<Point> {
+    pub(crate) fn get_nearest_points(&self, last_coordinate: &Coordinate) -> Vec<Point> {
         let x_floor = self.x.floor();
         let y_floor = self.y.floor();
         if x_floor == self.x && y_floor == self.y {
@@ -50,7 +50,7 @@ impl Coordinate {
 
     #[cfg(not(tarpaulin_include))]
     #[allow(dead_code)]
-    pub fn into_radians_coor(&self, end_coordinate: &Coordinate) -> player_utils::Radians {
+    pub(crate) fn into_radians_coor(&self, end_coordinate: &Coordinate) -> player_utils::Radians {
         let delta_x = self.x - end_coordinate.x;
         let delta_y = self.y - end_coordinate.y;
         if delta_x == 0.0 {
@@ -68,7 +68,7 @@ impl Coordinate {
         return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
     }
 
-    pub fn into_radians(&self, end_point: &Point) -> player_utils::Radians {
+    pub(crate) fn into_radians(&self, end_point: &Point) -> player_utils::Radians {
         let delta_x = self.x - end_point.x as f64;
         let delta_y = self.y - end_point.y as f64;
         if delta_x == 0.0 {

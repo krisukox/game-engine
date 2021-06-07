@@ -11,7 +11,7 @@ pub struct Rectangle {
 }
 #[cfg_attr(test, automock)]
 impl Rectangle {
-    pub fn is_point_in_object(&self, point: &Point) -> bool {
+    pub(crate) fn is_point_in_object(&self, point: &Point) -> bool {
         if self.point_a.x < self.point_b.x {
             if point.x < self.point_a.x || point.x > self.point_b.x {
                 return false;
@@ -34,7 +34,7 @@ impl Rectangle {
         return true;
     }
 
-    pub fn is_coordinate_in_object(&self, point: &Coordinate) -> bool {
+    pub(crate) fn is_coordinate_in_object(&self, point: &Coordinate) -> bool {
         if self.point_a.x < self.point_b.x {
             if point.x < self.point_a.x as f64 || point.x > self.point_b.x as f64 {
                 return false;

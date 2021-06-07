@@ -1,12 +1,12 @@
-use crate::graph::Coordinate;
 use crate::map_element::MapElement;
 use crate::map_element::Point;
 
+#[cfg(test)]
+use crate::graph::Coordinate;
+
 #[derive(Clone)]
 pub struct WallMap(image::RgbaImage);
-/*
-const ERROR_STRING_WRONG_FORMAT: &str = "Image should be in format RGBA 8 bit";
-*/
+
 impl WallMap {
     pub fn new(str_path: &str) -> Result<Self, image::ImageError> {
         let path = std::path::Path::new(str_path);
@@ -14,6 +14,7 @@ impl WallMap {
         return Ok(Self(pic.to_rgba()));
     }
 
+    #[cfg(test)]
     fn validate_coordinate(&self, coordinate: &Coordinate) -> bool {
         if coordinate.x < 0.0
             || coordinate.y < 0.0
@@ -36,7 +37,6 @@ impl MapElement for WallMap {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::player_utils::Radians;
 
     #[test]
     fn is_point_in_object() {

@@ -21,11 +21,11 @@ impl Point {
         }
     }
 
-    pub fn distance(&self, point: &Self) -> f64 {
+    pub(crate) fn distance(&self, point: &Self) -> f64 {
         return (((self.x - point.x).pow(2) + (self.y - point.y).pow(2)) as f64).sqrt();
     }
 
-    pub fn distance_coor(&self, coordinate: &Coordinate) -> f64 {
+    pub(crate) fn distance_coor(&self, coordinate: &Coordinate) -> f64 {
         return ((self.x as f64 - coordinate.x).powf(2.0)
             + (self.y as f64 - coordinate.y).powf(2.0))
         .sqrt();

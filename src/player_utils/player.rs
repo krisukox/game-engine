@@ -53,43 +53,41 @@ impl Player {
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
-    pub fn get_angle_value(&self) -> Radians {
-        self.angle.value()
-    }
-
-    pub fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
+    #[cfg(not(tarpaulin_include))]
+    #[allow(dead_code)]
+    pub(crate) fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
         self.angle.get_rays_angle_range(self.number_of_rays)
     }
 
-    pub fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
+    pub(crate) fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
         graph::LinearGraph::get_all_rays(self.number_of_rays)
     }
 
-    pub fn rotate_left(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_left(&mut self, angle_delta: Radians) {
         self.angle.rotate_left(angle_delta);
     }
 
-    pub fn rotate_right(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_right(&mut self, angle_delta: Radians) {
         self.angle.rotate_right(angle_delta);
     }
 
-    pub fn move_right(&mut self, is_move: bool) {
+    pub(crate) fn move_right(&mut self, is_move: bool) {
         self.move_handler.move_right(is_move)
     }
 
-    pub fn move_left(&mut self, is_move: bool) {
+    pub(crate) fn move_left(&mut self, is_move: bool) {
         self.move_handler.move_left(is_move)
     }
 
-    pub fn move_forward(&mut self, is_move: bool) {
+    pub(crate) fn move_forward(&mut self, is_move: bool) {
         self.move_handler.move_forward(is_move)
     }
 
-    pub fn move_backward(&mut self, is_move: bool) {
+    pub(crate) fn move_backward(&mut self, is_move: bool) {
         self.move_handler.move_backward(is_move)
     }
 
-    pub fn update(&mut self) -> bool {
+    pub(crate) fn update(&mut self) -> bool {
         let mut is_updated = false;
         if let Some(forward_backward_value) = self.move_handler.get_move_forward_backward_value() {
             is_updated = true;
@@ -103,7 +101,8 @@ impl Player {
         return is_updated;
     }
 
-    pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
+    #[cfg(test)]
+    pub(crate) fn change_position(&mut self, position_delta: &graph::Coordinate) {
         self.position += position_delta;
     }
 }
@@ -144,23 +143,23 @@ mod tests {
         assert_eq!(player.position, updated_postion);
     }
 
-    #[test]
-    fn player_get_angle_value() {
-        let angle_start = 1.3;
-        let angle_end = 4.3;
-        let player = Player::new(
-            Angle {
-                start: Radians::new(angle_start),
-                end: Radians::new(angle_end),
-            },
-            graph::Coordinate { x: 0.0, y: 0.0 },
-            100,
-        );
-        assert_eq!(
-            player.get_angle_value(),
-            Radians::new(angle_end - angle_start)
-        );
-    }
+    // #[test]
+    // fn player_get_angle_value() {
+    //     let angle_start = 1.3;
+    //     let angle_end = 4.3;
+    //     let player = Player::new(
+    //         Angle {
+    //             start: Radians::new(angle_start),
+    //             end: Radians::new(angle_end),
+    //         },
+    //         graph::Coordinate { x: 0.0, y: 0.0 },
+    //         100,
+    //     );
+    //     assert_eq!(
+    //         player.get_angle_value(),
+    //         Radians::new(angle_end - angle_start)
+    //     );
+    // }
 
     #[test]
     fn get_all_rays() {
@@ -192,6 +191,9 @@ mod tests {
         player.rotate_left(Radians::new(rotate_delta));
         assert_eq!(player.angle.start, Radians::new(angle_start + rotate_delta));
         assert_eq!(player.angle.end, Radians::new(angle_end + rotate_delta));
+        player.rotate_right(Radians::new(rotate_delta));
+        assert_eq!(player.angle.start, Radians::new(angle_start));
+        assert_eq!(player.angle.end, Radians::new(angle_end));
     }
 
     #[test]

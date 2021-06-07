@@ -159,7 +159,7 @@ impl PointGenerator {
             / (perpendicular_direction.tangens - graph_point_radians.tangens);
         let cross_point_y = cross_point_x * graph_point_radians.tangens;
 
-        let short_distance = graph::ZERO_COORDINATE.distance(&graph::Coordinate {
+        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
             x: cross_point_x,
             y: cross_point_y,
         });
@@ -183,7 +183,7 @@ impl PointGenerator {
             / (perpendicular_direction.tangens - graph_point_radians.tangens);
         let cross_point_y = cross_point_x * graph_point_radians.tangens;
 
-        let short_distance = graph::ZERO_COORDINATE.distance(&graph::Coordinate {
+        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
             x: cross_point_x,
             y: cross_point_y,
         });

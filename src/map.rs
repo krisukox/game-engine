@@ -60,7 +60,7 @@ impl Map {
         );
     }
 
-    pub fn cast_ray(
+    pub(crate) fn cast_ray(
         &self,
         position: &Coordinate,
         ray: &LinearGraph,

@@ -4,7 +4,7 @@ use crate::map_element::MapElement;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use super::half_door::MockHalfDoor as HalfDoor;
+        use super::MockHalfDoor as HalfDoor;
         use super::MockRectangle as Rectangle;
     } else {
         use super::HalfDoor;
@@ -406,8 +406,8 @@ mod tests {
     ) {
         let mut seq = Sequence::new();
 
-        let mut half_door_1 = MockHalfDoor::new();
-        let mut half_door_2 = MockHalfDoor::new();
+        let half_door_1 = MockHalfDoor::new();
+        let half_door_2 = MockHalfDoor::new();
         let mut area = MockRectangle::new();
 
         let coordinate = Coordinate { x: 10.0, y: 20.0 };

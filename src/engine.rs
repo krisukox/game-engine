@@ -1,10 +1,7 @@
 use crate::map_element::MapElement;
-use crate::map_element::{Door, DoorType, DoorVelocity, Point, Rectangle};
 use crate::player_utils::Radians;
-use crate::wall_map::WallMap;
 use graphics::types::Color;
 use graphics::Transformed;
-use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent, UpdateEvent};
 
 cfg_if::cfg_if! {
@@ -27,6 +24,9 @@ cfg_if::cfg_if! {
         use opengl_graphics::GlGraphics;
         use piston::AdvancedWindow;
         use piston::window::{Size, WindowSettings};
+        use opengl_graphics::OpenGL;
+
+        const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
     }
 }
 
@@ -39,7 +39,6 @@ pub struct Engine {
     map_elements: Vec<Box<dyn MapElement>>,
 }
 
-const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
 const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
 
@@ -47,69 +46,17 @@ impl Engine {
     #[cfg(not(tarpaulin_include))]
     #[cfg(not(test))]
     pub fn new(
-        path_to_map: &str,
         resolution: Size,
         player: Player,
         vertical_angle_value: Radians,
         wall_height: f64,
-    ) -> Result<Engine, image::ImageError> {
-        let map_elements: Vec<Box<dyn MapElement>> = vec![
-            Box::new(Door::new(
-                Rectangle {
-                    point_a: Point { x: 55, y: 43 },
-                    point_b: Point { x: 76, y: 45 },
-                },
-                DoorVelocity::VeryFast,
-                DoorType::Horizontal,
-                None,
-            )),
-            Box::new(Door::new(
-                Rectangle {
-                    point_a: Point { x: 55, y: 25 },
-                    point_b: Point { x: 76, y: 27 },
-                },
-                DoorVelocity::VeryFast,
-                DoorType::Horizontal,
-                None,
-            )),
-            Box::new(Door::new(
-                Rectangle {
-                    point_a: Point { x: 22, y: 36 },
-                    point_b: Point { x: 39, y: 38 },
-                },
-                DoorVelocity::Fast,
-                DoorType::Horizontal,
-                None,
-            )),
-            Box::new(Door::new(
-                Rectangle {
-                    point_a: Point { x: 89, y: 36 },
-                    point_b: Point { x: 105, y: 38 },
-                },
-                DoorVelocity::Fast,
-                DoorType::Horizontal,
-                None,
-            )),
-            Box::new(Door::new(
-                Rectangle {
-                    point_a: Point { x: 113, y: 16 },
-                    point_b: Point { x: 115, y: 32 },
-                },
-                DoorVelocity::Fast,
-                DoorType::Vertical,
-                None,
-            )),
-            Box::new(WallMap::new(path_to_map)?),
-        ];
-
+        map_elements: Vec<Box<dyn MapElement>>,
+        map: Map,
+    ) -> Engine {
         let polygon_generator = PolygonGenerator {
             point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
         };
-        let map = Map {
-            width: 130,
-            height: 117,
-        };
-        Result::Ok(Engine {
+        Engine {
             generator: ObjectGenerator {
                 rays: player.get_all_rays(),
                 polygon_generator,
@@ -120,7 +67,7 @@ impl Engine {
             events: Events::new(),
             graphics: GlGraphics::new(OPENGL_VERSION),
             map_elements,
-        })
+        }
     }
 
     #[cfg(not(tarpaulin_include))]
@@ -137,7 +84,10 @@ impl Engine {
         return window;
     }
 
+    pub(crate) fn cos() {}
+
     pub fn start(&mut self) {
+        Self::cos();
         while let Some(e) = self.events.next_event(&mut self.window) {
             if let Some(args) = e.render_args() {
                 let polygons = self
@@ -238,21 +188,6 @@ mod tests {
             .times(1)
             .return_const(Some(piston::Event::Input(
                 Input::Move(Motion::MouseRelative(motion_value)),
-                None,
-            )))
-            .in_sequence(seq);
-    }
-
-    fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: input::Key) {
-        events
-            .expect_next_event()
-            .times(1)
-            .return_const(Some(piston::Event::Input(
-                Input::Button(ButtonArgs {
-                    state: ButtonState::Press,
-                    button: Button::Keyboard(key),
-                    scancode: None,
-                }),
                 None,
             )))
             .in_sequence(seq);

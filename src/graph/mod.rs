@@ -2,7 +2,7 @@ mod coordinate;
 mod linear_graph;
 mod wall;
 
-pub use self::coordinate::{Coordinate, ZERO_COORDINATE};
+pub use self::coordinate::Coordinate;
 pub use self::linear_graph::LinearGraph;
 pub use self::wall::{Wall, Walls};
 
