@@ -4,6 +4,7 @@ use crate::map_element::Point;
 use crate::player_utils;
 use crate::polygon_generator;
 use graphics::types::Vec2d;
+use std::time::SystemTime;
 
 #[cfg(test)]
 use mockall::automock;
@@ -60,6 +61,7 @@ impl ObjectGenerator {
         rays_indexes_vec: std::vec::Vec<std::ops::Range<usize>>,
         map_elements: &Vec<Box<dyn MapElement>>,
     ) -> graph::Walls {
+        let now = SystemTime::now();
         let mut walls_in_sight = graph::Walls(vec![]);
         let mut last_points: Vec<Point> = Vec::with_capacity(2);
         for rays_indexes in rays_indexes_vec {
@@ -67,6 +69,9 @@ impl ObjectGenerator {
                 let mut points = self.map.cast_ray(position, &self.rays[index], map_elements);
                 handle_points(&mut last_points, &mut walls_in_sight, &mut points);
             }
+        }
+        if let Ok(elapsed) = now.elapsed() {
+            println!("get_walls_in_sight elapsed: {}", elapsed.as_micros());
         }
         return walls_in_sight;
     }
@@ -111,6 +116,7 @@ impl ObjectGenerator {
         position: &graph::Coordinate,
         angle: &player_utils::Angle,
     ) -> Vec<[Vec2d; 4]> {
+        let now = SystemTime::now();
         let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
         let mut index = 0;
         if walls_in_sight.0.len() == 0 {
@@ -142,6 +148,9 @@ impl ObjectGenerator {
                 &position,
                 &angle,
             ));
+        }
+        if let Ok(elapsed) = now.elapsed() {
+            println!("generate_polygons_ elapsed: {}", elapsed.as_micros());
         }
         return polygons;
     }

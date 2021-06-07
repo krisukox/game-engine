@@ -28,6 +28,10 @@ impl Radians {
         self.0.tan()
     }
 
+    pub fn to_f64(&self) -> f64 {
+        self.0
+    }
+
     pub const ZERO: Radians = Radians(0.0);
     pub const PI: Radians = Radians(std::f64::consts::PI);
     pub const PI_2: Radians = Radians(std::f64::consts::PI * 2.0);
