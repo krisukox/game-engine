@@ -1,7 +1,7 @@
+use crate::map_element::MapElement;
 use crate::player_utils::Radians;
 use graphics::types::Color;
 use graphics::Transformed;
-use opengl_graphics::OpenGL;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent, UpdateEvent};
 
 cfg_if::cfg_if! {
@@ -24,6 +24,9 @@ cfg_if::cfg_if! {
         use opengl_graphics::GlGraphics;
         use piston::AdvancedWindow;
         use piston::window::{Size, WindowSettings};
+        use opengl_graphics::OpenGL;
+
+        const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
     }
 }
 
@@ -33,9 +36,9 @@ pub struct Engine {
     window: GlutinWindow,
     events: Events,
     graphics: GlGraphics,
+    map_elements: Vec<Box<dyn MapElement>>,
 }
 
-const OPENGL_VERSION: OpenGL = OpenGL::V3_2;
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
 const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
 
@@ -43,27 +46,28 @@ impl Engine {
     #[cfg(not(tarpaulin_include))]
     #[cfg(not(test))]
     pub fn new(
-        path_to_map: &str,
         resolution: Size,
         player: Player,
         vertical_angle_value: Radians,
         wall_height: f64,
-    ) -> Result<Engine, image::ImageError> {
-        let map = Map::new(path_to_map)?;
+        map_elements: Vec<Box<dyn MapElement>>,
+        map: Map,
+    ) -> Engine {
         let polygon_generator = PolygonGenerator {
             point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
         };
-        Result::Ok(Engine {
+        Engine {
             generator: ObjectGenerator {
-                map,
                 rays: player.get_all_rays(),
                 polygon_generator,
+                map,
             },
             player,
             window: Self::create_window(resolution),
             events: Events::new(),
             graphics: GlGraphics::new(OPENGL_VERSION),
-        })
+            map_elements,
+        }
     }
 
     #[cfg(not(tarpaulin_include))]
@@ -80,10 +84,15 @@ impl Engine {
         return window;
     }
 
+    pub(crate) fn cos() {}
+
     pub fn start(&mut self) {
+        Self::cos();
         while let Some(e) = self.events.next_event(&mut self.window) {
             if let Some(args) = e.render_args() {
-                let polygons = self.generator.generate_polygons(&self.player);
+                let polygons = self
+                    .generator
+                    .generate_polygons(&self.player, &self.map_elements);
                 self.graphics.draw(args.viewport(), |c, g| {
                     let transform = c
                         .transform
@@ -125,8 +134,17 @@ impl Engine {
                 }
             }
 
-            if let Some(_) = e.update_args() {
-                self.player.update();
+            if let Some(args) = e.update_args() {
+                if self.player.update() {
+                    for map_element in &mut self.map_elements {
+                        map_element
+                            .as_mut()
+                            .on_position_update(&self.player.position());
+                    }
+                }
+                for map_element in &mut self.map_elements {
+                    map_element.as_mut().update(args.dt);
+                }
             }
         }
     }
@@ -140,11 +158,13 @@ fn into_bool(state: piston::input::ButtonState) -> bool {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
     use crate::events_wrapper::MockEvents;
+    use crate::graph::Coordinate;
     use crate::graphics_wrapper::MockGraphics;
+    use crate::map_element::MockMapElement;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
     use crate::test_utils::Graphics;
@@ -168,21 +188,6 @@ mod test {
             .times(1)
             .return_const(Some(piston::Event::Input(
                 Input::Move(Motion::MouseRelative(motion_value)),
-                None,
-            )))
-            .in_sequence(seq);
-    }
-
-    fn call_press_event(events: &mut MockEvents, seq: &mut Sequence, key: input::Key) {
-        events
-            .expect_next_event()
-            .times(1)
-            .return_const(Some(piston::Event::Input(
-                Input::Button(ButtonArgs {
-                    state: ButtonState::Press,
-                    button: Button::Keyboard(key),
-                    scancode: None,
-                }),
                 None,
             )))
             .in_sequence(seq);
@@ -253,6 +258,7 @@ mod test {
         let window = crate::test_utils::Window {};
         let mut events = MockEvents::default();
         let graphics = Graphics {};
+        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
 
         let clear_ctx = MockGraphics::clear_context();
         let draw_polygon_ctx = MockGraphics::draw_polygon_context();
@@ -324,6 +330,7 @@ mod test {
             window,
             events,
             graphics,
+            map_elements,
         };
 
         engine.start();
@@ -338,6 +345,7 @@ mod test {
         let window = Window {};
         let mut events = MockEvents::default();
         let graphics = Graphics {};
+        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
 
         static motion_left: [f64; 2] = [3.0, 5.0];
         static motion_right: [f64; 2] = [-7.0, 9.0];
@@ -366,6 +374,7 @@ mod test {
             window,
             events,
             graphics,
+            map_elements,
         };
 
         engine.start();
@@ -380,6 +389,7 @@ mod test {
         let window = Window {};
         let mut events = MockEvents::default();
         let graphics = Graphics {};
+        let map_elements: Vec<Box<dyn MapElement>> = vec![Box::new(MockMapElement::new())];
 
         call_key_event(&mut events, &mut seq, input::Key::W, ButtonState::Press);
         expect_move_forward(&mut player, &mut seq, true);
@@ -413,13 +423,14 @@ mod test {
             window,
             events,
             graphics,
+            map_elements,
         };
 
         engine.start();
     }
 
     #[test]
-    fn start_update_event() {
+    fn start_update_event_position_not_updated() {
         let mut seq = Sequence::new();
 
         let generator = MockObjectGenerator::new();
@@ -428,27 +439,102 @@ mod test {
         let mut events = MockEvents::default();
         let graphics = Graphics {};
 
+        let mut map_element = Box::new(MockMapElement::new());
+
+        let delta_time = 2.0;
+
         events
             .expect_next_event()
             .times(1)
             .return_const(Some(piston::Event::Loop(piston::Loop::Update(
-                UpdateArgs { dt: 0.0 },
+                UpdateArgs {
+                    dt: delta_time.clone(),
+                },
             ))))
             .in_sequence(&mut seq);
         player
             .expect_update()
             .times(1)
+            .return_const(false)
+            .in_sequence(&mut seq);
+        map_element
+            .expect_update()
+            .times(1)
+            .withf(move |time_elapsed| *time_elapsed == delta_time)
             .return_const(())
             .in_sequence(&mut seq);
 
         call_none_event(&mut events, &mut seq);
 
+        let map_elements: Vec<Box<dyn MapElement>> = vec![map_element];
         let mut engine = Engine {
             generator,
             player,
             window,
             events,
             graphics,
+            map_elements,
+        };
+
+        engine.start();
+    }
+
+    #[test]
+    fn start_update_event_position_updated() {
+        let mut seq = Sequence::new();
+
+        let generator = MockObjectGenerator::new();
+        let mut player = MockPlayer::default();
+        let window = Window {};
+        let mut events = MockEvents::default();
+        let graphics = Graphics {};
+
+        let mut map_element = Box::new(MockMapElement::new());
+
+        let delta_time = 2.0;
+
+        events
+            .expect_next_event()
+            .times(1)
+            .return_const(Some(piston::Event::Loop(piston::Loop::Update(
+                UpdateArgs {
+                    dt: delta_time.clone(),
+                },
+            ))))
+            .in_sequence(&mut seq);
+        player
+            .expect_update()
+            .times(1)
+            .return_const(true)
+            .in_sequence(&mut seq);
+        player
+            .expect_position()
+            .times(1)
+            .return_const(Coordinate { x: 10.0, y: 20.0 })
+            .in_sequence(&mut seq);
+        map_element
+            .expect_on_position_update()
+            .times(1)
+            .withf(|position| *position == Coordinate { x: 10.0, y: 20.0 })
+            .return_const(())
+            .in_sequence(&mut seq);
+        map_element
+            .expect_update()
+            .times(1)
+            .withf(move |time_elapsed| *time_elapsed == delta_time)
+            .return_const(())
+            .in_sequence(&mut seq);
+
+        call_none_event(&mut events, &mut seq);
+
+        let map_elements: Vec<Box<dyn MapElement>> = vec![map_element];
+        let mut engine = Engine {
+            generator,
+            player,
+            window,
+            events,
+            graphics,
+            map_elements,
         };
 
         engine.start();

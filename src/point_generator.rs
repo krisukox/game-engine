@@ -1,4 +1,5 @@
 use crate::graph;
+use crate::map_element::Point;
 use crate::player_utils;
 use piston::window::Size;
 
@@ -29,9 +30,24 @@ impl PointGenerator {
         &self,
         angle: &player_utils::Angle,
         start_position: &graph::Coordinate,
-        end_position: &graph::Coordinate,
+        end_position: &Point,
     ) -> f64 {
         let point_radians = start_position.into_radians(end_position);
+        if angle.is_inside(point_radians) {
+            return self.point_width_inside_field_of_view(angle, &point_radians);
+        }
+        return self.point_width_outside_field_of_view(angle, &point_radians);
+    }
+
+    #[cfg(not(tarpaulin_include))]
+    #[allow(dead_code)]
+    pub fn point_width_coor(
+        &self,
+        angle: &player_utils::Angle,
+        start_position: &graph::Coordinate,
+        end_position: &graph::Coordinate,
+    ) -> f64 {
+        let point_radians = start_position.into_radians_coor(end_position);
         if angle.is_inside(point_radians) {
             return self.point_width_inside_field_of_view(angle, &point_radians);
         }
@@ -126,12 +142,38 @@ impl PointGenerator {
         return short_distance / whole_distance * self.resolution.width as f64;
     }
 
+    #[cfg(not(tarpaulin_include))]
+    #[allow(dead_code)]
+    // returns 1/2 of point height
+    pub fn point_height_coor(
+        &self,
+        angle: &player_utils::Angle,
+        start_position: &graph::Coordinate,
+        end_position: &graph::Coordinate,
+    ) -> f64 {
+        let point_radians = start_position.into_radians_coor(end_position);
+        let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
+            Self::compute_graphs(angle, &point_radians);
+
+        let cross_point_x = -perpendicular_direction_b
+            / (perpendicular_direction.tangens - graph_point_radians.tangens);
+        let cross_point_y = cross_point_x * graph_point_radians.tangens;
+
+        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
+            x: cross_point_x,
+            y: cross_point_y,
+        });
+        let whole_distance = start_position.distance(&end_position);
+        return (short_distance / whole_distance * self.half_wall_height) / self.vertical_tangens
+            * self.resolution.height;
+    }
+
     // returns 1/2 of point height
     pub fn point_height(
         &self,
         angle: &player_utils::Angle,
         start_position: &graph::Coordinate,
-        end_position: &graph::Coordinate,
+        end_position: &Point,
     ) -> f64 {
         let point_radians = start_position.into_radians(end_position);
         let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
@@ -141,18 +183,18 @@ impl PointGenerator {
             / (perpendicular_direction.tangens - graph_point_radians.tangens);
         let cross_point_y = cross_point_x * graph_point_radians.tangens;
 
-        let short_distance = graph::ZERO_COORDINATE.distance(&graph::Coordinate {
+        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
             x: cross_point_x,
             y: cross_point_y,
         });
-        let whole_distance = start_position.distance(&end_position);
+        let whole_distance = end_position.distance_coor(&start_position);
         return (short_distance / whole_distance * self.half_wall_height) / self.vertical_tangens
             * self.resolution.height;
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use float_cmp::approx_eq;
 
@@ -173,27 +215,15 @@ mod test {
             end: player_utils::Radians::new(std::f64::consts::PI * 2.0 / 3.0),
         };
         let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
-        let end_position_1 = graph::Coordinate { x: 0.0, y: 10.0 };
-        let end_position_2 = graph::Coordinate {
-            x: 10.0 * 3.0_f64.sqrt(),
-            y: 10.0,
-        };
+        let end_position = Point { x: 0, y: 10 };
 
-        let short_distance_1 = 3.0_f64.sqrt() * 4.0 / 3.0;
-        let short_distance_2 = 3.0_f64.sqrt() * 2.0 / 3.0;
+        let short_distance = 3.0_f64.sqrt() * 4.0 / 3.0;
         let whole_distance = 3.0_f64.sqrt() * 2.0;
 
         assert!(approx_eq!(
             f64,
-            point_generator.point_width(&angle, &start_position, &end_position_1),
-            short_distance_1 / whole_distance * resolution_width,
-            ulps = 3
-        ));
-
-        assert!(approx_eq!(
-            f64,
-            point_generator.point_width(&angle, &start_position, &end_position_2),
-            short_distance_2 / whole_distance * resolution_width,
+            point_generator.point_width(&angle, &start_position, &end_position),
+            short_distance / whole_distance * resolution_width,
             ulps = 3
         ));
     }
@@ -215,8 +245,8 @@ mod test {
             end: player_utils::Radians::new(std::f64::consts::PI * 3.0 / 4.0),
         };
         let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
-        let end_position_1 = graph::Coordinate { x: 14.0, y: 4.0 };
-        let end_position_2 = graph::Coordinate { x: 2.0, y: 4.0 };
+        let end_position_1 = Point { x: 14, y: 4 };
+        let end_position_2 = Point { x: 2, y: 4 };
 
         let short_distance_1 = -1.0;
         let short_distance_2 = 3.0;
@@ -257,8 +287,8 @@ mod test {
         };
 
         let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
-        let end_position_1 = graph::Coordinate { x: 8.0, y: 4.0 };
-        let end_position_2 = graph::Coordinate { x: 4.0, y: 5.0 };
+        let end_position_1 = Point { x: 8, y: 4 };
+        let end_position_2 = Point { x: 4, y: 5 };
 
         assert!(approx_eq!(
             f64,

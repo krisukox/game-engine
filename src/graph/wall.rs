@@ -1,18 +1,19 @@
 use super::Coordinate;
+use crate::map_element::Point;
 
 #[derive(PartialEq, Default, Clone, Debug)]
 pub struct Wall {
-    pub start_point: Coordinate,
-    pub end_point: Coordinate,
+    pub start_point: Point,
+    pub end_point: Point,
 }
 
 impl Wall {
-    pub fn point_distance_start(&self, point: &Coordinate) -> f64 {
-        point.distance(&self.start_point)
+    pub fn point_distance_start(&self, coordinate: &Coordinate) -> f64 {
+        self.start_point.distance_coor(&coordinate)
     }
 
-    pub fn point_distance_end(&self, point: &Coordinate) -> f64 {
-        point.distance(&self.end_point)
+    pub fn point_distance_end(&self, coordinate: &Coordinate) -> f64 {
+        self.end_point.distance_coor(&coordinate)
     }
 }
 
@@ -20,7 +21,7 @@ impl Wall {
 pub struct Walls(pub Vec<Wall>);
 
 impl Walls {
-    pub fn try_extend_last_wall(&mut self, points: &mut Vec<Coordinate>) -> Option<Coordinate> {
+    pub fn try_extend_last_wall(&mut self, points: &mut Vec<Point>) -> Option<Point> {
         if let Some(last_wall) = self.0.last_mut() {
             if let Some(first) = points.get(0) {
                 if let Some(second) = points.get(1) {

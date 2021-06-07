@@ -1,6 +1,9 @@
 use super::coordinate::Coordinate;
 use crate::player_utils::Radians;
 
+#[cfg(test)]
+use mockall::automock;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct LinearGraph {
     pub radians: Radians,
@@ -39,6 +42,7 @@ fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
     }
 }
 
+#[cfg_attr(test, automock)]
 impl LinearGraph {
     pub fn from_radians(radians: Radians) -> LinearGraph {
         if radians == Radians::ZERO || radians == Radians::PI {

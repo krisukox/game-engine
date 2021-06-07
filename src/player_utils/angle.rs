@@ -24,21 +24,21 @@ pub struct Angle {
 }
 
 impl Angle {
-    pub fn value(&self) -> Radians {
+    pub(crate) fn value(&self) -> Radians {
         self.end - self.start
     }
 
-    pub fn rotate_left(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_left(&mut self, angle_delta: Radians) {
         self.start += angle_delta;
         self.end += angle_delta;
     }
 
-    pub fn rotate_right(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_right(&mut self, angle_delta: Radians) {
         self.start -= angle_delta;
         self.end -= angle_delta;
     }
 
-    pub fn get_rays_angle_range(
+    pub(crate) fn get_rays_angle_range(
         &self,
         number_of_rays: usize,
     ) -> std::vec::Vec<std::ops::Range<usize>> {
@@ -62,7 +62,7 @@ impl Angle {
         }]
     }
 
-    pub fn is_inside(&self, radians: Radians) -> bool {
+    pub(crate) fn is_inside(&self, radians: Radians) -> bool {
         if self.start > self.end {
             if radians >= self.start || radians <= self.end {
                 return true;
@@ -75,13 +75,13 @@ impl Angle {
         return false;
     }
 
-    pub fn get_direction(&self) -> Radians {
+    pub(crate) fn get_direction(&self) -> Radians {
         self.start + self.value() / 2.0
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::player_utils::radians::PI_2;
 

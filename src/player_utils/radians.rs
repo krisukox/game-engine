@@ -20,15 +20,11 @@ impl Radians {
         Radians(fix_radians(radians))
     }
 
-    pub fn into_rays_index(&self, number_of_rays: usize) -> f64 {
+    pub(crate) fn into_rays_index(&self, number_of_rays: usize) -> f64 {
         number_of_rays as f64 / PI_2 * self.0
     }
 
-    pub fn min(&self, other: Radians) -> Radians {
-        Radians(self.0.min(other.0))
-    }
-
-    pub fn tan(&self) -> f64 {
+    pub(crate) fn tan(&self) -> f64 {
         self.0.tan()
     }
 
@@ -91,7 +87,7 @@ impl Div<f64> for Radians {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]

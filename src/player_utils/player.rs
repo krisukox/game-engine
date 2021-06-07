@@ -34,6 +34,14 @@ impl Player {
         }
     }
 
+    pub fn angle(&self) -> &Angle {
+        &self.angle
+    }
+
+    pub fn position(&self) -> &graph::Coordinate {
+        &self.position
+    }
+
     fn move_forward_backward(&mut self, distance: f64) {
         let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
         self.position = direction.get_next_from_distance(&self.position, distance);
@@ -49,55 +57,61 @@ impl Player {
         self.angle.value()
     }
 
-    pub fn get_rays_angle_range(&self) -> std::vec::Vec<std::ops::Range<usize>> {
+    #[allow(dead_code)]
+    pub(crate) fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
         self.angle.get_rays_angle_range(self.number_of_rays)
     }
 
-    pub fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
+    pub(crate) fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
         graph::LinearGraph::get_all_rays(self.number_of_rays)
     }
 
-    pub fn rotate_left(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_left(&mut self, angle_delta: Radians) {
         self.angle.rotate_left(angle_delta);
     }
 
-    pub fn rotate_right(&mut self, angle_delta: Radians) {
+    pub(crate) fn rotate_right(&mut self, angle_delta: Radians) {
         self.angle.rotate_right(angle_delta);
     }
 
-    pub fn move_right(&mut self, is_move: bool) {
+    pub(crate) fn move_right(&mut self, is_move: bool) {
         self.move_handler.move_right(is_move)
     }
 
-    pub fn move_left(&mut self, is_move: bool) {
+    pub(crate) fn move_left(&mut self, is_move: bool) {
         self.move_handler.move_left(is_move)
     }
 
-    pub fn move_forward(&mut self, is_move: bool) {
+    pub(crate) fn move_forward(&mut self, is_move: bool) {
         self.move_handler.move_forward(is_move)
     }
 
-    pub fn move_backward(&mut self, is_move: bool) {
+    pub(crate) fn move_backward(&mut self, is_move: bool) {
         self.move_handler.move_backward(is_move)
     }
 
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) -> bool {
+        let mut is_updated = false;
         if let Some(forward_backward_value) = self.move_handler.get_move_forward_backward_value() {
+            is_updated = true;
             self.move_forward_backward(forward_backward_value)
         }
 
         if let Some(right_left_value) = self.move_handler.get_move_left_right_value() {
+            is_updated = true;
             self.move_left_right(right_left_value)
         }
+        return is_updated;
     }
 
-    pub fn change_position(&mut self, position_delta: &graph::Coordinate) {
+    #[cfg(test)]
+    pub(crate) fn change_position(&mut self, position_delta: &graph::Coordinate) {
         self.position += position_delta;
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     fn check_update(
@@ -180,6 +194,9 @@ mod test {
         player.rotate_left(Radians::new(rotate_delta));
         assert_eq!(player.angle.start, Radians::new(angle_start + rotate_delta));
         assert_eq!(player.angle.end, Radians::new(angle_end + rotate_delta));
+        player.rotate_right(Radians::new(rotate_delta));
+        assert_eq!(player.angle.start, Radians::new(angle_start));
+        assert_eq!(player.angle.end, Radians::new(angle_end));
     }
 
     #[test]

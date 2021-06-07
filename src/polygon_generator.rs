@@ -48,9 +48,10 @@ impl PolygonGenerator {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::map_element::Point;
     use mockall::*;
 
     #[test]
@@ -61,8 +62,8 @@ mod test {
         };
         static position: graph::Coordinate = graph::Coordinate { x: 11.0, y: 13.0 };
         static wall: graph::Wall = graph::Wall {
-            start_point: graph::Coordinate { x: 1.0, y: 3.0 },
-            end_point: graph::Coordinate { x: 5.0, y: 8.0 },
+            start_point: Point { x: 1, y: 3 },
+            end_point: Point { x: 5, y: 8 },
         };
 
         let start_point_width = 15.0;
@@ -79,7 +80,7 @@ mod test {
             .withf(
                 |angle_: &player_utils::Angle,
                  start_position: &graph::Coordinate,
-                 end_position: &graph::Coordinate| {
+                 end_position: &Point| {
                     *angle_ == angle
                         && *start_position == position
                         && *end_position == wall.start_point
@@ -94,7 +95,7 @@ mod test {
             .withf(
                 |angle_: &player_utils::Angle,
                  start_position: &graph::Coordinate,
-                 end_position: &graph::Coordinate| {
+                 end_position: &Point| {
                     *angle_ == angle
                         && *start_position == position
                         && *end_position == wall.start_point
@@ -109,7 +110,7 @@ mod test {
             .withf(
                 |angle_: &player_utils::Angle,
                  start_position: &graph::Coordinate,
-                 end_position: &graph::Coordinate| {
+                 end_position: &Point| {
                     *angle_ == angle
                         && *start_position == position
                         && *end_position == wall.end_point
@@ -124,7 +125,7 @@ mod test {
             .withf(
                 |angle_: &player_utils::Angle,
                  start_position: &graph::Coordinate,
-                 end_position: &graph::Coordinate| {
+                 end_position: &Point| {
                     *angle_ == angle
                         && *start_position == position
                         && *end_position == wall.end_point
