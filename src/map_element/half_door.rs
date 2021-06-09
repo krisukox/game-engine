@@ -214,14 +214,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_half_doors() {
-        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
-            &Rectangle {
-                point_a: Point { x: 2, y: 1 },
-                point_b: Point { x: 3, y: 6 },
-            },
-            &DoorType::Vertical,
-        );
+    fn get_half_doors_odd() {
         let expected_half_door_1 = HalfDoor {
             start_point: Point { x: 3, y: 4 },
             end_point: Point { x: 2, y: 1 },
@@ -240,8 +233,64 @@ mod tests {
             },
             door_type: DoorType::Vertical,
         };
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 2, y: 1 },
+                point_b: Point { x: 3, y: 6 },
+            },
+            &DoorType::Vertical,
+        );
         assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
         assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 3, y: 6 },
+                point_b: Point { x: 2, y: 1 },
+            },
+            &DoorType::Vertical,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let expected_half_door_1 = HalfDoor {
+            start_point: Point { x: 7, y: 2 },
+            end_point: Point { x: 4, y: 1 },
+            rectangle: Rectangle {
+                point_a: Point { x: 7, y: 2 },
+                point_b: Point { x: 4, y: 1 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        let expected_half_door_2 = HalfDoor {
+            start_point: Point { x: 6, y: 1 },
+            end_point: Point { x: 9, y: 2 },
+            rectangle: Rectangle {
+                point_a: Point { x: 6, y: 1 },
+                point_b: Point { x: 9, y: 2 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 4, y: 1 },
+                point_b: Point { x: 9, y: 2 },
+            },
+            &DoorType::Horizontal,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 9, y: 2 },
+                point_b: Point { x: 4, y: 1 },
+            },
+            &DoorType::Horizontal,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+    }
+
+    #[test]
+    fn get_half_doors_even() {
         let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
             &Rectangle {
                 point_a: Point { x: 2, y: 1 },
@@ -266,33 +315,6 @@ mod tests {
                 point_b: Point { x: 3, y: 7 },
             },
             door_type: DoorType::Vertical,
-        };
-        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
-        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
-        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
-            &Rectangle {
-                point_a: Point { x: 4, y: 1 },
-                point_b: Point { x: 9, y: 2 },
-            },
-            &DoorType::Horizontal,
-        );
-        let expected_half_door_1 = HalfDoor {
-            start_point: Point { x: 7, y: 2 },
-            end_point: Point { x: 4, y: 1 },
-            rectangle: Rectangle {
-                point_a: Point { x: 7, y: 2 },
-                point_b: Point { x: 4, y: 1 },
-            },
-            door_type: DoorType::Horizontal,
-        };
-        let expected_half_door_2 = HalfDoor {
-            start_point: Point { x: 6, y: 1 },
-            end_point: Point { x: 9, y: 2 },
-            rectangle: Rectangle {
-                point_a: Point { x: 6, y: 1 },
-                point_b: Point { x: 9, y: 2 },
-            },
-            door_type: DoorType::Horizontal,
         };
         assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
         assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
