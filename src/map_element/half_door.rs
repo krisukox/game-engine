@@ -187,8 +187,6 @@ impl HalfDoor {
         return false;
     }
 
-    #[cfg(not(tarpaulin_include))]
-    #[allow(dead_code)]
     pub fn is_point_in_object(&self, point: &Point) -> bool {
         self.rectangle.is_point_in_object(point)
     }

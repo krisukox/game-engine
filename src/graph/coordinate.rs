@@ -48,26 +48,6 @@ impl Coordinate {
         return vec![Point::new(self.x.round(), self.y.round())];
     }
 
-    #[cfg(not(tarpaulin_include))]
-    #[allow(dead_code)]
-    pub(crate) fn into_radians_coor(&self, end_coordinate: &Coordinate) -> player_utils::Radians {
-        let delta_x = self.x - end_coordinate.x;
-        let delta_y = self.y - end_coordinate.y;
-        if delta_x == 0.0 {
-            if self.y < end_coordinate.y {
-                return player_utils::Radians::new(std::f64::consts::PI / 2.0);
-            }
-            return player_utils::Radians::new(std::f64::consts::PI * 3.0 / 2.0);
-        }
-        if self.x < end_coordinate.x {
-            if self.y > end_coordinate.y {
-                return player_utils::Radians::new((delta_y / delta_x).atan() + player_utils::PI_2);
-            }
-            return player_utils::Radians::new((delta_y / delta_x).atan());
-        }
-        return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
-    }
-
     pub(crate) fn into_radians(&self, end_point: &Point) -> player_utils::Radians {
         let delta_x = self.x - end_point.x as f64;
         let delta_y = self.y - end_point.y as f64;
