@@ -48,6 +48,91 @@ macro_rules! close_door_step {
 
 #[cfg_attr(test, automock)]
 impl HalfDoor {
+    pub fn get_half_doors(door_area: &Rectangle, door_type: &DoorType) -> (HalfDoor, HalfDoor) {
+        let start_point_1: Point;
+        let end_point_1: Point;
+        let start_point_2: Point;
+        let end_point_2: Point;
+        if *door_type == DoorType::Vertical {
+            start_point_1 = Point {
+                x: door_area.point_b.x,
+                y: if (door_area.point_a.y - door_area.point_b.y) % 2 == 0 {
+                    (door_area.point_a.y + door_area.point_b.y) / 2
+                } else {
+                    if door_area.point_a.y > door_area.point_b.y {
+                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).floor() as i64
+                    } else {
+                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).ceil() as i64
+                    }
+                },
+            };
+            end_point_1 = door_area.point_a.clone();
+
+            start_point_2 = Point {
+                x: door_area.point_a.x,
+                y: if (door_area.point_a.y - door_area.point_b.y) % 2 == 0 {
+                    (door_area.point_a.y + door_area.point_b.y) / 2
+                } else {
+                    if door_area.point_a.y > door_area.point_b.y {
+                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).ceil() as i64
+                    } else {
+                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).floor() as i64
+                    }
+                },
+            };
+            end_point_2 = door_area.point_b.clone();
+        } else {
+            start_point_1 = Point {
+                x: if (door_area.point_a.x - door_area.point_b.x) % 2 == 0 {
+                    (door_area.point_a.x + door_area.point_b.x) / 2
+                } else {
+                    if door_area.point_a.x > door_area.point_b.x {
+                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).floor() as i64
+                    } else {
+                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).ceil() as i64
+                    }
+                },
+                y: door_area.point_b.y,
+            };
+            end_point_1 = door_area.point_a.clone();
+
+            start_point_2 = Point {
+                x: if (door_area.point_a.x - door_area.point_b.x) % 2 == 0 {
+                    (door_area.point_a.x + door_area.point_b.x) / 2
+                } else {
+                    if door_area.point_a.x > door_area.point_b.x {
+                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).ceil() as i64
+                    } else {
+                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).floor() as i64
+                    }
+                },
+                y: door_area.point_a.y,
+            };
+            end_point_2 = door_area.point_b.clone();
+        }
+
+        return (
+            HalfDoor {
+                start_point: start_point_1.clone(),
+                end_point: end_point_1.clone(),
+                rectangle: Rectangle {
+                    point_a: end_point_1,
+                    point_b: start_point_1,
+                },
+                door_type: door_type.clone(),
+            },
+            HalfDoor {
+                start_point: start_point_2.clone(),
+                end_point: end_point_2.clone(),
+                rectangle: Rectangle {
+                    point_a: end_point_2,
+                    point_b: start_point_2,
+                },
+                door_type: door_type.clone(),
+            },
+        );
+    }
+
     fn is_opened(&self) -> bool {
         if self.door_type == DoorType::Vertical {
             if self.rectangle.point_a.y == self.rectangle.point_b.y {
@@ -102,16 +187,163 @@ impl HalfDoor {
         return false;
     }
 
-    #[cfg(not(tarpaulin_include))]
-    #[allow(dead_code)]
     pub fn is_point_in_object(&self, point: &Point) -> bool {
         self.rectangle.is_point_in_object(point)
+    }
+}
+
+impl PartialEq for HalfDoor {
+    fn eq(&self, other: &Self) -> bool {
+        if (self.rectangle.point_a == other.rectangle.point_a
+            || self.rectangle.point_a == other.rectangle.point_b)
+            && (self.rectangle.point_b == other.rectangle.point_a
+                || self.rectangle.point_b == other.rectangle.point_b)
+        {
+            return self.start_point == other.start_point
+                && self.end_point == other.end_point
+                && self.door_type == other.door_type;
+        }
+        return false;
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn get_half_doors_odd() {
+        let expected_half_door_1 = HalfDoor {
+            start_point: Point { x: 3, y: 4 },
+            end_point: Point { x: 2, y: 1 },
+            rectangle: Rectangle {
+                point_a: Point { x: 3, y: 4 },
+                point_b: Point { x: 2, y: 1 },
+            },
+            door_type: DoorType::Vertical,
+        };
+        let expected_half_door_2 = HalfDoor {
+            start_point: Point { x: 2, y: 3 },
+            end_point: Point { x: 3, y: 6 },
+            rectangle: Rectangle {
+                point_a: Point { x: 2, y: 3 },
+                point_b: Point { x: 3, y: 6 },
+            },
+            door_type: DoorType::Vertical,
+        };
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 2, y: 1 },
+                point_b: Point { x: 3, y: 6 },
+            },
+            &DoorType::Vertical,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 3, y: 6 },
+                point_b: Point { x: 2, y: 1 },
+            },
+            &DoorType::Vertical,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let expected_half_door_1 = HalfDoor {
+            start_point: Point { x: 7, y: 2 },
+            end_point: Point { x: 4, y: 1 },
+            rectangle: Rectangle {
+                point_a: Point { x: 7, y: 2 },
+                point_b: Point { x: 4, y: 1 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        let expected_half_door_2 = HalfDoor {
+            start_point: Point { x: 6, y: 1 },
+            end_point: Point { x: 9, y: 2 },
+            rectangle: Rectangle {
+                point_a: Point { x: 6, y: 1 },
+                point_b: Point { x: 9, y: 2 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 4, y: 1 },
+                point_b: Point { x: 9, y: 2 },
+            },
+            &DoorType::Horizontal,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 9, y: 2 },
+                point_b: Point { x: 4, y: 1 },
+            },
+            &DoorType::Horizontal,
+        );
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+    }
+
+    #[test]
+    fn get_half_doors_even() {
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 2, y: 1 },
+                point_b: Point { x: 3, y: 7 },
+            },
+            &DoorType::Vertical,
+        );
+        let expected_half_door_1 = HalfDoor {
+            start_point: Point { x: 3, y: 4 },
+            end_point: Point { x: 2, y: 1 },
+            rectangle: Rectangle {
+                point_a: Point { x: 3, y: 4 },
+                point_b: Point { x: 2, y: 1 },
+            },
+            door_type: DoorType::Vertical,
+        };
+        let expected_half_door_2 = HalfDoor {
+            start_point: Point { x: 2, y: 4 },
+            end_point: Point { x: 3, y: 7 },
+            rectangle: Rectangle {
+                point_a: Point { x: 2, y: 4 },
+                point_b: Point { x: 3, y: 7 },
+            },
+            door_type: DoorType::Vertical,
+        };
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+        let (half_door_1, half_door_2) = HalfDoor::get_half_doors(
+            &Rectangle {
+                point_a: Point { x: 4, y: 1 },
+                point_b: Point { x: 10, y: 2 },
+            },
+            &DoorType::Horizontal,
+        );
+        let expected_half_door_1 = HalfDoor {
+            start_point: Point { x: 7, y: 2 },
+            end_point: Point { x: 4, y: 1 },
+            rectangle: Rectangle {
+                point_a: Point { x: 7, y: 2 },
+                point_b: Point { x: 4, y: 1 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        let expected_half_door_2 = HalfDoor {
+            start_point: Point { x: 7, y: 1 },
+            end_point: Point { x: 10, y: 2 },
+            rectangle: Rectangle {
+                point_a: Point { x: 7, y: 1 },
+                point_b: Point { x: 10, y: 2 },
+            },
+            door_type: DoorType::Horizontal,
+        };
+        assert!(half_door_1 == expected_half_door_1 || half_door_1 == expected_half_door_2);
+        assert!(half_door_2 == expected_half_door_1 || half_door_2 == expected_half_door_2);
+    }
 
     #[test]
     fn open_door_step_already_opened() {
