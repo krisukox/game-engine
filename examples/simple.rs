@@ -22,6 +22,7 @@ fn main() {
     );
     let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
     let wall_height = 5.0;
+    let render_threads_amount = 3;
 
     match WallMap::new(path_to_map) {
         Ok(map) => {
@@ -85,7 +86,7 @@ fn main() {
                 map,
                 player,
                 map_elements,
-                3,
+                render_threads_amount,
             );
             engine.start();
         }

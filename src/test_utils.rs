@@ -6,8 +6,6 @@ pub struct Window();
 pub struct Graphics();
 
 impl Graphics {
-    // const CONTEXT: Context=
-
     pub fn draw<F: FnOnce(graphics::Context, &mut Self) + 'static>(
         &mut self,
         viewport: Viewport,
