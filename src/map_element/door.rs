@@ -31,62 +31,14 @@ impl Door {
     ) -> Self {
         Self {
             half_doors: HalfDoor::get_half_doors(&door_area, &door_type),
-            open_door_area: Self::get_open_door_area(&door_area, open_door_area_opt, &door_type),
+            open_door_area: Rectangle::get_open_door_area(
+                &door_area,
+                open_door_area_opt,
+                &door_type,
+            ),
             door_state: DoorState::Closed,
             door_velocity: door_velocity.into(),
             time_elapsed_ms: 0.0,
-        }
-    }
-
-    #[cfg(not(tarpaulin_include))]
-    #[cfg(not(test))]
-    fn get_open_door_area(
-        door_area: &Rectangle,
-        open_door_area_opt: Option<Rectangle>,
-        door_type: &DoorType,
-    ) -> Rectangle {
-        if let Some(open_door_area) = open_door_area_opt {
-            return open_door_area;
-        } else {
-            let x1: i64;
-            let x2: i64;
-            let y1: i64;
-            let y2: i64;
-            if *door_type == DoorType::Vertical {
-                if door_area.point_a.x < door_area.point_b.x {
-                    x1 = door_area.point_a.x - 10;
-                    x2 = door_area.point_b.x + 10;
-                } else {
-                    x1 = door_area.point_a.x + 10;
-                    x2 = door_area.point_b.x - 10;
-                }
-                if door_area.point_a.y < door_area.point_b.y {
-                    y1 = door_area.point_a.y - 4;
-                    y2 = door_area.point_b.y + 4;
-                } else {
-                    y1 = door_area.point_a.y + 4;
-                    y2 = door_area.point_b.y - 4;
-                }
-            } else {
-                if door_area.point_a.x < door_area.point_b.x {
-                    x1 = door_area.point_a.x - 4;
-                    x2 = door_area.point_b.x + 4;
-                } else {
-                    x1 = door_area.point_a.x + 4;
-                    x2 = door_area.point_b.x - 4;
-                }
-                if door_area.point_a.y < door_area.point_b.y {
-                    y1 = door_area.point_a.y - 10;
-                    y2 = door_area.point_b.y + 10;
-                } else {
-                    y1 = door_area.point_a.y + 10;
-                    y2 = door_area.point_b.y - 10;
-                }
-            }
-            return Rectangle {
-                point_a: Point::new_i64(x1, y1),
-                point_b: Point::new_i64(x2, y2),
-            };
         }
     }
 
