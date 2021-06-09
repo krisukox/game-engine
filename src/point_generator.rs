@@ -39,21 +39,6 @@ impl PointGenerator {
         return self.point_width_outside_field_of_view(angle, &point_radians);
     }
 
-    #[cfg(not(tarpaulin_include))]
-    #[allow(dead_code)]
-    pub fn point_width_coor(
-        &self,
-        angle: &player_utils::Angle,
-        start_position: &graph::Coordinate,
-        end_position: &graph::Coordinate,
-    ) -> f64 {
-        let point_radians = start_position.into_radians_coor(end_position);
-        if angle.is_inside(point_radians) {
-            return self.point_width_inside_field_of_view(angle, &point_radians);
-        }
-        return self.point_width_outside_field_of_view(angle, &point_radians);
-    }
-
     fn compute_graphs(
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
@@ -140,32 +125,6 @@ impl PointGenerator {
             return -short_distance / whole_distance * self.resolution.width as f64;
         }
         return short_distance / whole_distance * self.resolution.width as f64;
-    }
-
-    #[cfg(not(tarpaulin_include))]
-    #[allow(dead_code)]
-    // returns 1/2 of point height
-    pub fn point_height_coor(
-        &self,
-        angle: &player_utils::Angle,
-        start_position: &graph::Coordinate,
-        end_position: &graph::Coordinate,
-    ) -> f64 {
-        let point_radians = start_position.into_radians_coor(end_position);
-        let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
-            Self::compute_graphs(angle, &point_radians);
-
-        let cross_point_x = -perpendicular_direction_b
-            / (perpendicular_direction.tangens - graph_point_radians.tangens);
-        let cross_point_y = cross_point_x * graph_point_radians.tangens;
-
-        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
-            x: cross_point_x,
-            y: cross_point_y,
-        });
-        let whole_distance = start_position.distance(&end_position);
-        return (short_distance / whole_distance * self.half_wall_height) / self.vertical_tangens
-            * self.resolution.height;
     }
 
     // returns 1/2 of point height

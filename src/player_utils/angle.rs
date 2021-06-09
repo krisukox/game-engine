@@ -41,9 +41,18 @@ impl Angle {
     pub(crate) fn get_rays_angle_range(
         &self,
         number_of_rays: usize,
+        index: usize,     // 0, 1, 2...
+        all_index: usize, // 1, 2, 3...
     ) -> std::vec::Vec<std::ops::Range<usize>> {
-        let start = self.start - Radians::new(0.02);
-        let end = self.end + Radians::new(0.02);
+        let start = Radians::new(
+            self.start.to_f64() + (self.value().to_f64() / all_index as f64) * index as f64,
+        ) - Radians::new(0.02);
+        let end = Radians::new(
+            self.start.to_f64() + (self.value().to_f64() / all_index as f64) * (index + 1) as f64,
+        ) + Radians::new(0.02);
+
+        // let start = self.start - Radians::new(0.02);
+        // let end = self.end + Radians::new(0.02);
         if start > end {
             return vec![
                 std::ops::Range {
@@ -138,7 +147,7 @@ mod tests {
             start: Radians::new(start_angle),
             end: Radians::new(end_angle),
         };
-        let ranges = angle.get_rays_angle_range(number_of_rays);
+        let ranges = angle.get_rays_angle_range(number_of_rays, 0, 1);
 
         assert_eq!(ranges.len(), 1);
         assert_eq!(
@@ -157,7 +166,7 @@ mod tests {
             start: Radians::new(start_angle),
             end: Radians::new(end_angle),
         };
-        let ranges = angle.get_rays_angle_range(number_of_rays);
+        let ranges = angle.get_rays_angle_range(number_of_rays, 0, 1);
 
         assert_eq!(ranges.len(), 2);
         assert_eq!(

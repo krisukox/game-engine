@@ -57,9 +57,13 @@ impl Player {
         self.angle.value()
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn get_rays_angle_range(&self) -> Vec<std::ops::Range<usize>> {
-        self.angle.get_rays_angle_range(self.number_of_rays)
+    pub(crate) fn get_rays_angle_range(
+        &self,
+        index: usize,
+        all_index: usize,
+    ) -> Vec<std::ops::Range<usize>> {
+        self.angle
+            .get_rays_angle_range(self.number_of_rays, index, all_index)
     }
 
     pub(crate) fn get_all_rays(&self) -> Vec<graph::LinearGraph> {

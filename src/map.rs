@@ -13,7 +13,7 @@ cfg_if::cfg_if! {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Map {
     pub width: i64,
     pub height: i64,

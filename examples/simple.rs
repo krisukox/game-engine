@@ -14,14 +14,15 @@ fn main() {
     let number_of_rays = 2000;
     let player = Player::new(
         Angle {
-            start: Radians::new(std::f64::consts::PI),
-            end: Radians::new(3.0 * std::f64::consts::PI / 2.0),
+            start: Radians::new(std::f64::consts::PI / 2.0),
+            end: Radians::new(std::f64::consts::PI),
         },
         Coordinate { x: 63.0, y: 90.0 },
         number_of_rays,
     );
     let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
     let wall_height = 5.0;
+    let render_threads_amount = 3;
 
     match WallMap::new(path_to_map) {
         Ok(map) => {
@@ -80,11 +81,12 @@ fn main() {
 
             let mut engine = Engine::new(
                 resolution,
-                player,
                 vertical_angle_value,
                 wall_height,
-                map_elements,
                 map,
+                player,
+                map_elements,
+                render_threads_amount,
             );
             engine.start();
         }
