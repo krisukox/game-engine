@@ -30,99 +30,12 @@ impl Door {
         open_door_area_opt: Option<Rectangle>,
     ) -> Self {
         Self {
-            half_doors: Self::get_half_doors(&door_area, &door_type),
+            half_doors: HalfDoor::get_half_doors(&door_area, &door_type),
             open_door_area: Self::get_open_door_area(&door_area, open_door_area_opt, &door_type),
             door_state: DoorState::Closed,
             door_velocity: door_velocity.into(),
             time_elapsed_ms: 0.0,
         }
-    }
-
-    #[cfg(not(tarpaulin_include))]
-    #[cfg(not(test))]
-    fn get_half_doors(door_area: &Rectangle, door_type: &DoorType) -> (HalfDoor, HalfDoor) {
-        let start_point_1: Point;
-        let end_point_1: Point;
-        let start_point_2: Point;
-        let end_point_2: Point;
-        if *door_type == DoorType::Vertical {
-            start_point_1 = Point {
-                x: door_area.point_b.x,
-                y: if (door_area.point_a.y - door_area.point_b.y) % 2 == 0 {
-                    (door_area.point_a.y + door_area.point_b.y) / 2
-                } else {
-                    if door_area.point_a.y > door_area.point_b.y {
-                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).floor() as i64
-                    } else {
-                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).ceil() as i64
-                    }
-                },
-            };
-            end_point_1 = door_area.point_a.clone();
-
-            start_point_2 = Point {
-                x: door_area.point_a.x,
-                y: if (door_area.point_a.y - door_area.point_b.y) % 2 == 0 {
-                    (door_area.point_a.y + door_area.point_b.y) / 2
-                } else {
-                    if door_area.point_a.y > door_area.point_b.y {
-                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).ceil() as i64
-                    } else {
-                        ((door_area.point_a.y + door_area.point_b.y) as f64 / 2.0).floor() as i64
-                    }
-                },
-            };
-            end_point_2 = door_area.point_b.clone();
-        } else {
-            start_point_1 = Point {
-                x: if (door_area.point_a.x - door_area.point_b.x) % 2 == 0 {
-                    (door_area.point_a.x + door_area.point_b.x) / 2
-                } else {
-                    if door_area.point_a.x > door_area.point_b.x {
-                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).floor() as i64
-                    } else {
-                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).ceil() as i64
-                    }
-                },
-                y: door_area.point_b.y,
-            };
-            end_point_1 = door_area.point_a.clone();
-
-            start_point_2 = Point {
-                x: if (door_area.point_a.x - door_area.point_b.x) % 2 == 0 {
-                    (door_area.point_a.x + door_area.point_b.x) / 2
-                } else {
-                    if door_area.point_a.x > door_area.point_b.x {
-                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).ceil() as i64
-                    } else {
-                        ((door_area.point_a.x + door_area.point_b.x) as f64 / 2.0).floor() as i64
-                    }
-                },
-                y: door_area.point_a.y,
-            };
-            end_point_2 = door_area.point_b.clone();
-        }
-
-        return (
-            HalfDoor {
-                start_point: start_point_1.clone(),
-                end_point: end_point_1.clone(),
-                rectangle: Rectangle {
-                    point_a: end_point_1,
-                    point_b: start_point_1,
-                },
-                door_type: door_type.clone(),
-            },
-            HalfDoor {
-                start_point: start_point_2.clone(),
-                end_point: end_point_2.clone(),
-                rectangle: Rectangle {
-                    point_a: end_point_2,
-                    point_b: start_point_2,
-                },
-                door_type: door_type.clone(),
-            },
-        );
     }
 
     #[cfg(not(tarpaulin_include))]
