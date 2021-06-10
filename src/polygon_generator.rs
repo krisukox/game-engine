@@ -1,7 +1,7 @@
+use crate::generator::Polygon;
 use crate::graph;
 use crate::player_utils;
 use crate::point_generator;
-use graphics::types::Vec2d;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
@@ -25,7 +25,7 @@ impl PolygonGenerator {
         wall: &graph::Wall,
         position: &graph::Coordinate,
         angle: &player_utils::Angle,
-    ) -> [Vec2d; 4] {
+    ) -> Polygon {
         let start_point_width =
             self.point_generator
                 .point_width(angle, position, &wall.start_point);
@@ -38,12 +38,15 @@ impl PolygonGenerator {
         let end_point_height = self
             .point_generator
             .point_height(angle, position, &wall.end_point);
-        return [
-            [start_point_width, start_point_height],
-            [end_point_width, end_point_height],
-            [end_point_width, -end_point_height],
-            [start_point_width, -start_point_height],
-        ];
+        return Polygon {
+            area: [
+                [start_point_width, start_point_height],
+                [end_point_width, end_point_height],
+                [end_point_width, -end_point_height],
+                [start_point_width, -start_point_height],
+            ],
+            color: wall.primary_object_color.clone(),
+        };
     }
 }
 
@@ -51,6 +54,7 @@ impl PolygonGenerator {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::map_element::Color;
     use crate::map_element::Point;
     use mockall::*;
 
@@ -61,9 +65,11 @@ mod tests {
             end: player_utils::Radians::PI_2,
         };
         static position: graph::Coordinate = graph::Coordinate { x: 11.0, y: 13.0 };
+        static color: Color = Color::Yellow;
         static wall: graph::Wall = graph::Wall {
             start_point: Point { x: 1, y: 3 },
             end_point: Point { x: 5, y: 8 },
+            primary_object_color: Color::Yellow,
         };
 
         let start_point_width = 15.0;
@@ -136,12 +142,15 @@ mod tests {
 
         assert_eq!(
             PolygonGenerator { point_generator }.generate_polygon(&wall, &position, &angle),
-            [
-                [start_point_width, start_point_height],
-                [end_point_width, end_point_height],
-                [end_point_width, -end_point_height],
-                [start_point_width, -start_point_height]
-            ]
+            Polygon {
+                area: [
+                    [start_point_width, start_point_height],
+                    [end_point_width, end_point_height],
+                    [end_point_width, -end_point_height],
+                    [start_point_width, -start_point_height]
+                ],
+                color: color.clone()
+            }
         );
     }
 }

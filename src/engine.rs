@@ -132,8 +132,14 @@ impl Engine {
                         .flip_v()
                         .trans(0.0, -(c.viewport.unwrap().draw_size[1] as f64 / 2.0));
                     Graphics::clear(g, BACKGROUND_COLOR);
-                    for polygon_ in polygons {
-                        Graphics::draw_polygon(g, WALL_COLOR, polygon_, &c.draw_state, transform);
+                    for polygon in polygons {
+                        Graphics::draw_polygon(
+                            g,
+                            polygon.color.into(),
+                            polygon.area,
+                            &c.draw_state,
+                            transform,
+                        );
                     }
                 });
             }
@@ -204,8 +210,10 @@ mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
     use crate::events_wrapper::MockEvents;
+    use crate::generator::Polygon;
     use crate::graph::Coordinate;
     use crate::graphics_wrapper::MockGraphics;
+    use crate::map_element::Color;
     use crate::map_element::MockMapElement;
     use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
@@ -317,8 +325,14 @@ mod tests {
         let draw_polygon_ctx = MockGraphics::draw_polygon_context();
 
         let polygons = vec![
-            [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]],
-            [[8.0, 9.0], [10.0, 11.0], [12.0, 13.0], [14.0, 15.0]],
+            Polygon {
+                area: [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0], [6.0, 7.0]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[8.0, 9.0], [10.0, 11.0], [12.0, 13.0], [14.0, 15.0]],
+                color: Color::Yellow,
+            },
         ];
 
         let event = piston::Event::Loop(Loop::Render(RenderArgs {
@@ -349,7 +363,10 @@ mod tests {
             draw_polygon_ctx
                 .expect()
                 .times(1)
-                .withf(move |_, color, polygon_, _, _| *color == WALL_COLOR && *polygon_ == polygon)
+                .withf(move |_, color, polygon_, _, _| {
+                    *color == Into::<[f32; 4]>::into(polygon.color.clone())
+                        && *polygon_ == polygon.area
+                })
                 .return_const(())
                 .in_sequence(&mut seq);
         }

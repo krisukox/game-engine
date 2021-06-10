@@ -7,6 +7,7 @@ pub use map::Map;
 pub use piston::window::Size;
 
 mod events_wrapper;
+mod generator;
 mod graphics_wrapper;
 mod map;
 mod object_generator;
