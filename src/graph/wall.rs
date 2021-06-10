@@ -1,10 +1,11 @@
 use super::Coordinate;
-use crate::map_element::Point;
+use crate::map_element::{Color, ColoredPoint, Point};
 
 #[derive(PartialEq, Default, Clone, Debug)]
 pub struct Wall {
     pub start_point: Point,
     pub end_point: Point,
+    pub primary_object_color: Color,
 }
 
 impl Wall {
@@ -21,26 +22,37 @@ impl Wall {
 pub struct Walls(pub Vec<Wall>);
 
 impl Walls {
-    pub fn try_extend_last_wall(&mut self, points: &mut Vec<Point>) -> Option<Point> {
+    pub fn try_extend_last_wall(&mut self, points: &mut Vec<ColoredPoint>) -> Option<ColoredPoint> {
         if let Some(last_wall) = self.0.last_mut() {
             if let Some(first) = points.get(0) {
                 if let Some(second) = points.get(1) {
-                    if *second == last_wall.end_point {
+                    if second.point == last_wall.end_point {
                         return None;
                     }
-                    if last_wall.end_point == *first && last_wall.start_point != *second {
+                    if last_wall.end_point == first.point && last_wall.start_point != second.point {
                         if (last_wall.start_point.x == last_wall.end_point.x
-                            && last_wall.end_point.x == second.x)
+                            && last_wall.end_point.x == second.point.x)
                             || (last_wall.start_point.y == last_wall.end_point.y
-                                && last_wall.end_point.y == second.y)
+                                && last_wall.end_point.y == second.point.y)
                         {
-                            last_wall.end_point = second.clone();
-                            return None;
+                            if last_wall.primary_object_color == first.color {
+                                last_wall.end_point = second.point.clone();
+                                return None;
+                            } else if first.color == second.color {
+                                last_wall.end_point = first.point.clone();
+                                self.0.push(Wall {
+                                    start_point: first.point.clone(),
+                                    end_point: second.point.clone(),
+                                    primary_object_color: first.color.clone(),
+                                });
+                                return None;
+                            }
                         }
                     }
                     self.0.push(Wall {
-                        start_point: first.clone(),
-                        end_point: second.clone(),
+                        start_point: first.point.clone(),
+                        end_point: second.point.clone(),
+                        primary_object_color: second.color.clone(),
                     });
                     return None;
                 }
@@ -50,8 +62,9 @@ impl Walls {
             if let Some(first) = points.get(0) {
                 if let Some(second) = points.get(1) {
                     self.0.push(Wall {
-                        start_point: first.clone(),
-                        end_point: second.clone(),
+                        start_point: first.point.clone(),
+                        end_point: second.point.clone(),
+                        primary_object_color: first.color.clone(),
                     });
                     return None;
                 }

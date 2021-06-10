@@ -1,3 +1,4 @@
+use crate::generator::Polygon;
 use crate::graph;
 use crate::graph::Walls;
 use crate::player_utils;
@@ -52,7 +53,7 @@ impl ObjectGenerator {
         walls_in_sight: &Vec<graph::Wall>,
         position: &graph::Coordinate,
         angle: &player_utils::Angle,
-        polygons: &mut Vec<[Vec2d; 4]>,
+        polygons: &mut Vec<Polygon>,
     ) -> usize {
         if index < walls_in_sight.len() - 1
             && walls_in_sight[index].point_distance_end(position)
@@ -85,8 +86,8 @@ impl ObjectGenerator {
         walls_in_sight: graph::Walls,
         position: &graph::Coordinate,
         angle: &player_utils::Angle,
-    ) -> Vec<[Vec2d; 4]> {
-        let mut polygons: Vec<[Vec2d; 4]> = Vec::new();
+    ) -> Vec<Polygon> {
+        let mut polygons: Vec<Polygon> = Vec::new();
         let mut index = 0;
         if walls_in_sight.0.len() == 0 {
             return vec![];
@@ -121,7 +122,7 @@ impl ObjectGenerator {
         return polygons;
     }
 
-    pub fn generate_polygons(&self, player: &Arc<RwLock<Player>>) -> Vec<[Vec2d; 4]> {
+    pub fn generate_polygons(&self, player: &Arc<RwLock<Player>>) -> Vec<Polygon> {
         if let Some(merged_walls) = self.receive_and_merge_walls() {
             let player_read = player.read().unwrap();
             return self.generate_polygons_(
@@ -137,7 +138,8 @@ impl ObjectGenerator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::map_element::Point;
+    use crate::generator::Polygon;
+    use crate::map_element::{Color, Point};
     use crate::player_utils::Angle;
     use crate::player_utils::MockPlayer;
     use crate::player_utils::Radians;
@@ -176,26 +178,32 @@ mod tests {
             graph::Wall {
                 start_point: Point { x: 1, y: 4 },
                 end_point: Point { x: 2, y: 4 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 2, y: 4 },
                 end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 2, y: 3 },
                 end_point: Point { x: 3, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 3, y: 4 },
                 end_point: Point { x: 4, y: 4 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 4, y: 5 },
                 end_point: Point { x: 5, y: 5 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 6 },
                 end_point: Point { x: 7, y: 6 },
+                primary_object_color: Color::Red,
             },
         ]);
 
@@ -207,12 +215,30 @@ mod tests {
             .unwrap();
 
         let expected_generate_polygons = vec![
-            [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
-            [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
-            [[2.0, 0.5], [3.0, 0.5], [4.0, 0.5], [5.0, 0.5]],
-            [[3.0, 0.6], [4.0, 0.6], [5.0, 0.6], [6.0, 0.6]],
-            [[4.0, 0.4], [5.0, 0.4], [6.0, 0.4], [7.0, 0.4]],
-            [[5.0, 0.2], [6.0, 0.2], [7.0, 0.2], [8.0, 0.2]],
+            Polygon {
+                area: [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[2.0, 0.5], [3.0, 0.5], [4.0, 0.5], [5.0, 0.5]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[3.0, 0.6], [4.0, 0.6], [5.0, 0.6], [6.0, 0.6]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[4.0, 0.4], [5.0, 0.4], [6.0, 0.4], [7.0, 0.4]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[5.0, 0.2], [6.0, 0.2], [7.0, 0.2], [8.0, 0.2]],
+                color: Color::Red,
+            },
         ];
         let walls_in_sight_indices: Vec<usize> = vec![0, 1, 5, 4, 3, 2];
         for (index, polygon) in walls_in_sight_indices
@@ -292,8 +318,14 @@ mod tests {
             .unwrap();
 
         let expected_generate_polygons = vec![
-            [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
-            [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
+            Polygon {
+                area: [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
+                color: Color::Red,
+            },
+            Polygon {
+                area: [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
+                color: Color::Red,
+            },
         ];
         for (wall, polygon) in merged_walls
             .0
@@ -336,28 +368,34 @@ mod tests {
             graph::Wall {
                 start_point: Point { x: 2, y: 3 },
                 end_point: Point { x: 4, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 3, y: 3 },
                 end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 3 },
                 end_point: Point { x: 5, y: 5 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 4 },
                 end_point: Point { x: 5, y: 6 },
+                primary_object_color: Color::Red,
             },
         ]);
         let merged_walls_1 = graph::Walls(vec![
             graph::Wall {
                 start_point: Point { x: 2, y: 3 },
                 end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 3 },
                 end_point: Point { x: 5, y: 6 },
+                primary_object_color: Color::Red,
             },
         ]);
 
@@ -365,28 +403,34 @@ mod tests {
             graph::Wall {
                 start_point: Point { x: 5, y: 6 },
                 end_point: Point { x: 5, y: 4 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 5 },
                 end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 3 },
                 end_point: Point { x: 3, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 3, y: 3 },
                 end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
             },
         ]);
         let merged_walls_2 = graph::Walls(vec![
             graph::Wall {
                 start_point: Point { x: 5, y: 6 },
                 end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 3 },
                 end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
             },
         ]);
 
@@ -429,7 +473,7 @@ mod tests {
         };
         assert_eq!(
             object_generator.generate_polygons(&player),
-            Vec::<[Vec2d; 4]>::new()
+            Vec::<Polygon>::new()
         );
     }
 }

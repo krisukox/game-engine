@@ -1,5 +1,6 @@
 use super::Point;
 use crate::graph::Coordinate;
+use crate::map_element::Color;
 use crate::map_element::MapElement;
 
 cfg_if::cfg_if! {
@@ -18,6 +19,7 @@ pub struct Door {
     door_state: DoorState,
     door_velocity: f64,
     time_elapsed_ms: f64,
+    color: Color,
 }
 
 impl Door {
@@ -28,6 +30,7 @@ impl Door {
         door_velocity: DoorVelocity,
         door_type: DoorType,
         open_door_area_opt: Option<Rectangle>,
+        door_color: Option<Color>,
     ) -> Self {
         Self {
             half_doors: HalfDoor::get_half_doors(&door_area, &door_type),
@@ -39,6 +42,7 @@ impl Door {
             door_state: DoorState::Closed,
             door_velocity: door_velocity.into(),
             time_elapsed_ms: 0.0,
+            color: door_color.unwrap_or(Color::Blue),
         }
     }
 
@@ -60,6 +64,10 @@ impl Door {
 impl MapElement for Door {
     fn is_point_in_object(&self, point: &Point) -> bool {
         self.half_doors.0.is_point_in_object(point) || self.half_doors.1.is_point_in_object(point)
+    }
+
+    fn color(&self) -> Color {
+        self.color.clone()
     }
 
     fn update(&mut self, time_elapsed: f64) {
@@ -106,6 +114,13 @@ enum DoorState {
     Opened,
     Closing,
 }
+
+impl Default for DoorState {
+    fn default() -> DoorState {
+        DoorState::Closed
+    }
+}
+
 pub enum DoorVelocity {
     VerySlow,
     Slow,
@@ -181,9 +196,24 @@ mod tests {
             door_state: DoorState::Closed,
             door_velocity: Default::default(),
             time_elapsed_ms: Default::default(),
+            color: Default::default(),
         };
         assert!(door.is_point_in_object(&point));
         assert!(!door.is_point_in_object(&point));
+    }
+
+    #[test]
+    fn color() {
+        let color = Color::Green;
+        let door = Door {
+            half_doors: Default::default(),
+            open_door_area: Default::default(),
+            door_state: Default::default(),
+            door_velocity: Default::default(),
+            time_elapsed_ms: Default::default(),
+            color: color.clone(),
+        };
+        assert_eq!(door.color(), color);
     }
 
     #[test]
@@ -220,6 +250,7 @@ mod tests {
             door_state: DoorState::Opening,
             door_velocity: 150.0,
             time_elapsed_ms: 0.0,
+            color: Default::default(),
         };
         door.update(0.5);
         assert_eq!(door.door_state, DoorState::Opened)
@@ -259,6 +290,7 @@ mod tests {
             door_state: DoorState::Closing,
             door_velocity: 150.0,
             time_elapsed_ms: 0.0,
+            color: Default::default(),
         };
         door.update(0.5);
         assert_eq!(door.door_state, DoorState::Closed)
@@ -290,6 +322,7 @@ mod tests {
             door_state: door_state_start,
             door_velocity: Default::default(),
             time_elapsed_ms: Default::default(),
+            color: Default::default(),
         };
 
         door.on_position_update(&coordinate);
