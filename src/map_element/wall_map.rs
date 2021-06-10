@@ -129,4 +129,15 @@ mod tests {
             panic!("new_map_file_not_found test failed");
         }
     }
+
+    #[test]
+    fn get_map() {
+        if let Ok(wall_map) = WallMap::new(&Path::new("test_resources/map-test.png"), None) {
+            let map = wall_map.get_map();
+            assert_eq!(map.width, 50);
+            assert_eq!(map.height, 50);
+        } else {
+            panic!("File with image for the testcase doesn't exist");
+        }
+    }
 }
