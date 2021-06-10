@@ -3,7 +3,7 @@ use graphics::DrawState;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
-        use super::test_utils::Graphics as GlGraphics;
+        use super::test_utils::GlGraphics;
     } else {
         use opengl_graphics::GlGraphics;
     }

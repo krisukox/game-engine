@@ -4,9 +4,11 @@ use engine::Engine;
 use graph::Coordinate;
 use map_element::{Door, DoorType, DoorVelocity, MapElement, Point, Rectangle, WallMap};
 use player_utils::{Angle, Player, Radians};
+use std::path::Path;
 
 fn main() {
-    let path_to_map = "test_resources/map-simple.png";
+    // let path = Path::new("examples/map-simple.png");
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/map-simple.png");
     let resolution = Size {
         width: 1280.0,
         height: 720.0,
@@ -17,15 +19,16 @@ fn main() {
             start: Radians::new(std::f64::consts::PI * 5.0 / 4.0),
             end: Radians::new(std::f64::consts::PI * 7.0 / 4.0),
         },
-        Coordinate { x: 66.0, y: 58.0 },
+        Coordinate { x: 66.0, y: 84.0 },
         number_of_rays,
     );
     let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
     let wall_height = 5.0;
     let render_threads_amount = 3;
 
-    match WallMap::new(path_to_map, None) {
-        Ok(map) => {
+    match WallMap::new(&path, None) {
+        Ok(wall_map) => {
+            let map = wall_map.get_map();
             let map_elements: Vec<Box<dyn MapElement>> = vec![
                 Box::new(Door::new(
                     Rectangle {
@@ -77,12 +80,8 @@ fn main() {
                     None,
                     None,
                 )),
-                Box::new(map),
+                Box::new(wall_map),
             ];
-            let map = Map {
-                width: 130,
-                height: 117,
-            };
 
             let mut engine = Engine::new(
                 resolution,
@@ -95,6 +94,8 @@ fn main() {
             );
             engine.start();
         }
-        Err(_) => {}
+        Err(_) => {
+            println!("file not found");
+        }
     }
 }

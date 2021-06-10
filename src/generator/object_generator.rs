@@ -2,8 +2,6 @@ use crate::generator::Polygon;
 use crate::graph;
 use crate::graph::Walls;
 use crate::player_utils;
-use crate::polygon_generator;
-use graphics::types::Vec2d;
 use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, RwLock};
@@ -13,10 +11,10 @@ use mockall::automock;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use self::polygon_generator::MockPolygonGenerator as PolygonGenerator;
+        use super::polygon_generator::MockPolygonGenerator as PolygonGenerator;
         use crate::player_utils::MockPlayer as Player;
     } else {
-        use self::polygon_generator::PolygonGenerator;
+        use super::polygon_generator::PolygonGenerator;
         use crate::player_utils::Player;
     }
 }
@@ -137,14 +135,16 @@ impl ObjectGenerator {
 
 #[cfg(test)]
 mod tests {
+    #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::generator::MockPolygonGenerator;
     use crate::generator::Polygon;
     use crate::map_element::{Color, Point};
     use crate::player_utils::Angle;
     use crate::player_utils::MockPlayer;
     use crate::player_utils::Radians;
+    use lazy_static::*;
     use mockall::*;
-    use polygon_generator::MockPolygonGenerator;
     use std::sync::mpsc;
 
     #[test]
@@ -289,21 +289,25 @@ mod tests {
         let mut polygon_generator = MockPolygonGenerator::new();
         let player = Arc::new(RwLock::new(MockPlayer::default()));
         let (sender_walls, receiver_walls) = mpsc::channel::<(Walls, usize)>();
+        lazy_static! {
+            static ref angle: Angle = Angle {
+                start: Radians::new(0.0),
+                end: Radians::new(1.0),
+            };
+            static ref position: graph::Coordinate = graph::Coordinate { x: 2.0, y: 1.0 };
+        }
 
         {
             let mut player_write = player.write().unwrap();
             player_write
                 .expect_position()
                 .times(1)
-                .return_const(graph::Coordinate { x: 2.0, y: 1.0 })
+                .return_const(position.clone())
                 .in_sequence(&mut seq);
             player_write
                 .expect_angle()
                 .times(1)
-                .return_const(Angle {
-                    start: Radians::new(0.0),
-                    end: Radians::new(1.0),
-                })
+                .return_const(angle.clone())
                 .in_sequence(&mut seq);
         }
 
@@ -332,19 +336,14 @@ mod tests {
             .into_iter()
             .zip(expected_generate_polygons.iter().cloned())
         {
-            let cloned_angle = Angle {
-                start: Radians::new(0.0),
-                end: Radians::new(1.0),
-            };
-            let cloned_position = graph::Coordinate { x: 2.0, y: 1.0 };
             polygon_generator
                 .expect_generate_polygon()
                 .times(1)
                 .withf(
                     move |wall_: &graph::Wall,
-                          position: &graph::Coordinate,
-                          angle: &player_utils::Angle| {
-                        *wall_ == wall && *position == cloned_position && *angle == cloned_angle
+                          position_: &graph::Coordinate,
+                          angle_: &player_utils::Angle| {
+                        *wall_ == wall && *position_ == *position && *angle_ == *angle
                     },
                 )
                 .return_const(polygon)

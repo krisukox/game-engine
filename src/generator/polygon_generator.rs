@@ -1,16 +1,15 @@
 use crate::generator::Polygon;
 use crate::graph;
 use crate::player_utils;
-use crate::point_generator;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        use self::point_generator::MockPointGenerator as PointGenerator;
+        use super::point_generator::MockPointGenerator as PointGenerator;
     } else {
-        use self::point_generator::PointGenerator;
+        use super::point_generator::PointGenerator;
     }
 }
 
@@ -54,6 +53,7 @@ impl PolygonGenerator {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::generator::MockPointGenerator;
     use crate::map_element::Color;
     use crate::map_element::Point;
     use mockall::*;
@@ -77,7 +77,7 @@ mod tests {
         let end_point_width = 19.0;
         let end_point_height = 21.0;
 
-        let mut point_generator = point_generator::MockPointGenerator::default();
+        let mut point_generator = MockPointGenerator::default();
         let mut seq = Sequence::new();
 
         point_generator

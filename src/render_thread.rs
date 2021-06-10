@@ -96,6 +96,7 @@ fn handle_one_point(
 
 #[cfg(test)]
 mod tests {
+    #![allow(non_upper_case_globals)]
     use super::*;
     use crate::graph::MockLinearGraph;
     use crate::graph::Wall;
@@ -124,10 +125,10 @@ mod tests {
         let rays = get_rays(10);
         let (start_render_sender, start_render_receiver) = channel::<bool>();
         let (sender_walls, receiver_walls) = channel::<(Walls, usize)>();
-        let thread_index = 3;
-        let threads_amount = 4;
+        static thread_index: usize = 3;
+        static threads_amount: usize = 4;
 
-        let player_position = Coordinate { x: 10.0, y: 20.0 };
+        static player_position: Coordinate = Coordinate { x: 10.0, y: 20.0 };
         let vec_points = vec![
             vec![
                 ColoredPoint {
@@ -253,22 +254,20 @@ mod tests {
                 .times(1)
                 .return_const(player_position.clone())
                 .in_sequence(&mut seq);
-            let thread_index_clone = thread_index.clone();
             player_write
                 .expect_get_rays_angle_range()
                 .times(1)
-                .withf(move |thread_index_, threads_amount_| {
-                    *thread_index_ == thread_index_clone && *threads_amount_ == threads_amount
+                .withf(|thread_index_, threads_amount_| {
+                    *thread_index_ == thread_index && *threads_amount_ == threads_amount
                 })
                 .return_const(vec![std::ops::Range { start: 1, end: 10 }])
                 .in_sequence(&mut seq);
         }
 
         for points in vec_points {
-            let player_position_clone = player_position.clone();
             map.expect_cast_ray()
                 .times(1)
-                .withf(move |position, _, _| *position == player_position_clone)
+                .withf(|position, _, _| *position == player_position)
                 .return_const(points)
                 .in_sequence(&mut seq);
         }
