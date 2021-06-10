@@ -352,4 +352,31 @@ mod tests {
             graph::Coordinate { x: 4.0, y: 8.0 },
         );
     }
+
+    #[test]
+    fn angle() {
+        let angle = Angle {
+            start: Radians::ZERO,
+            end: Radians::PI / 2.0,
+        };
+        let player = Player {
+            angle: angle.clone(),
+            position: Default::default(),
+            number_of_rays: Default::default(),
+            move_handler: Default::default(),
+        };
+        assert_eq!(*player.angle(), angle);
+    }
+
+    #[test]
+    fn position() {
+        let position = graph::Coordinate { x: 5.0, y: 8.0 };
+        let player = Player {
+            angle: Default::default(),
+            position: position.clone(),
+            number_of_rays: Default::default(),
+            move_handler: Default::default(),
+        };
+        assert_eq!(*player.position(), position);
+    }
 }

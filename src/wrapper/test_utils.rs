@@ -3,9 +3,9 @@ use graphics::Viewport;
 
 pub struct Window();
 
-pub struct Graphics();
+pub struct GlGraphics();
 
-impl Graphics {
+impl GlGraphics {
     pub fn draw<F: FnOnce(graphics::Context, &mut Self) + 'static>(
         &mut self,
         viewport: Viewport,

@@ -1,4 +1,6 @@
 use crate::map_element::{Color, MapElement, Point};
+use crate::Map;
+use std::path::Path;
 
 #[cfg(test)]
 use crate::graph::Coordinate;
@@ -10,8 +12,7 @@ pub struct WallMap {
 }
 
 impl WallMap {
-    pub fn new(str_path: &str, color: Option<Color>) -> Result<Self, image::ImageError> {
-        let path = std::path::Path::new(str_path);
+    pub fn new(path: &Path, color: Option<Color>) -> Result<Self, image::ImageError> {
         let pic = image::open(path)?;
         return Ok(Self {
             image: pic.to_rgba(),
@@ -29,6 +30,13 @@ impl WallMap {
             return false;
         }
         return true;
+    }
+
+    pub fn get_map(&self) -> Map {
+        Map {
+            width: self.image.width() as i64,
+            height: self.image.height() as i64,
+        }
     }
 }
 
@@ -49,7 +57,7 @@ mod tests {
 
     #[test]
     fn is_point_in_object() {
-        if let Ok(wall_map) = WallMap::new("test_resources/map-test.png", None) {
+        if let Ok(wall_map) = WallMap::new(&Path::new("test_resources/map-test.png"), None) {
             assert_eq!(wall_map.is_point_in_object(&Point { x: 23, y: 7 }), true);
             assert_eq!(wall_map.is_point_in_object(&Point { x: 43, y: 23 }), true);
             assert_eq!(wall_map.is_point_in_object(&Point { x: 32, y: 30 }), true);
@@ -64,20 +72,23 @@ mod tests {
 
     #[test]
     fn color() {
-        if let Ok(wall_map) = WallMap::new("test_resources/map-test.png", None) {
+        if let Ok(wall_map) = WallMap::new(&Path::new("test_resources/map-test.png"), None) {
             assert_eq!(wall_map.color(), Color::Orange);
         } else {
             panic!("File with image for the testcase doesn't exist");
         }
         let color = Color::Green;
-        if let Ok(wall_map) = WallMap::new("test_resources/map-test.png", Some(color.clone())) {
+        if let Ok(wall_map) = WallMap::new(
+            &Path::new("test_resources/map-test.png"),
+            Some(color.clone()),
+        ) {
             assert_eq!(wall_map.color(), color);
         }
     }
 
     #[test]
     fn validate_coordinate() {
-        if let Ok(wall_map) = WallMap::new("test_resources/map-test.png", None) {
+        if let Ok(wall_map) = WallMap::new(&Path::new("test_resources/map-test.png"), None) {
             assert_eq!(
                 wall_map.validate_coordinate(&Coordinate { x: 49.0, y: 49.0 }),
                 true
@@ -111,11 +122,22 @@ mod tests {
     #[test]
     fn new_map_file_not_found() {
         if let Err(image::ImageError::IoError(err)) =
-            WallMap::new("dummy_path/dummy_picture.png", None)
+            WallMap::new(&Path::new("dummy_path/dummy_picture.png"), None)
         {
             assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
         } else {
             panic!("new_map_file_not_found test failed");
+        }
+    }
+
+    #[test]
+    fn get_map() {
+        if let Ok(wall_map) = WallMap::new(&Path::new("test_resources/map-test.png"), None) {
+            let map = wall_map.get_map();
+            assert_eq!(map.width, 50);
+            assert_eq!(map.height, 50);
+        } else {
+            panic!("File with image for the testcase doesn't exist");
         }
     }
 }

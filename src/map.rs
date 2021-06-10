@@ -1,5 +1,5 @@
 use crate::graph::Coordinate;
-use crate::map_element::{Color, ColoredPoint, MapElement, Point};
+use crate::map_element::{ColoredPoint, MapElement, Point};
 
 #[cfg(test)]
 use mockall::automock;
@@ -94,8 +94,10 @@ impl Map {
 
 #[cfg(test)]
 mod tests {
+    #![allow(non_upper_case_globals)]
     use super::*;
     use crate::graph::MockLinearGraph;
+    use crate::map_element::Color;
     use crate::map_element::MockMapElement;
     use mockall::*;
 
@@ -108,43 +110,42 @@ mod tests {
             height: 50,
         };
 
-        let current_positon = Coordinate { x: 30.0, y: 20.0 };
-        let next_position = Coordinate { x: 40.0, y: 30.0 };
-        let next_point = ColoredPoint {
-            point: Point {
-                x: next_position.x as i64,
-                y: next_position.y as i64,
-            },
-            color: Color::Green,
-        };
+        lazy_static! {
+            static ref current_positon: Coordinate = Coordinate { x: 30.0, y: 20.0 };
+            static ref next_position: Coordinate = Coordinate { x: 40.0, y: 30.0 };
+            static ref next_point: ColoredPoint = ColoredPoint {
+                point: Point {
+                    x: next_position.x as i64,
+                    y: next_position.y as i64,
+                },
+                color: Color::Green,
+            };
+        }
 
         let mut ray = MockLinearGraph::new();
         let mut map_element = Box::new(MockMapElement::new());
 
-        let clone_current_position = current_positon.clone();
         ray.expect_get_next()
             .times(1)
-            .withf(move |coordinate| *coordinate == clone_current_position)
-            .return_const(next_position)
+            .withf(move |coordinate| *coordinate == *current_positon)
+            .return_const(next_position.clone())
             .in_sequence(&mut seq);
 
-        let clone_next_point = next_point.point.clone();
         map_element
             .expect_is_point_in_object()
             .times(1)
-            .withf(move |point| *point == clone_next_point)
+            .withf(|point| *point == next_point.point)
             .return_const(true)
             .in_sequence(&mut seq);
-        let clone_next_color = next_point.color.clone();
         map_element
             .expect_color()
             .times(1)
-            .return_const(clone_next_color)
+            .return_const(next_point.color.clone())
             .in_sequence(&mut seq);
 
         assert_eq!(
             map.cast_ray(&current_positon, &ray, &vec![map_element]),
-            vec![next_point]
+            vec![next_point.clone()]
         );
     }
 
@@ -157,105 +158,92 @@ mod tests {
             height: 50,
         };
 
-        let current_positon = Coordinate { x: 30.0, y: 20.0 };
-        let next_position_1 = Coordinate { x: 40.0, y: 30.5 };
-        let next_points_1 = vec![
-            Point {
-                x: next_position_1.x as i64,
-                y: next_position_1.y.ceil() as i64,
-            },
-            Point {
-                x: next_position_1.x as i64,
-                y: next_position_1.y.floor() as i64,
-            },
-        ];
-
-        let next_position_2 = Coordinate { x: 45.0, y: 35.5 };
-        let next_points_2 = vec![
-            ColoredPoint {
-                point: Point {
-                    x: next_position_2.x as i64,
-                    y: next_position_2.y.ceil() as i64,
+        lazy_static! {
+            static ref current_position: Coordinate = Coordinate { x: 30.0, y: 20.0 };
+            static ref next_position_1: Coordinate = Coordinate { x: 40.0, y: 30.5 };
+            static ref next_points_1: Vec<Point> = vec![
+                Point {
+                    x: next_position_1.x as i64,
+                    y: next_position_1.y.ceil() as i64,
                 },
-                color: Color::Red,
-            },
-            ColoredPoint {
-                point: Point {
-                    x: next_position_2.x as i64,
-                    y: next_position_2.y.floor() as i64,
+                Point {
+                    x: next_position_1.x as i64,
+                    y: next_position_1.y.floor() as i64,
                 },
-                color: Color::Green,
-            },
-        ];
+            ];
+            static ref next_position_2: Coordinate = Coordinate { x: 45.0, y: 35.5 };
+            static ref next_points_2: Vec<ColoredPoint> = vec![
+                ColoredPoint {
+                    point: Point {
+                        x: next_position_2.x as i64,
+                        y: next_position_2.y.ceil() as i64,
+                    },
+                    color: Color::Red,
+                },
+                ColoredPoint {
+                    point: Point {
+                        x: next_position_2.x as i64,
+                        y: next_position_2.y.floor() as i64,
+                    },
+                    color: Color::Green,
+                },
+            ];
+        }
 
         let mut ray = MockLinearGraph::new();
         let mut map_element = Box::new(MockMapElement::new());
 
-        let clone_current_position = current_positon.clone();
         ray.expect_get_next()
             .times(1)
-            .withf(move |coordinate| *coordinate == clone_current_position)
+            .withf(|coordinate| *coordinate == *current_position)
             .return_const(next_position_1.clone())
             .in_sequence(&mut seq);
 
-        let clone_next_points_1 = next_points_1.clone();
         map_element
             .expect_is_point_in_object()
             .times(1)
-            .withf(move |point| clone_next_points_1.contains(point))
+            .withf(|point| next_points_1.contains(point))
             .return_const(false)
             .in_sequence(&mut seq);
 
         ray.expect_get_next()
             .times(1)
-            .withf(move |coordinate| *coordinate == next_position_1)
-            .return_const(next_position_2)
+            .withf(|coordinate| *coordinate == *next_position_1)
+            .return_const(next_position_2.clone())
             .in_sequence(&mut seq);
 
-        let clone_next_points_2 = next_points_2.clone();
         map_element
             .expect_is_point_in_object()
             .times(1)
-            .withf(move |point| {
-                clone_next_points_2
-                    .iter()
-                    .any(|point_| point_.point == *point)
-            })
+            .withf(|point| next_points_2.iter().any(|point_| point_.point == *point))
             .return_const(true)
             .in_sequence(&mut seq);
-        let clone_next_points_2 = next_points_2.clone();
         map_element
             .expect_color()
             .times(1)
-            .return_const(clone_next_points_2[0].color.clone())
+            .return_const(next_points_2[0].color.clone())
             .in_sequence(&mut seq);
-        let clone_next_points_2 = next_points_2.clone();
         map_element
             .expect_is_point_in_object()
             .times(1)
-            .withf(move |point| {
-                clone_next_points_2
-                    .iter()
-                    .any(|point_| point_.point == *point)
-            })
+            .withf(move |point| next_points_2.iter().any(|point_| point_.point == *point))
             .return_const(true)
             .in_sequence(&mut seq);
-        let clone_next_points_2 = next_points_2.clone();
         map_element
             .expect_color()
             .times(1)
-            .return_const(clone_next_points_2[1].color.clone())
+            .return_const(next_points_2[1].color.clone())
             .in_sequence(&mut seq);
 
-        let ret_points = map.cast_ray(&current_positon, &ray, &vec![map_element]);
+        let ret_points = map.cast_ray(&current_position, &ray, &vec![map_element]);
 
-        for point in &next_points_2 {
+        for point in &*next_points_2 {
             assert!(ret_points
                 .iter()
                 .any(|ret_point| ret_point.point == point.point));
         }
 
-        for (ret_point, point) in ret_points.iter().zip(next_points_2) {
+        for (ret_point, point) in ret_points.iter().zip(&*next_points_2) {
             assert!(ret_point.color == point.color);
         }
     }
@@ -269,16 +257,15 @@ mod tests {
             height: 50,
         };
 
-        let current_positon = Coordinate { x: 30.0, y: 20.0 };
+        static current_positon: Coordinate = Coordinate { x: 30.0, y: 20.0 };
         let next_position_out_of_map = Coordinate { x: 55.0, y: 30.0 };
 
         let mut ray = MockLinearGraph::new();
         let map_element = Box::new(MockMapElement::new());
 
-        let clone_current_position = current_positon.clone();
         ray.expect_get_next()
             .times(1)
-            .withf(move |coordinate| *coordinate == clone_current_position)
+            .withf(move |coordinate| *coordinate == current_positon)
             .return_const(next_position_out_of_map)
             .in_sequence(&mut seq);
 

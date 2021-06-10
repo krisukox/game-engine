@@ -9,21 +9,21 @@ use std::thread::JoinHandle;
 
 cfg_if::cfg_if! {
     if #[cfg(test)]{
-        use crate::object_generator::MockObjectGenerator as ObjectGenerator;
+        use crate::generator::MockObjectGenerator as ObjectGenerator;
         use crate::player_utils::MockPlayer as Player;
-        use crate::events_wrapper::MockEvents as Events;
-        use crate::graphics_wrapper::MockGraphics as Graphics;
-        use crate::test_utils::Window as GlutinWindow;
-        use crate::test_utils::Graphics as GlGraphics;
+        use crate::wrapper::MockEvents as Events;
+        use crate::wrapper::MockGraphics as Graphics;
+        use crate::wrapper::test_utils::Window as GlutinWindow;
+        use crate::wrapper::test_utils::GlGraphics;
     } else {
-        use crate::events_wrapper::Events;
-        use crate::graphics_wrapper::Graphics;
+        use crate::wrapper::Events;
+        use crate::wrapper::Graphics;
         use crate::graph::Walls;
         use crate::map::Map;
-        use crate::object_generator::ObjectGenerator;
+        use crate::generator::ObjectGenerator;
         use crate::player_utils::Player;
-        use crate::polygon_generator::PolygonGenerator;
-        use crate::point_generator::PointGenerator;
+        use crate::generator::PolygonGenerator;
+        use crate::generator::PointGenerator;
         use crate::render_thread::RenderThread;
         use glutin_window::GlutinWindow;
         use opengl_graphics::GlGraphics;
@@ -47,7 +47,6 @@ pub struct Engine {
 }
 
 const BACKGROUND_COLOR: Color = [0.8, 0.8, 0.8, 1.0];
-const WALL_COLOR: Color = [1.0, 0.0, 0.5, 1.0];
 
 impl Engine {
     #[cfg(not(tarpaulin_include))]
@@ -59,7 +58,7 @@ impl Engine {
         map: Map,
         player: Player,
         map_elements: Vec<Box<dyn MapElement>>,
-        render_threads_amount: usize,
+        render_threads_amount: i64,
     ) -> Engine {
         let polygon_generator = PolygonGenerator {
             point_generator: PointGenerator::new(resolution, vertical_angle_value, wall_height),
@@ -69,6 +68,7 @@ impl Engine {
         let player = Arc::new(RwLock::new(player));
         let map_elements = Arc::new(RwLock::new(map_elements));
         let mut start_render_notifiers = vec![];
+        let render_threads_amount = Self::limit_threads_amount(render_threads_amount);
         let mut render_threads = Vec::with_capacity(render_threads_amount);
 
         let (sender_walls, receiver_walls) = channel::<(Walls, usize)>();
@@ -117,6 +117,15 @@ impl Engine {
         window.ctx.window().set_maximized(false);
         window.set_capture_cursor(true);
         return window;
+    }
+
+    fn limit_threads_amount(render_threads_amount: i64) -> usize {
+        if render_threads_amount <= 1 {
+            return 1;
+        } else if render_threads_amount >= 4 {
+            return 4;
+        }
+        return render_threads_amount as usize;
     }
 
     pub fn start(&mut self) {
@@ -209,16 +218,16 @@ fn into_bool(state: piston::input::ButtonState) -> bool {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::events_wrapper::MockEvents;
+    use crate::generator::MockObjectGenerator;
     use crate::generator::Polygon;
     use crate::graph::Coordinate;
-    use crate::graphics_wrapper::MockGraphics;
     use crate::map_element::Color;
     use crate::map_element::MockMapElement;
-    use crate::object_generator::MockObjectGenerator;
     use crate::player_utils::{MockPlayer, Radians};
-    use crate::test_utils::Graphics;
-    use crate::test_utils::Window;
+    use crate::wrapper::test_utils::GlGraphics;
+    use crate::wrapper::test_utils::Window;
+    use crate::wrapper::MockEvents;
+    use crate::wrapper::MockGraphics;
     use mockall::*;
     use piston::input::*;
     use piston::*;
@@ -301,12 +310,19 @@ mod tests {
     }
 
     #[test]
+    fn limit_threads_amount() {
+        assert_eq!(Engine::limit_threads_amount(3), 3);
+        assert_eq!(Engine::limit_threads_amount(6), 4);
+        assert_eq!(Engine::limit_threads_amount(0), 1);
+    }
+
+    #[test]
     fn start_render_event() {
         let mut seq = Sequence::new();
 
         let mut generator = MockObjectGenerator::new();
-        let window = crate::test_utils::Window {};
-        let graphics = Graphics {};
+        let window = Window {};
+        let graphics = GlGraphics {};
         let mut events = MockEvents::default();
         let player = Arc::new(RwLock::new(MockPlayer::default()));
         let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
@@ -397,7 +413,7 @@ mod tests {
 
         let generator = MockObjectGenerator::new();
         let window = Window {};
-        let graphics = Graphics {};
+        let graphics = GlGraphics {};
         let mut events = MockEvents::default();
         let player = Arc::new(RwLock::new(MockPlayer::default()));
         let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
@@ -450,7 +466,7 @@ mod tests {
         let player = Arc::new(RwLock::new(MockPlayer::default()));
         let window = Window {};
         let mut events = MockEvents::default();
-        let graphics = Graphics {};
+        let graphics = GlGraphics {};
         let map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>> =
             Arc::new(RwLock::new(vec![Box::new(MockMapElement::new())]));
         {
@@ -503,7 +519,7 @@ mod tests {
 
         let generator = MockObjectGenerator::new();
         let window = Window {};
-        let graphics = Graphics {};
+        let graphics = GlGraphics {};
         let mut events = MockEvents::default();
         let player = Arc::new(RwLock::new(MockPlayer::default()));
 
@@ -559,7 +575,7 @@ mod tests {
 
         let generator = MockObjectGenerator::new();
         let window = Window {};
-        let graphics = Graphics {};
+        let graphics = GlGraphics {};
         let mut events = MockEvents::default();
         let player = Arc::new(RwLock::new(MockPlayer::default()));
 
