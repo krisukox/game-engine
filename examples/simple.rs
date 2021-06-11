@@ -1,9 +1,5 @@
 use game_engine_3d::*;
-
-use engine::Engine;
-use graph::Coordinate;
-use map_element::{Door, DoorType, DoorVelocity, MapElement, Point, Rectangle, WallMap};
-use player_utils::{Angle, Player, Radians};
+use map_element::*;
 use std::path::Path;
 
 fn main() {
@@ -22,8 +18,8 @@ fn main() {
         Coordinate { x: 66.0, y: 84.0 },
         number_of_rays,
     );
-    let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);
-    let wall_height = 5.0;
+    let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.6);
+    let wall_height = 10.0;
     let render_threads_amount = 3;
 
     match WallMap::new(&path, None) {
