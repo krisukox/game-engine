@@ -3,14 +3,13 @@
 [![Build Status](https://github.com/krisukox/game-engine/workflows/Build/badge.svg)](https://github.com/krisukox/game-engine/actions)
 [![codecov](https://codecov.io/gh/krisukox/game-engine/branch/master/graphs/badge.svg?token=H1GXCQQ3YG)](https://codecov.io/gh/krisukox/game-engine/tree/master/src)
 
-Game engine 3D uses [piston2d-graphics](https://github.com/pistondevelopers/graphics) with [opengl backend](https://github.com/PistonDevelopers/opengl_graphics) to draw 2d objects and gather mouse and keyboard event. All 3D structures are rendered by game-engine-project using ray casting. Rendering can be devided into multiple threads (up to 4 threads). 
+Game engine 3D uses [piston2d-graphics](https://github.com/pistondevelopers/graphics) with [opengl backend](https://github.com/PistonDevelopers/opengl_graphics) to draw 2D objects and gather mouse and keyboard event. All 3D structures are rendered by game-engine-project using ray casting. Rendering can be devided into multiple threads (up to 4 threads). 
 
-
-
-Game engine 
-
+CLICK IMAGE TO PLAY
+[![codecov](ray-cast.png)](ray-cast.gif)
 
 Unit tests in the project are made with [Mockall](https://docs.rs/mockall/0.9.1/mockall/)
+
 Code coverage reporting tool used in the project [Tarpaulin](https://github.com/xd009642/tarpaulin)
 
 
