@@ -1,9 +1,5 @@
 use game_engine_3d::*;
-
-use engine::Engine;
-use graph::Coordinate;
-use map_element::{Door, DoorType, DoorVelocity, MapElement, Point, Rectangle, WallMap};
-use player_utils::{Angle, Player, Radians};
+use map_element::*;
 use std::path::Path;
 
 fn main() {
