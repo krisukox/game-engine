@@ -9,7 +9,7 @@ CLICK IMAGE TO PLAY
 
 [![codecov](ray-cast.png)](ray-cast.gif)
 
-General purpose of this project is to create engine that can handle any black-white image and turn it to 3D objects.
+The general purpose of this project is to create engine that can handle any black-white image and turns it to 3D objects.
 
 ## Tools and depenencies
 
@@ -21,7 +21,7 @@ General purpose of this project is to create engine that can handle any black-wh
 
 ## Movement
 
-Player can be moved using WASD keys and mouse
+Move the player using WASD keys and mouse.
 
 
 ## Examples
@@ -129,23 +129,47 @@ When engine is created call **engine::start** function.
 ### Map elements
 
 * [`WallMap`](src/map_element/wall_map.rs) - structure which describes where Walls are placed on the game area. It takes path to the image that shows walls locations (top view). Image has to be black(grey) and white. It takes also color of the Walls. Default color is orange.
-* [`Door`](src/map_element/door.rs) - structure describes where door is located, opening direction, opening velocity, color of the door and opening area. Location is specified by Rectangle. Opening direction is specified by DoorType.
+* [`Door`](src/map_element/door.rs) - structure describes where door is located, opening direction, opening velocity, color of the door and opening area. Location is specified by Rectangle. Opening direction is specified by DoorType. Opening velocity is specified by DoorVelocity.
 
 ### Player utils
 
-* [`Player`](src/player_utils/player.rs) - structure is used to describe position, horizontal field of view and number of rays used in rendering. Position is specified by Coordinate. Horizontal field of view is specified by Angle. Number of rays is specified by usize.
+* [`Player`](src/player_utils/player.rs) - structure is used to describe position, horizontal field of view and number of rays used in the rendering. Position is specified by Coordinate. Horizontal field of view is specified by Angle. Number of rays is specified by usize.
 * [`Radians`](src/player_utils/radians.rs) - structure describes direction. Valid values [0, 2pi)
 * [`Angle`](src/player_utils/angle.rs) - structure contains two radians value: start and end. 
 
-
-
 ### Other types
 
-* [`Color`](src/map_element/color.rs) - enum used to describe color of walls and doors. Available values: Red, Green, Blue, Yellow, Orange, Pink, Custom. Use custom value to specify own color in [f64; 4](R, G, B, A).
+* [`Color`](src/map_element/color.rs) - enum used to describe color of walls and doors. Available values: Red, Green, Blue, Yellow, Orange, Pink, Custom. Use custom value to specify own color in [f64; 4](R, G, B, A)
 * [`Rectangle`](src/map_element/rectangle.rs) - structure used to specify door position and opening area
-* [`DoorType`](src/map_element/door.rs#L143) - enum used to describe door opening direction. Available values: Vertical - door open along Y axis, Horizontal - door open along X axis.
+* [`DoorType`](src/map_element/door.rs#L143) - enum used to describe door opening direction. Available values: Vertical - door opens along Y axis, Horizontal - door opens along X axis.
 * [`DoorVelocity`](src/map_element/door.rs#L124) - enum used to describe door opening velocity. Available values: VerySlow, Slow, Fast, VeryFast.
 * [`Coordinate`](src/graph/coordinate.rs) - describes position using f64 values
 * [`Point`](src/map_element/point.rs) - describes position using i64 values
 
 # Developer documentation
+
+### MapElement
+
+MapElement trait has four functions:
+* **is_point_in_object** - used in the ray casting. This function checks if point is inside this MapElement.
+* **color** - returns color of the object.
+* **update** - updates object. Every MapElement is updated in the same time.
+* **on_position_update** - used when position of the player has been changed.
+
+### Ray casting
+
+Rays are described by LinearGraph structure. LinearGraph::from_radians takes Radians and generate LinearGraph. All available rays are generated when Engine is created.
+
+Ray casting is performed by map::cast_ray function. It takes ray start position, LinearGraph as a ray and Vector of MapElements. cast_ray function iterate over MapElements and check if in the postion any of the elements is placed.
+
+
+### RenderThread
+
+Rays are splited between RenderThreads by a Player::get_rays_angle_range function. This function takes number of RenderThread and RenderThreads amount.
+
+Every RenderThread starts rendering when receive notification from the Engine. Notification is a true value sends by channel. RenderThread sends back rendered Walls to the ObjectGenerator.
+
+Player and MapElements are shared by RwLock across RenderThreads and Engine. Engine modifies Player and MapElements when RenderThreads only read the values.
+
+
+
