@@ -160,10 +160,9 @@ MapElement trait has four functions:
 
 Rays are described by LinearGraph structure. LinearGraph::from_radians takes Radians and generate LinearGraph. All available rays are generated when Engine is created.
 
-Ray casting is performed by map::cast_ray function. It takes ray start position, LinearGraph as a ray and Vector of MapElements. cast_ray function iterate over MapElements and check if in the postion any of the elements is placed.
+Ray casting is performed by map::cast_ray function. It takes ray start position, LinearGraph as a ray and Vector of MapElements. cast_ray function iterate over MapElements and check if in the position any of the elements is placed. map::cast_ray function returns empty vector, one or two ColoredPoints.
 
-
-### RenderThread
+### [RenderThread](src/render_thread.rs)
 
 Rays are splited between RenderThreads by a Player::get_rays_angle_range function. This function takes number of RenderThread and RenderThreads amount.
 
@@ -171,5 +170,20 @@ Every RenderThread starts rendering when receive notification from the Engine. N
 
 Player and MapElements are shared by RwLock across RenderThreads and Engine. Engine modifies Player and MapElements when RenderThreads only read the values.
 
+### [ObjectGenerator](src/generator/object_generator.rs)
 
+ObjectGenerator::generate_polygons function generate polygons using Player and Walls received from the RenderThreads. Single polygon is generated using PolygonGenerator.
 
+### Wrappers
+
+Wrappers prepared in order to improve Engine test cases.
+
+* [`EventsWrapper`](src/wrapper/events_wrapper.rs) - wrapper for piston::event_loop
+* [`GraphicsWrapper`](src/wrapper/graphics_wrapper.rs) - wrapper for opengl_graphics::GlGraphics
+
+### Other types
+
+* [`Polygon`](src/generator/polygon.rs) - structre used to describe polygons that should be painted on the screen. PolygonGenerator returns single Polygon.
+* [`ColoredPoint`](src/map_element/colored_point.rs) - structure returned by map::cast_ray function.
+* [`LinearGraph`](src/graph/LinearGraph.rs) - structure used to describe Ray.
+* [`MoveHandler`](src/player_utils/move_handler.rs) - structure used to move the Player properly.
