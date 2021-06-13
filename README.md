@@ -1,28 +1,43 @@
-# game-engine
+# FPS 3D game engine
 
 [![Build Status](https://github.com/krisukox/game-engine/workflows/Build/badge.svg)](https://github.com/krisukox/game-engine/actions)
 [![codecov](https://codecov.io/gh/krisukox/game-engine/branch/master/graphs/badge.svg?token=H1GXCQQ3YG)](https://codecov.io/gh/krisukox/game-engine/tree/master/src)
 
-Game engine 3D uses [piston2d-graphics](https://github.com/pistondevelopers/graphics) with [opengl backend](https://github.com/PistonDevelopers/opengl_graphics) to draw 2D objects and gather mouse and keyboard event. All 3D structures are rendered by game-engine-3d project using ray casting. Rendering can be devided into multiple threads (up to 4 threads):
+FPS 3D game engine uses [piston2d-graphics](https://github.com/pistondevelopers/graphics) with [opengl backend](https://github.com/PistonDevelopers/opengl_graphics) to draw 2D objects and gather mouse and keyboard event. All 3D objects are rendered by FPS 3D game engine project using ray casting. Rendering can be devided into multiple threads (up to 4 threads):
 
 CLICK IMAGE TO PLAY
 
 [![codecov](ray-cast.png)](ray-cast.gif)
 
-The general purpose of this project is to create engine that can handle any black-white image and turns it to 3D objects.
+The general purpose of this project is to create engine that can handle any black-white image and turn it to 3D objects.
 
-## Tools and depenencies
+# Table of Contents  
+1. [Tools and dependencies](#tools)  
+2. [User documentation](#user)  
+3. [Developer documentation](#developer)  
+
+<a name="tools"/>
+
+# Tools and dependencies
 
 **Unit tests** in the project are made with the [Mockall](https://docs.rs/mockall/0.9.1/mockall/) library.
 
-**Code coverage** reporting tool used in the project: [Tarpaulin](https://github.com/xd009642/tarpaulin)
+**Code coverage** reporting tool used in the project - [Tarpaulin](https://github.com/xd009642/tarpaulin).
 
-# User documentation
+**Other libraries:**  
+[image](https://crates.io/crates/image) - load and analyse images  
+[piston](https://crates.io/crates/piston) - paint 2D objects and gather mouse and keyboard event  
+[lazy_static](https://crates.io/crates/lazy_static) - decrease number of clones in the test cases  
+[float-cmp](https://crates.io/crates/float-cmp) - compare floats in the test cases  
 
-## Movement
+<a name="user"/>
 
-Move the player using WASD keys and mouse.
+# User Documentation
 
+## Controls
+
+Move the player using WASD keys and mouse.  
+Exit game using ESC.
 
 ## Examples
 
@@ -37,12 +52,6 @@ Example with the labyrinth map
 cargo run --example labyrinth --release
 ```
 <img src="examples/labyrinth.png" width="160" height="110" />
-<!-- [![map](examples/labyrinth.png)](examples/labyrinth.png) -->
-
-
-
-
-
 
 ## Getting Started
 ```
@@ -121,21 +130,21 @@ fn main() {
 | wall_height | height of walls | f64 | [3, 10] |
 | map | area where player is moving and map elements are placed | [Map](src/map.rs) |  |
 | player | describes player start position, view angle and number of rays | [Player](src/player_utils/player.rs)  |  |
-| map_elements | collectioin of all map elements that can be rendered | Vec\<[MapElement](src/map_element/map_element.rs)\> | [WallMap](src/map_element/wall_map.rs), [Door](src/map_element/door.rs) |
+| map_elements | collection of all map elements that can be rendered | Vec\<[MapElement](src/map_element/map_element.rs)\> | [WallMap](src/map_element/wall_map.rs), [Door](src/map_element/door.rs) |
 | render_threads_amount | amounts of the render threads | i64 | [1, 4] |
 
 When engine is created call **engine::start** function.
 
 ### Map elements
 
-* [`WallMap`](src/map_element/wall_map.rs) - structure which describes where Walls are placed on the game area. It takes path to the image that shows walls locations (top view). Image has to be black(grey) and white. It takes also color of the Walls. Default color is orange.
-* [`Door`](src/map_element/door.rs) - structure describes where door is located, opening direction, opening velocity, color of the door and opening area. Location is specified by Rectangle. Opening direction is specified by DoorType. Opening velocity is specified by DoorVelocity.
+* [`WallMap`](src/map_element/wall_map.rs) - structure which describes where walls are placed on the game area. It takes path to the image that shows walls locations (top view). Image has to be black(grey) and white. It takes also color of the walls. Default color of the walls is orange.
+* [`Door`](src/map_element/door.rs) - structure describes where door is located, opening direction, opening velocity, color of the door and opening area. Location is specified by the Rectangle. Opening direction is specified by the DoorType. Opening velocity is specified by the DoorVelocity. Opening area is specified by the Rectangle.
 
 ### Player utils
 
-* [`Player`](src/player_utils/player.rs) - structure is used to describe position, horizontal field of view and number of rays used in the rendering. Position is specified by Coordinate. Horizontal field of view is specified by Angle. Number of rays is specified by usize.
+* [`Player`](src/player_utils/player.rs) - structure is used to describe position, horizontal field of view and number of rays used in the rendering. Position is specified by the Coordinate. Horizontal field of view is specified by the Angle. Number of rays is specified by usize.
 * [`Radians`](src/player_utils/radians.rs) - structure describes direction. Valid values [0, 2pi)
-* [`Angle`](src/player_utils/angle.rs) - structure contains two radians value: start and end. 
+* [`Angle`](src/player_utils/angle.rs) - structure contains two radians values: start and end. 
 
 ### Other types
 
@@ -146,15 +155,17 @@ When engine is created call **engine::start** function.
 * [`Coordinate`](src/graph/coordinate.rs) - describes position using f64 values
 * [`Point`](src/map_element/point.rs) - describes position using i64 values
 
+<a name="developer"/>
+
 # Developer documentation
 
-### MapElement
+### [MapElement](src/map_element/map_element.rs)
 
 MapElement trait has four functions:
 * **is_point_in_object** - used in the ray casting. This function checks if point is inside this MapElement.
 * **color** - returns color of the object.
-* **update** - updates object. Every MapElement is updated in the same time.
-* **on_position_update** - used when position of the player has been changed.
+* **update** - updates object. Every MapElement is updated at the same time.
+* **on_position_update** - is called when position of the player is changed.
 
 ### Ray casting
 
@@ -164,9 +175,9 @@ Ray casting is performed by map::cast_ray function. It takes ray start position,
 
 ### [RenderThread](src/render_thread.rs)
 
-Rays are splited between RenderThreads by a Player::get_rays_angle_range function. This function takes number of RenderThread and RenderThreads amount.
+Rays are splited between RenderThreads by a Player::get_rays_angle_range function. This function takes index of the RenderThread and the RenderThreads amount.
 
-Every RenderThread starts rendering when receive notification from the Engine. Notification is a true value sends by channel. RenderThread sends back rendered Walls to the ObjectGenerator.
+Every RenderThread starts rendering when receives notification from the Engine. Notification is a true value sends by the channel. RenderThread sends back rendered Walls to the ObjectGenerator.
 
 Player and MapElements are shared by RwLock across RenderThreads and Engine. Engine modifies Player and MapElements when RenderThreads only read the values.
 
@@ -183,7 +194,7 @@ Wrappers prepared in order to improve Engine test cases.
 
 ### Other types
 
-* [`Polygon`](src/generator/polygon.rs) - structre used to describe polygons that should be painted on the screen. PolygonGenerator returns single Polygon.
+* [`Polygon`](src/generator/polygon.rs) - structure used to describe polygons that should be painted on the screen. PolygonGenerator returns single Polygon.
 * [`ColoredPoint`](src/map_element/colored_point.rs) - structure returned by map::cast_ray function.
-* [`LinearGraph`](src/graph/LinearGraph.rs) - structure used to describe Ray.
+* [`LinearGraph`](src/graph/linear_graph.rs) - structure used to describe a ray.
 * [`MoveHandler`](src/player_utils/move_handler.rs) - structure used to move the Player properly.
