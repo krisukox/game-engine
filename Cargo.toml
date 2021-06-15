@@ -9,10 +9,10 @@ edition = "2018"
 [dependencies]
 image = "0.22.3"
 cfg-if = "1.0.0"
-piston = "0.52.0"
-piston2d-graphics = "0.39.0"
-pistoncore-glutin_window = "0.67.0"
-piston2d-opengl_graphics = "0.76.0"
+piston = "0.53.0"
+piston2d-graphics = "0.40.0"
+pistoncore-glutin_window = "0.69.0"
+piston2d-opengl_graphics = "0.78.0"
 
 [dev-dependencies]
 mockall = "0.9.1"
