@@ -119,6 +119,10 @@ fn main() {
 }
 ```
 
+```
+cargo run
+```
+
 ### Engine
 
 **engine:new** function parameters:
