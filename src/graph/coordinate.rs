@@ -16,6 +16,7 @@ impl Coordinate {
             .sqrt();
     }
 
+    #[cfg(test)]
     pub(crate) fn get_nearest_points(&self, last_coordinate: &Coordinate) -> Vec<Point> {
         let x_floor = self.x.floor();
         let y_floor = self.y.floor();

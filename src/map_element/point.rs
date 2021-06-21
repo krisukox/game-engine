@@ -21,6 +21,7 @@ impl Point {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn distance(&self, point: &Self) -> f64 {
         return (((self.x - point.x).pow(2) + (self.y - point.y).pow(2)) as f64).sqrt();
     }

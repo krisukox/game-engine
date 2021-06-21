@@ -28,8 +28,8 @@ fn main() {
             let map_elements: Vec<Box<dyn MapElement>> = vec![
                 Box::new(Door::new(
                     Rectangle {
-                        point_a: Point { x: 56, y: 43 },
-                        point_b: Point { x: 75, y: 45 },
+                        point_a: Point { x: 55, y: 43 },
+                        point_b: Point { x: 76, y: 45 },
                     },
                     DoorVelocity::VeryFast,
                     DoorType::Horizontal,
@@ -38,8 +38,8 @@ fn main() {
                 )),
                 Box::new(Door::new(
                     Rectangle {
-                        point_a: Point { x: 56, y: 25 },
-                        point_b: Point { x: 75, y: 27 },
+                        point_a: Point { x: 55, y: 25 },
+                        point_b: Point { x: 76, y: 27 },
                     },
                     DoorVelocity::VeryFast,
                     DoorType::Horizontal,
@@ -48,8 +48,8 @@ fn main() {
                 )),
                 Box::new(Door::new(
                     Rectangle {
-                        point_a: Point { x: 23, y: 36 },
-                        point_b: Point { x: 38, y: 38 },
+                        point_a: Point { x: 22, y: 36 },
+                        point_b: Point { x: 39, y: 38 },
                     },
                     DoorVelocity::Fast,
                     DoorType::Horizontal,
@@ -58,8 +58,8 @@ fn main() {
                 )),
                 Box::new(Door::new(
                     Rectangle {
-                        point_a: Point { x: 90, y: 36 },
-                        point_b: Point { x: 104, y: 38 },
+                        point_a: Point { x: 89, y: 36 },
+                        point_b: Point { x: 105, y: 38 },
                     },
                     DoorVelocity::Fast,
                     DoorType::Horizontal,
@@ -68,8 +68,8 @@ fn main() {
                 )),
                 Box::new(Door::new(
                     Rectangle {
-                        point_a: Point { x: 113, y: 17 },
-                        point_b: Point { x: 115, y: 31 },
+                        point_a: Point { x: 113, y: 16 },
+                        point_b: Point { x: 115, y: 32 },
                     },
                     DoorVelocity::Fast,
                     DoorType::Vertical,

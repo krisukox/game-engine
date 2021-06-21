@@ -475,4 +475,24 @@ mod tests {
             Vec::<Polygon>::new()
         );
     }
+
+    #[test]
+    fn generate_polygons_no_render_threads() {
+        let render_threads_amount = 0;
+
+        let polygon_generator = MockPolygonGenerator::new();
+        let player = Arc::new(RwLock::new(MockPlayer::default()));
+
+        let (_, receiver_walls) = mpsc::channel::<(Walls, usize)>();
+
+        let object_generator = ObjectGenerator {
+            polygon_generator,
+            receiver_walls,
+            render_threads_amount,
+        };
+        assert_eq!(
+            object_generator.generate_polygons(&player),
+            Vec::<Polygon>::new()
+        );
+    }
 }
