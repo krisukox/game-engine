@@ -1,13 +1,22 @@
 mod coordinate;
 mod linear_graph;
+mod rays;
+mod rays_iterator;
 mod wall;
 
 pub use self::coordinate::Coordinate;
 pub use self::linear_graph::LinearGraph;
 pub use self::wall::{Wall, Walls};
+pub use rays::Rays;
+pub use rays_iterator::RaysIterator;
 
-#[cfg(test)]
-pub use self::linear_graph::MockLinearGraph;
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        pub use self::linear_graph::MockLinearGraph;
+        pub use self::rays::MockRays;
+        pub use self::rays_iterator::MockRaysIterator;
+    }
+}
 
 #[cfg(test)]
 mod tests {

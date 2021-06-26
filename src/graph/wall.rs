@@ -9,6 +9,14 @@ pub struct Wall {
 }
 
 impl Wall {
+    pub fn new(start_point: Point, end_point: Point, primary_object_color: Color) -> Self {
+        Self {
+            start_point,
+            end_point,
+            primary_object_color,
+        }
+    }
+
     pub fn point_distance_start(&self, coordinate: &Coordinate) -> f64 {
         self.start_point.distance_coor(&coordinate)
     }

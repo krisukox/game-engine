@@ -57,16 +57,7 @@ impl Player {
         self.angle.value()
     }
 
-    pub(crate) fn get_rays_angle_range(
-        &self,
-        index: usize,
-        all_index: usize,
-    ) -> Vec<std::ops::Range<usize>> {
-        self.angle
-            .get_rays_angle_range(self.number_of_rays, index, all_index)
-    }
-
-    pub(crate) fn get_all_rays(&self) -> Vec<graph::LinearGraph> {
+    pub(crate) fn get_all_rays(&self) -> graph::Rays {
         graph::LinearGraph::get_all_rays(self.number_of_rays)
     }
 
@@ -179,7 +170,7 @@ mod tests {
             graph::Coordinate { x: 0.0, y: 0.0 },
             number_of_rays,
         );
-        assert_eq!(player.get_all_rays().len(), number_of_rays);
+        assert_eq!(player.get_all_rays().0.len(), number_of_rays);
     }
 
     #[test]

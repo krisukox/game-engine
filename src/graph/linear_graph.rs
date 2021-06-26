@@ -1,4 +1,5 @@
 use super::coordinate::Coordinate;
+use super::Rays;
 use crate::player_utils::Radians;
 
 #[cfg(test)]
@@ -192,12 +193,12 @@ impl LinearGraph {
         panic!("radians value out of scope");
     }
 
-    pub fn get_all_rays(number_of_rays: usize) -> Vec<LinearGraph> {
+    pub fn get_all_rays(number_of_rays: usize) -> Rays {
         let mut all_rays = Vec::with_capacity(number_of_rays);
         for index in 0..number_of_rays {
             all_rays.push(generate_one_graph(number_of_rays, index));
         }
-        return all_rays;
+        return Rays(all_rays);
     }
 }
 
@@ -242,7 +243,7 @@ mod tests {
     #[test]
     fn get_all_rays_check_size() {
         let size = 123456_usize;
-        assert_eq!(LinearGraph::get_all_rays(size).len(), size);
+        assert_eq!(LinearGraph::get_all_rays(size).0.len(), size);
     }
 
     #[test]
@@ -260,8 +261,9 @@ mod tests {
             Radians::new(std::f64::consts::PI * 6.0 / 4.0),
             Radians::new(std::f64::consts::PI * 7.0 / 4.0),
         ];
+
         for index in 0..NUMBER_OF_RAYS {
-            assert_eq!(all_rays[index], LinearGraph::from_radians(radians[index]));
+            assert_eq!(all_rays.0[index], LinearGraph::from_radians(radians[index]));
         }
     }
 
