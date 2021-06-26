@@ -294,16 +294,6 @@ mod tests {
             temp_val += 2.4;
         }
         return polygons;
-        // let expected_generate_polygons = vec![
-        //     Polygon {
-        //         area: [[0.0, 0.1], [1.0, 0.1], [2.0, 0.1], [3.0, 0.1]],
-        //         color: Color::Red,
-        //     },
-        //     Polygon {
-        //         area: [[1.0, 0.3], [2.0, 0.3], [3.0, 0.3], [4.0, 0.3]],
-        //         color: Color::Orange,
-        //     },
-        // ];
     }
 
     fn check_generate_polygons_merge_walls(
@@ -343,10 +333,16 @@ mod tests {
             .send((Walls(vec![walls_in_sight.0[0].clone()]), 0))
             .unwrap();
         sender_walls
-            .send((Walls(walls_in_sight.0[1..3].to_vec()), 1))
+            .send((
+                Walls(walls_in_sight.0[1..walls_in_sight.0.len() - 1].to_vec()),
+                1,
+            ))
             .unwrap();
         sender_walls
-            .send((Walls(vec![walls_in_sight.0[3].clone()]), 2))
+            .send((
+                Walls(vec![walls_in_sight.0[walls_in_sight.0.len() - 1].clone()]),
+                2,
+            ))
             .unwrap();
 
         let expected_generate_polygons = generate_polygons(merged_walls.0.len());
@@ -437,7 +433,7 @@ mod tests {
             graph::Wall {
                 start_point: Point { x: 3, y: 3 },
                 end_point: Point { x: 2, y: 3 },
-                primary_object_color: Color::Green,
+                primary_object_color: Color::Red,
             },
         ]);
         let merged_walls_2 = graph::Walls(vec![
@@ -448,18 +444,48 @@ mod tests {
             },
             graph::Wall {
                 start_point: Point { x: 5, y: 3 },
-                end_point: Point { x: 3, y: 3 },
+                end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
+            },
+        ]);
+        let walls_in_sight_3 = graph::Walls(vec![
+            graph::Wall {
+                start_point: Point { x: 5, y: 6 },
+                end_point: Point { x: 5, y: 5 },
                 primary_object_color: Color::Red,
             },
             graph::Wall {
-                start_point: Point { x: 3, y: 3 },
-                end_point: Point { x: 2, y: 3 },
+                start_point: Point { x: 5, y: 5 },
+                end_point: Point { x: 5, y: 4 },
                 primary_object_color: Color::Green,
+            },
+            graph::Wall {
+                start_point: Point { x: 5, y: 4 },
+                end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
+            },
+        ]);
+        let merged_walls_3 = graph::Walls(vec![
+            graph::Wall {
+                start_point: Point { x: 5, y: 6 },
+                end_point: Point { x: 5, y: 5 },
+                primary_object_color: Color::Red,
+            },
+            graph::Wall {
+                start_point: Point { x: 5, y: 5 },
+                end_point: Point { x: 5, y: 4 },
+                primary_object_color: Color::Green,
+            },
+            graph::Wall {
+                start_point: Point { x: 5, y: 4 },
+                end_point: Point { x: 5, y: 3 },
+                primary_object_color: Color::Red,
             },
         ]);
 
         check_generate_polygons_merge_walls(walls_in_sight_1, merged_walls_1);
         check_generate_polygons_merge_walls(walls_in_sight_2, merged_walls_2);
+        check_generate_polygons_merge_walls(walls_in_sight_3, merged_walls_3);
     }
 
     #[test]
