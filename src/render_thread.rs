@@ -114,6 +114,11 @@ mod tests {
                 primary_object_color: Color::Red,
             },
             Wall {
+                start_point: Point { x: 2, y: 4 },
+                end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
                 start_point: Point { x: 2, y: 3 },
                 end_point: Point { x: 3, y: 3 },
                 primary_object_color: Color::Red,
@@ -195,7 +200,7 @@ mod tests {
                 .withf(|thread_index_, threads_amount_| {
                     *thread_index_ == thread_index && *threads_amount_ == threads_amount
                 })
-                .return_const(vec![std::ops::Range { start: 1, end: 9 }])
+                .return_const(vec![std::ops::Range { start: 1, end: 10 }])
                 .in_sequence(&mut seq);
         }
 
