@@ -114,6 +114,7 @@ impl Engine {
             .exit_on_esc(true)
             .build()
             .unwrap();
+        window.ctx.window().set_resizable(false);
         window.ctx.window().set_maximized(false);
         window.set_capture_cursor(true);
         return window;

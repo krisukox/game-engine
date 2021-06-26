@@ -1,5 +1,4 @@
 mod color;
-mod colored_point;
 mod door;
 mod half_door;
 mod map_element;
@@ -8,7 +7,6 @@ mod rectangle;
 mod wall_map;
 
 pub use color::Color;
-pub(crate) use colored_point::ColoredPoint;
 pub use door::{Door, DoorType, DoorVelocity};
 pub use map_element::MapElement;
 pub use point::Point;

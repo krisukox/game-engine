@@ -1,5 +1,5 @@
 use crate::graph::{Coordinate, Walls};
-use crate::map_element::{ColoredPoint, MapElement};
+use crate::map_element::MapElement;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -55,42 +55,15 @@ impl RenderThread {
         map_elements: &Vec<Box<dyn MapElement>>,
     ) -> Walls {
         let mut walls_in_sight = Walls(vec![]);
-        let mut last_points: Vec<ColoredPoint> = Vec::with_capacity(2);
         for rays_indexes in rays_indexes_vec {
             for index in rays_indexes {
-                let mut points = self.map.cast_ray(position, &self.rays[index], map_elements);
-                handle_points(&mut last_points, &mut walls_in_sight, &mut points);
+                let option_wall = self.map.cast_ray(position, &self.rays[index], map_elements);
+                if let Some(wall) = option_wall {
+                    walls_in_sight.try_extend_last_wall(wall)
+                }
             }
         }
         return walls_in_sight;
-    }
-}
-
-fn handle_points(
-    last_points: &mut Vec<ColoredPoint>,
-    walls: &mut Walls,
-    new_points: &mut Vec<ColoredPoint>,
-) {
-    if let Some(point) = walls.try_extend_last_wall(new_points) {
-        handle_one_point(last_points, walls, point);
-    }
-}
-
-fn handle_one_point(
-    last_points: &mut Vec<ColoredPoint>,
-    walls: &mut Walls,
-    new_point: ColoredPoint,
-) {
-    if last_points.len() < 2 {
-        last_points.push(new_point);
-        if last_points.len() == 2 {
-            if last_points[0].distance(&last_points[1]) == 1.0 {
-                walls.try_extend_last_wall(last_points);
-            }
-            last_points.clear();
-        }
-    } else {
-        last_points.clear();
     }
 }
 
@@ -101,7 +74,7 @@ mod tests {
     use crate::graph::MockLinearGraph;
     use crate::graph::Wall;
     use crate::map::MockMap;
-    use crate::map_element::{Color, ColoredPoint, Point};
+    use crate::map_element::{Color, Point};
     use crate::player_utils::MockPlayer;
     use mockall::*;
     use std::sync::mpsc::channel;
@@ -129,85 +102,52 @@ mod tests {
         static threads_amount: usize = 4;
 
         static player_position: Coordinate = Coordinate { x: 10.0, y: 20.0 };
-        let vec_points = vec![
-            vec![
-                ColoredPoint {
-                    point: Point { x: 1, y: 4 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 2, y: 4 },
-                    color: Color::Red,
-                },
-            ],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 2, y: 4 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 2, y: 3 },
-                    color: Color::Red,
-                },
-            ],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 2, y: 3 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 3, y: 3 },
-                    color: Color::Red,
-                },
-            ],
-            vec![ColoredPoint {
-                point: Point { x: 3, y: 4 },
-                color: Color::Red,
-            }],
-            vec![ColoredPoint {
-                point: Point { x: 4, y: 4 },
-                color: Color::Red,
-            }],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 4, y: 5 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 5, y: 5 },
-                    color: Color::Red,
-                },
-            ],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 5, y: 6 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 6, y: 6 },
-                    color: Color::Red,
-                },
-            ],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 6, y: 6 },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point { x: 7, y: 6 },
-                    color: Color::Green,
-                },
-            ],
-            vec![
-                ColoredPoint {
-                    point: Point { x: 7, y: 6 },
-                    color: Color::Green,
-                },
-                ColoredPoint {
-                    point: Point { x: 8, y: 6 },
-                    color: Color::Green,
-                },
-            ],
+        let walls = vec![
+            Wall {
+                start_point: Point { x: 1, y: 4 },
+                end_point: Point { x: 2, y: 4 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 2, y: 4 },
+                end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 2, y: 4 },
+                end_point: Point { x: 2, y: 3 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 2, y: 3 },
+                end_point: Point { x: 3, y: 3 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 3, y: 4 },
+                end_point: Point { x: 4, y: 4 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 4, y: 5 },
+                end_point: Point { x: 5, y: 5 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 5, y: 6 },
+                end_point: Point { x: 6, y: 6 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 6, y: 6 },
+                end_point: Point { x: 7, y: 6 },
+                primary_object_color: Color::Red,
+            },
+            Wall {
+                start_point: Point { x: 7, y: 6 },
+                end_point: Point { x: 8, y: 6 },
+                primary_object_color: Color::Green,
+            },
         ];
         let walls_in_sight = Walls(vec![
             Wall {
@@ -264,11 +204,11 @@ mod tests {
                 .in_sequence(&mut seq);
         }
 
-        for points in vec_points {
+        for wall in walls {
             map.expect_cast_ray()
                 .times(1)
                 .withf(|position, _, _| *position == player_position)
-                .return_const(points)
+                .return_const(wall)
                 .in_sequence(&mut seq);
         }
 

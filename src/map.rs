@@ -1,5 +1,5 @@
-use crate::graph::Coordinate;
-use crate::map_element::{ColoredPoint, MapElement, Point};
+use crate::graph::{Coordinate, Wall};
+use crate::map_element::MapElement;
 
 #[cfg(test)]
 use mockall::automock;
@@ -31,42 +31,18 @@ impl Map {
         return true;
     }
 
-    fn is_black_wall_or_point(
+    fn get_wall(
         &self,
-        points: Vec<Point>,
+        position: &Coordinate, // has to return coordinates sorted in clockwise order
         map_elements: &Vec<Box<dyn MapElement>>,
-    ) -> Option<Vec<ColoredPoint>> {
-        let mut points_primary_object_type = vec![];
-        let points_len = points.len();
-        'point_loop: for point in points.into_iter() {
-            for map_element in map_elements {
-                if map_element.is_point_in_object(&point) {
-                    points_primary_object_type.push(ColoredPoint {
-                        point,
-                        color: map_element.color(),
-                    });
-                    continue 'point_loop;
-                }
+    ) -> Option<Wall> {
+        for map_element in map_elements {
+            let wall = map_element.is_coordinate_in_object(&position);
+            if wall != None {
+                return wall;
             }
-            return None;
-        }
-
-        if points_primary_object_type.len() == points_len {
-            return Some(points_primary_object_type);
         }
         return None;
-    }
-
-    fn get_point_or_wall(
-        &self,
-        last_position: &Coordinate, // last cordinate is needed because get_point_or_wall
-        next_position: &Coordinate, // has to return coordinates sorted in clockwise order
-        map_elements: &Vec<Box<dyn MapElement>>,
-    ) -> Option<Vec<ColoredPoint>> {
-        return self.is_black_wall_or_point(
-            next_position.get_nearest_points(&last_position),
-            map_elements,
-        );
     }
 
     pub(crate) fn cast_ray(
@@ -74,18 +50,17 @@ impl Map {
         position: &Coordinate,
         ray: &LinearGraph,
         map_elements: &Vec<Box<dyn MapElement>>,
-    ) -> Vec<ColoredPoint> {
+    ) -> Option<Wall> {
         let mut last_position = position.clone();
         let mut next_position: Coordinate;
         loop {
             next_position = ray.get_next(&last_position);
             if !self.validate_coordinate(&next_position) {
-                return vec![];
+                return None;
             }
-            if let Some(points) =
-                self.get_point_or_wall(&last_position, &next_position, map_elements)
-            {
-                return points;
+            let wall = self.get_wall(&next_position, map_elements);
+            if wall != None {
+                return wall;
             }
             last_position = next_position;
         }
@@ -97,57 +72,8 @@ mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
     use crate::graph::MockLinearGraph;
-    use crate::map_element::Color;
-    use crate::map_element::MockMapElement;
+    use crate::map_element::{Color, MockMapElement, Point};
     use mockall::*;
-
-    #[test]
-    fn cast_ray_simple() {
-        let mut seq = Sequence::new();
-
-        let map = Map {
-            width: 50,
-            height: 50,
-        };
-
-        lazy_static! {
-            static ref current_positon: Coordinate = Coordinate { x: 30.0, y: 20.0 };
-            static ref next_position: Coordinate = Coordinate { x: 40.0, y: 30.0 };
-            static ref next_point: ColoredPoint = ColoredPoint {
-                point: Point {
-                    x: next_position.x as i64,
-                    y: next_position.y as i64,
-                },
-                color: Color::Green,
-            };
-        }
-
-        let mut ray = MockLinearGraph::new();
-        let mut map_element = Box::new(MockMapElement::new());
-
-        ray.expect_get_next()
-            .times(1)
-            .withf(move |coordinate| *coordinate == *current_positon)
-            .return_const(next_position.clone())
-            .in_sequence(&mut seq);
-
-        map_element
-            .expect_is_point_in_object()
-            .times(1)
-            .withf(|point| *point == next_point.point)
-            .return_const(true)
-            .in_sequence(&mut seq);
-        map_element
-            .expect_color()
-            .times(1)
-            .return_const(next_point.color.clone())
-            .in_sequence(&mut seq);
-
-        assert_eq!(
-            map.cast_ray(&current_positon, &ray, &vec![map_element]),
-            vec![next_point.clone()]
-        );
-    }
 
     #[test]
     fn cast_ray_complex() {
@@ -161,34 +87,13 @@ mod tests {
         lazy_static! {
             static ref current_position: Coordinate = Coordinate { x: 30.0, y: 20.0 };
             static ref next_position_1: Coordinate = Coordinate { x: 40.0, y: 30.5 };
-            static ref next_points_1: Vec<Point> = vec![
-                Point {
-                    x: next_position_1.x as i64,
-                    y: next_position_1.y.ceil() as i64,
-                },
-                Point {
-                    x: next_position_1.x as i64,
-                    y: next_position_1.y.floor() as i64,
-                },
-            ];
             static ref next_position_2: Coordinate = Coordinate { x: 45.0, y: 35.5 };
-            static ref next_points_2: Vec<ColoredPoint> = vec![
-                ColoredPoint {
-                    point: Point {
-                        x: next_position_2.x as i64,
-                        y: next_position_2.y.ceil() as i64,
-                    },
-                    color: Color::Red,
-                },
-                ColoredPoint {
-                    point: Point {
-                        x: next_position_2.x as i64,
-                        y: next_position_2.y.floor() as i64,
-                    },
-                    color: Color::Green,
-                },
-            ];
         }
+        let wall = Some(Wall {
+            start_point: Point { x: 10, y: 15 },
+            end_point: Point { x: 20, y: 25 },
+            primary_object_color: Color::Blue,
+        });
 
         let mut ray = MockLinearGraph::new();
         let mut map_element = Box::new(MockMapElement::new());
@@ -200,10 +105,10 @@ mod tests {
             .in_sequence(&mut seq);
 
         map_element
-            .expect_is_point_in_object()
+            .expect_is_coordinate_in_object()
             .times(1)
-            .withf(|point| next_points_1.contains(point))
-            .return_const(false)
+            .withf(|coordinate| *coordinate == *next_position_1)
+            .return_const(None)
             .in_sequence(&mut seq);
 
         ray.expect_get_next()
@@ -213,39 +118,15 @@ mod tests {
             .in_sequence(&mut seq);
 
         map_element
-            .expect_is_point_in_object()
+            .expect_is_coordinate_in_object()
             .times(1)
-            .withf(|point| next_points_2.iter().any(|point_| point_.point == *point))
-            .return_const(true)
-            .in_sequence(&mut seq);
-        map_element
-            .expect_color()
-            .times(1)
-            .return_const(next_points_2[0].color.clone())
-            .in_sequence(&mut seq);
-        map_element
-            .expect_is_point_in_object()
-            .times(1)
-            .withf(move |point| next_points_2.iter().any(|point_| point_.point == *point))
-            .return_const(true)
-            .in_sequence(&mut seq);
-        map_element
-            .expect_color()
-            .times(1)
-            .return_const(next_points_2[1].color.clone())
+            .withf(|coordinate| *coordinate == *next_position_2)
+            .return_const(wall.clone())
             .in_sequence(&mut seq);
 
-        let ret_points = map.cast_ray(&current_position, &ray, &vec![map_element]);
+        let ret_wall = map.cast_ray(&current_position, &ray, &vec![map_element]);
 
-        for point in &*next_points_2 {
-            assert!(ret_points
-                .iter()
-                .any(|ret_point| ret_point.point == point.point));
-        }
-
-        for (ret_point, point) in ret_points.iter().zip(&*next_points_2) {
-            assert!(ret_point.color == point.color);
-        }
+        assert_eq!(wall, ret_wall);
     }
 
     #[test]
@@ -271,7 +152,7 @@ mod tests {
 
         assert_eq!(
             map.cast_ray(&current_positon, &ray, &vec![map_element]),
-            vec![]
+            None
         );
     }
 }

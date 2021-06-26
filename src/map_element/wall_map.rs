@@ -38,12 +38,16 @@ impl WallMap {
             height: self.image.height() as i64,
         }
     }
+
+    pub fn is_black_pixel(&self, x: u32, y: u32) -> bool {
+        let pixel = self.image.get_pixel(x, y);
+        pixel[0] < 100 && pixel[1] < 100 && pixel[2] < 100
+    }
 }
 
 impl MapElement for WallMap {
     fn is_point_in_object(&self, point: &Point) -> bool {
-        let pixel = self.image.get_pixel(point.x as u32, point.y as u32);
-        return pixel[0] < 100 && pixel[1] < 100 && pixel[2] < 100;
+        self.is_black_pixel(point.x as u32, point.y as u32)
     }
 
     fn color(&self) -> Color {
@@ -54,6 +58,7 @@ impl MapElement for WallMap {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::graph::Wall;
 
     #[test]
     fn is_point_in_object() {
@@ -136,6 +141,81 @@ mod tests {
             let map = wall_map.get_map();
             assert_eq!(map.width, 50);
             assert_eq!(map.height, 50);
+        } else {
+            panic!("File with image for the testcase doesn't exist");
+        }
+    }
+
+    #[test]
+    fn is_coordinate_in_object() {
+        let color = Color::Green;
+        if let Ok(wall_map) = WallMap::new(
+            &Path::new("test_resources/map-test.png"),
+            Some(color.clone()),
+        ) {
+            let coordinate_1 = Coordinate { x: 34.6, y: 26.0 };
+            let coordinate_2 = Coordinate { x: 35.4, y: 32.0 };
+            let coordinate_3 = Coordinate { x: 32.0, y: 29.3 };
+            let coordinate_4 = Coordinate { x: 36.0, y: 28.7 };
+            let coordinate_none = Coordinate { x: 18.0, y: 21.0 };
+
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_1),
+                Some(Wall {
+                    start_point: Point {
+                        x: coordinate_1.x.floor() as i64,
+                        y: coordinate_1.y as i64
+                    },
+                    end_point: Point {
+                        x: coordinate_1.x.ceil() as i64,
+                        y: coordinate_1.y as i64
+                    },
+                    primary_object_color: color.clone()
+                })
+            );
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_2),
+                Some(Wall {
+                    start_point: Point {
+                        x: coordinate_2.x.ceil() as i64,
+                        y: coordinate_2.y as i64
+                    },
+                    end_point: Point {
+                        x: coordinate_2.x.floor() as i64,
+                        y: coordinate_2.y as i64
+                    },
+                    primary_object_color: color.clone()
+                })
+            );
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_3),
+                Some(Wall {
+                    start_point: Point {
+                        x: coordinate_3.x as i64,
+                        y: coordinate_3.y.ceil() as i64
+                    },
+                    end_point: Point {
+                        x: coordinate_3.x as i64,
+                        y: coordinate_3.y.floor() as i64
+                    },
+                    primary_object_color: color.clone()
+                })
+            );
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_4),
+                Some(Wall {
+                    start_point: Point {
+                        x: coordinate_4.x as i64,
+                        y: coordinate_4.y.floor() as i64
+                    },
+                    end_point: Point {
+                        x: coordinate_4.x as i64,
+                        y: coordinate_4.y.ceil() as i64
+                    },
+                    primary_object_color: color.clone()
+                })
+            );
+            assert_eq!(wall_map.is_coordinate_in_object(&coordinate_none), None);
         } else {
             panic!("File with image for the testcase doesn't exist");
         }
