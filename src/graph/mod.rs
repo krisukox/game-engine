@@ -1,13 +1,22 @@
 mod coordinate;
 mod linear_graph;
+mod rays;
+mod rays_iterator;
 mod wall;
 
 pub use self::coordinate::Coordinate;
 pub use self::linear_graph::LinearGraph;
 pub use self::wall::{Wall, Walls};
+pub use rays::Rays;
+pub use rays_iterator::RaysIterator;
 
-#[cfg(test)]
-pub use self::linear_graph::MockLinearGraph;
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+        pub use self::linear_graph::MockLinearGraph;
+        pub use self::rays::MockRays;
+        pub use self::rays_iterator::MockRaysIterator;
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -151,5 +160,15 @@ mod tests {
             &first_coordinate_2,
             &second_coordinate_2,
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn next_coordinate_radians_out_of_scope() {
+        let graph: LinearGraph = LinearGraph {
+            radians: Radians::PI_2,
+            tangens: Default::default(),
+        };
+        graph.get_next(&Coordinate::default());
     }
 }

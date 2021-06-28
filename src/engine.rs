@@ -108,12 +108,12 @@ impl Engine {
     #[cfg(not(tarpaulin_include))]
     #[cfg(not(test))]
     fn create_window(resolution: Size) -> GlutinWindow {
-        let mut window: GlutinWindow = WindowSettings::new("game", resolution)
+        let mut window_settings = WindowSettings::new("game", resolution)
             .graphics_api(OPENGL_VERSION)
             .fullscreen(false)
-            .exit_on_esc(true)
-            .build()
-            .unwrap();
+            .exit_on_esc(true);
+        window_settings.set_resizable(false);
+        let mut window: GlutinWindow = window_settings.build().unwrap();
         window.ctx.window().set_resizable(false);
         window.ctx.window().set_maximized(false);
         window.set_capture_cursor(true);
