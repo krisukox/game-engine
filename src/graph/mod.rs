@@ -161,4 +161,14 @@ mod tests {
             &second_coordinate_2,
         );
     }
+
+    #[test]
+    #[should_panic]
+    fn next_coordinate_radians_out_of_scope() {
+        let graph: LinearGraph = LinearGraph {
+            radians: Radians::PI_2,
+            tangens: Default::default(),
+        };
+        graph.get_next(&Coordinate::default());
+    }
 }
