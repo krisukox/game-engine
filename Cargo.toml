@@ -13,6 +13,7 @@ piston = "0.53.0"
 piston2d-graphics = "0.40.0"
 pistoncore-glutin_window = "0.69.0"
 piston2d-opengl_graphics = "0.78.0"
+mockall_double = "0.1.0"
 
 [dev-dependencies]
 mockall = "0.9.1"

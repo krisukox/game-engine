@@ -1,17 +1,14 @@
 use super::angle::Angle;
 use super::radians::Radians;
 use crate::graph;
+use mockall_double::double;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
-cfg_if::cfg_if! {
-    if #[cfg(test)]{
-        use super::move_handler::MockMoveHandler as MoveHandler;
-    } else {
-        use super::move_handler::MoveHandler;
-    }
-}
+#[double]
+use super::move_handler::MoveHandler;
+
 #[cfg_attr(not(test), derive(Debug))]
 pub struct Player {
     pub angle: Angle,

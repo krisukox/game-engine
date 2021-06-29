@@ -1,23 +1,18 @@
 use crate::graph::{Coordinate, Walls};
 use crate::map_element::MapElement;
+use mockall_double::double;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, RwLock};
-use std::thread;
-use std::thread::JoinHandle;
+use std::{thread, thread::JoinHandle};
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        use crate::graph::MockLinearGraph as LinearGraph;
-        use crate::player_utils::MockPlayer as Player;
-        use crate::map::MockMap as Map;
-        use crate::graph::MockRays as Rays;
-    } else {
-        use crate::graph::LinearGraph;
-        use crate::player_utils::Player;
-        use crate::map::Map;
-        use crate::graph::Rays;
-    }
-}
+#[double]
+use crate::graph::LinearGraph;
+#[double]
+use crate::graph::Rays;
+#[double]
+use crate::map::Map;
+#[double]
+use crate::player_utils::Player;
 
 pub struct RenderThread {
     pub map_elements: Arc<RwLock<Vec<Box<dyn MapElement>>>>,

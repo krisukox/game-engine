@@ -1,7 +1,7 @@
 use piston::{event_loop, Event};
 
 cfg_if::cfg_if! {
-    if #[cfg(test)]{
+    if #[cfg(test)] {
         use super::test_utils::Window;
     } else {
         use glutin_window::GlutinWindow as Window;

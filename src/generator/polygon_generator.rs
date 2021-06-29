@@ -1,17 +1,13 @@
 use crate::generator::Polygon;
 use crate::graph;
 use crate::player_utils;
+use mockall_double::double;
 
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        use super::point_generator::MockPointGenerator as PointGenerator;
-    } else {
-        use super::point_generator::PointGenerator;
-    }
-}
+#[double]
+use super::point_generator::PointGenerator;
 
 pub struct PolygonGenerator {
     pub point_generator: PointGenerator,
