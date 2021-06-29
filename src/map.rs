@@ -1,16 +1,12 @@
 use crate::graph::{Coordinate, Wall};
 use crate::map_element::MapElement;
+use mockall_double::double;
 
 #[cfg(test)]
 use mockall::automock;
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        use crate::graph::MockLinearGraph as LinearGraph;
-    } else {
-        use crate::graph::LinearGraph;
-    }
-}
+#[double]
+use crate::graph::LinearGraph;
 
 #[derive(Default, Clone)]
 pub struct Map {

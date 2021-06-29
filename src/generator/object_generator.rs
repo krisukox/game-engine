@@ -2,6 +2,7 @@ use crate::generator::Polygon;
 use crate::graph;
 use crate::graph::Walls;
 use crate::player_utils;
+use mockall_double::double;
 use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, RwLock};
@@ -9,15 +10,10 @@ use std::sync::{Arc, RwLock};
 #[cfg(test)]
 use mockall::automock;
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        use super::polygon_generator::MockPolygonGenerator as PolygonGenerator;
-        use crate::player_utils::MockPlayer as Player;
-    } else {
-        use super::polygon_generator::PolygonGenerator;
-        use crate::player_utils::Player;
-    }
-}
+#[double]
+use super::polygon_generator::PolygonGenerator;
+#[double]
+use crate::player_utils::Player;
 
 pub struct ObjectGenerator {
     pub polygon_generator: PolygonGenerator,

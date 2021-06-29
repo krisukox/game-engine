@@ -2,26 +2,28 @@ use crate::map_element::MapElement;
 use crate::player_utils::Radians;
 use graphics::types::Color;
 use graphics::Transformed;
+use mockall_double::double;
 use piston::input::{ButtonEvent, MouseRelativeEvent, RenderEvent, UpdateEvent};
 use std::sync::mpsc::{channel, Sender};
 use std::sync::{Arc, RwLock};
 use std::thread::JoinHandle;
 
+#[double]
+use crate::generator::ObjectGenerator;
+#[double]
+use crate::player_utils::Player;
+#[double]
+use crate::wrapper::Events;
+#[double]
+use crate::wrapper::Graphics;
+
 cfg_if::cfg_if! {
-    if #[cfg(test)]{
-        use crate::generator::MockObjectGenerator as ObjectGenerator;
-        use crate::player_utils::MockPlayer as Player;
-        use crate::wrapper::MockEvents as Events;
-        use crate::wrapper::MockGraphics as Graphics;
+    if #[cfg(test)] {
         use crate::wrapper::test_utils::Window as GlutinWindow;
         use crate::wrapper::test_utils::GlGraphics;
     } else {
-        use crate::wrapper::Events;
-        use crate::wrapper::Graphics;
         use crate::graph::Walls;
         use crate::map::Map;
-        use crate::generator::ObjectGenerator;
-        use crate::player_utils::Player;
         use crate::generator::PolygonGenerator;
         use crate::generator::PointGenerator;
         use crate::render_thread::RenderThread;
@@ -219,16 +221,12 @@ fn into_bool(state: piston::input::ButtonState) -> bool {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::generator::MockObjectGenerator;
-    use crate::generator::Polygon;
+    use crate::generator::{MockObjectGenerator, Polygon};
     use crate::graph::Coordinate;
-    use crate::map_element::Color;
-    use crate::map_element::MockMapElement;
+    use crate::map_element::{Color, MockMapElement};
     use crate::player_utils::{MockPlayer, Radians};
-    use crate::wrapper::test_utils::GlGraphics;
-    use crate::wrapper::test_utils::Window;
-    use crate::wrapper::MockEvents;
-    use crate::wrapper::MockGraphics;
+    use crate::wrapper::test_utils::{GlGraphics, Window};
+    use crate::wrapper::{MockEvents, MockGraphics};
     use mockall::*;
     use piston::input::*;
     use piston::*;

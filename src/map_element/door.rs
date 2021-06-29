@@ -2,16 +2,12 @@ use super::Point;
 use crate::graph::Coordinate;
 use crate::map_element::Color;
 use crate::map_element::MapElement;
+use mockall_double::double;
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        use super::MockHalfDoor as HalfDoor;
-        use super::MockRectangle as Rectangle;
-    } else {
-        use super::HalfDoor;
-        use super::Rectangle;
-    }
-}
+#[double]
+use super::half_door::HalfDoor;
+#[double]
+use super::Rectangle;
 
 pub struct Door {
     half_doors: (HalfDoor, HalfDoor),
@@ -148,7 +144,7 @@ pub enum DoorType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::map_element::MockHalfDoor;
+    use crate::map_element::half_door::MockHalfDoor;
     use crate::map_element::MockRectangle;
     use mockall::*;
 

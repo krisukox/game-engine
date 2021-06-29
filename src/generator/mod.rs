@@ -9,7 +9,7 @@ pub use polygon::Polygon;
 pub use polygon_generator::PolygonGenerator;
 
 cfg_if::cfg_if! {
-    if #[cfg(test)]{
+    if #[cfg(test)] {
         pub use object_generator::MockObjectGenerator;
         use point_generator::MockPointGenerator;
         use polygon_generator::MockPolygonGenerator;

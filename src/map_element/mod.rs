@@ -17,8 +17,5 @@ cfg_if::cfg_if! {
     if #[cfg(test)]{
         pub use map_element::MockMapElement;
         pub use rectangle::MockRectangle;
-        use half_door::MockHalfDoor;
-    } else {
-        use half_door::HalfDoor;
     }
 }
