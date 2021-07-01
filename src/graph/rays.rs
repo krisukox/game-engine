@@ -24,7 +24,7 @@ impl Rays {
         _angle: &Angle,
         _index: usize,
         _all_index: usize,
-    ) -> impl Iterator<Item = &'static crate::graph::MockLinearGraph> {
+    ) -> impl Iterator<Item = &'static super::LinearGraph> {
         return super::MockRaysIterator::default();
     }
 }

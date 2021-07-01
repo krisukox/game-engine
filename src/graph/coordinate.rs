@@ -49,22 +49,30 @@ impl Coordinate {
         return vec![Point::new(self.x.round(), self.y.round())];
     }
 
-    pub(crate) fn into_radians(&self, end_point: &Point) -> player_utils::Radians {
-        let delta_x = self.x - end_point.x as f64;
-        let delta_y = self.y - end_point.y as f64;
+    fn into_radians(&self, end_point_x: f64, end_point_y: f64) -> player_utils::Radians {
+        let delta_x = self.x - end_point_x;
+        let delta_y = self.y - end_point_y;
         if delta_x == 0.0 {
-            if self.y < end_point.y as f64 {
+            if self.y < end_point_y {
                 return player_utils::Radians::new(std::f64::consts::PI / 2.0);
             }
             return player_utils::Radians::new(std::f64::consts::PI * 3.0 / 2.0);
         }
-        if self.x < end_point.x as f64 {
-            if self.y > end_point.y as f64 {
+        if self.x < end_point_x {
+            if self.y > end_point_y {
                 return player_utils::Radians::new((delta_y / delta_x).atan() + player_utils::PI_2);
             }
             return player_utils::Radians::new((delta_y / delta_x).atan());
         }
         return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
+    }
+
+    pub(crate) fn into_radians_point(&self, end_point: &Point) -> player_utils::Radians {
+        self.into_radians(end_point.x as f64, end_point.y as f64)
+    }
+
+    pub(crate) fn into_radians_coor(&self, end_point: &Coordinate) -> player_utils::Radians {
+        self.into_radians(end_point.x, end_point.y)
     }
 }
 
@@ -189,7 +197,28 @@ mod tests {
         let mut radian = player_utils::Radians::new(0.0);
 
         for end_point in end_points {
-            assert_eq!(start_coordinate.into_radians(&end_point), radian);
+            assert_eq!(start_coordinate.into_radians_point(&end_point), radian);
+            radian += player_utils::Radians::new(std::f64::consts::PI / 4.0);
+        }
+    }
+
+    #[test]
+    fn into_radians_coor() {
+        let start_coordinate = Coordinate { x: 0.5, y: 1.5 };
+        let end_coordinates = vec![
+            Coordinate { x: 1.5, y: 1.5 },
+            Coordinate { x: 1.5, y: 2.5 },
+            Coordinate { x: 0.5, y: 2.5 },
+            Coordinate { x: -0.5, y: 2.5 },
+            Coordinate { x: -0.5, y: 1.5 },
+            Coordinate { x: -0.5, y: 0.5 },
+            Coordinate { x: 0.5, y: 0.5 },
+            Coordinate { x: 1.5, y: 0.5 },
+        ];
+        let mut radian = player_utils::Radians::new(0.0);
+
+        for end_coordinate in end_coordinates {
+            assert_eq!(start_coordinate.into_radians_coor(&end_coordinate), radian);
             radian += player_utils::Radians::new(std::f64::consts::PI / 4.0);
         }
     }

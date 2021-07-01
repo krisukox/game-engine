@@ -57,8 +57,10 @@ impl MapElement for WallMap {
 
 #[cfg(test)]
 mod tests {
+    #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::graph::Wall;
+    use crate::graph::{LinearGraph, MockGraphMethods, Wall};
+    use lazy_static::*;
 
     #[test]
     fn is_point_in_object() {
@@ -153,69 +155,152 @@ mod tests {
             &Path::new("test_resources/map-test.png"),
             Some(color.clone()),
         ) {
-            let coordinate_1 = Coordinate { x: 34.6, y: 26.0 };
-            let coordinate_2 = Coordinate { x: 35.4, y: 32.0 };
-            let coordinate_3 = Coordinate { x: 32.0, y: 29.3 };
-            let coordinate_4 = Coordinate { x: 36.0, y: 28.7 };
-            let coordinate_none = Coordinate { x: 18.0, y: 21.0 };
+            static coordinate_1: Coordinate = Coordinate { x: 34.6, y: 26.0 };
+            static coordinate_2: Coordinate = Coordinate { x: 35.4, y: 32.0 };
+            static coordinate_3: Coordinate = Coordinate { x: 32.0, y: 29.3 };
+            static coordinate_4: Coordinate = Coordinate { x: 36.0, y: 28.7 };
+            static coordinate_none: Coordinate = Coordinate { x: 18.0, y: 21.0 };
+            static coordinate_out_of_map_1: Coordinate = Coordinate { x: 25.0, y: 0.5 };
+            static coordinate_out_of_map_2: Coordinate = Coordinate { x: 0.7, y: 25.0 };
 
-            assert_eq!(
-                wall_map.is_coordinate_in_object(&coordinate_1),
-                Some(Wall {
-                    start_point: Point {
-                        x: coordinate_1.x.floor() as i64,
-                        y: coordinate_1.y as i64
-                    },
-                    end_point: Point {
-                        x: coordinate_1.x.ceil() as i64,
-                        y: coordinate_1.y as i64
-                    },
-                    primary_object_color: color.clone()
+            lazy_static! {
+                static ref start_position: Coordinate = Coordinate::default();
+                static ref linear_graph: LinearGraph = LinearGraph::default();
+            }
+
+            let from_two_coordinates_context = MockGraphMethods::from_two_coordinates_context();
+
+            from_two_coordinates_context
+                .expect()
+                .once()
+                .withf(|first_coordinate, second_coordinate| {
+                    *first_coordinate == *start_position
+                        && *second_coordinate
+                            == Coordinate {
+                                x: coordinate_1.x.floor() - 0.0001,
+                                y: coordinate_1.y,
+                            }
                 })
+                .return_const(linear_graph.clone());
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_1, &start_position),
+                Some((
+                    Wall {
+                        start_point: Point {
+                            x: coordinate_1.x.ceil() as i64,
+                            y: coordinate_1.y as i64
+                        },
+                        end_point: Point {
+                            x: coordinate_1.x.floor() as i64,
+                            y: coordinate_1.y as i64
+                        },
+                        primary_object_color: color.clone()
+                    },
+                    linear_graph.clone()
+                ))
+            );
+
+            from_two_coordinates_context
+                .expect()
+                .once()
+                .withf(|first_coordinate, second_coordinate| {
+                    *first_coordinate == *start_position
+                        && *second_coordinate
+                            == Coordinate {
+                                x: coordinate_2.x.ceil() + 0.0001,
+                                y: coordinate_2.y,
+                            }
+                })
+                .return_const(linear_graph.clone());
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_2, &start_position),
+                Some((
+                    Wall {
+                        start_point: Point {
+                            x: coordinate_2.x.floor() as i64,
+                            y: coordinate_2.y as i64
+                        },
+                        end_point: Point {
+                            x: coordinate_2.x.ceil() as i64,
+                            y: coordinate_2.y as i64
+                        },
+                        primary_object_color: color.clone()
+                    },
+                    linear_graph.clone()
+                ))
+            );
+
+            from_two_coordinates_context
+                .expect()
+                .once()
+                .withf(|first_coordinate, second_coordinate| {
+                    *first_coordinate == *start_position
+                        && *second_coordinate
+                            == Coordinate {
+                                x: coordinate_3.x,
+                                y: coordinate_3.y.ceil() + 0.0001,
+                            }
+                })
+                .return_const(linear_graph.clone());
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_3, &start_position),
+                Some((
+                    Wall {
+                        start_point: Point {
+                            x: coordinate_3.x as i64,
+                            y: coordinate_3.y.floor() as i64
+                        },
+                        end_point: Point {
+                            x: coordinate_3.x as i64,
+                            y: coordinate_3.y.ceil() as i64
+                        },
+                        primary_object_color: color.clone()
+                    },
+                    linear_graph.clone()
+                ))
+            );
+
+            from_two_coordinates_context
+                .expect()
+                .once()
+                .withf(|first_coordinate, second_coordinate| {
+                    *first_coordinate == *start_position
+                        && *second_coordinate
+                            == Coordinate {
+                                x: coordinate_4.x,
+                                y: coordinate_4.y.floor() - 0.0001,
+                            }
+                })
+                .return_const(linear_graph.clone());
+            assert_eq!(
+                wall_map.is_coordinate_in_object(&coordinate_4, &start_position),
+                Some((
+                    Wall {
+                        start_point: Point {
+                            x: coordinate_4.x as i64,
+                            y: coordinate_4.y.ceil() as i64
+                        },
+                        end_point: Point {
+                            x: coordinate_4.x as i64,
+                            y: coordinate_4.y.floor() as i64
+                        },
+                        primary_object_color: color.clone()
+                    },
+                    linear_graph.clone()
+                ))
             );
             assert_eq!(
-                wall_map.is_coordinate_in_object(&coordinate_2),
-                Some(Wall {
-                    start_point: Point {
-                        x: coordinate_2.x.ceil() as i64,
-                        y: coordinate_2.y as i64
-                    },
-                    end_point: Point {
-                        x: coordinate_2.x.floor() as i64,
-                        y: coordinate_2.y as i64
-                    },
-                    primary_object_color: color.clone()
-                })
+                wall_map.is_coordinate_in_object(&coordinate_none, &start_position),
+                None
             );
             assert_eq!(
-                wall_map.is_coordinate_in_object(&coordinate_3),
-                Some(Wall {
-                    start_point: Point {
-                        x: coordinate_3.x as i64,
-                        y: coordinate_3.y.ceil() as i64
-                    },
-                    end_point: Point {
-                        x: coordinate_3.x as i64,
-                        y: coordinate_3.y.floor() as i64
-                    },
-                    primary_object_color: color.clone()
-                })
+                wall_map.is_coordinate_in_object(&coordinate_out_of_map_1, &start_position),
+                None
             );
             assert_eq!(
-                wall_map.is_coordinate_in_object(&coordinate_4),
-                Some(Wall {
-                    start_point: Point {
-                        x: coordinate_4.x as i64,
-                        y: coordinate_4.y.floor() as i64
-                    },
-                    end_point: Point {
-                        x: coordinate_4.x as i64,
-                        y: coordinate_4.y.ceil() as i64
-                    },
-                    primary_object_color: color.clone()
-                })
+                wall_map.is_coordinate_in_object(&coordinate_out_of_map_2, &start_position),
+                None
             );
-            assert_eq!(wall_map.is_coordinate_in_object(&coordinate_none), None);
         } else {
             panic!("File with image for the testcase doesn't exist");
         }

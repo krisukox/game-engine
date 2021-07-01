@@ -9,13 +9,13 @@ fn main() {
         width: 1280.0,
         height: 720.0,
     };
-    let number_of_rays = 4000;
+    let number_of_rays = 10000;
     let player = Player::new(
         Angle {
             start: Radians::new(std::f64::consts::PI * 3.0 / 4.0),
             end: Radians::new(std::f64::consts::PI * 5.0 / 4.0),
         },
-        Coordinate { x: 503.0, y: 303.0 },
+        Coordinate { x: 495.0, y: 303.0 },
         number_of_rays,
     );
     let vertical_angle_value = Radians::new(std::f64::consts::PI * 0.375);

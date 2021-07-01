@@ -1,6 +1,6 @@
 use super::angle::Angle;
 use super::radians::Radians;
-use crate::graph;
+use crate::graph::{Coordinate, LinearGraph, Rays};
 use mockall_double::double;
 
 #[cfg(test)]
@@ -12,14 +12,14 @@ use super::move_handler::MoveHandler;
 #[cfg_attr(not(test), derive(Debug))]
 pub struct Player {
     pub angle: Angle,
-    pub position: graph::Coordinate,
+    pub position: Coordinate,
     number_of_rays: usize,
     move_handler: MoveHandler,
 }
 
 #[cfg_attr(test, automock)]
 impl Player {
-    pub fn new(angle: Angle, position: graph::Coordinate, number_of_rays: usize) -> Player {
+    pub fn new(angle: Angle, position: Coordinate, number_of_rays: usize) -> Player {
         Player {
             angle,
             position,
@@ -35,18 +35,17 @@ impl Player {
         &self.angle
     }
 
-    pub fn position(&self) -> &graph::Coordinate {
+    pub fn position(&self) -> &Coordinate {
         &self.position
     }
 
     fn move_forward_backward(&mut self, distance: f64) {
-        let direction = graph::LinearGraph::from_radians(self.angle.get_direction());
+        let direction = LinearGraph::from_radians(self.angle.get_direction());
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
     fn move_left_right(&mut self, distance: f64) {
-        let direction =
-            graph::LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
+        let direction = LinearGraph::from_radians(self.angle.get_direction() - Radians::PI / 2.0);
         self.position = direction.get_next_from_distance(&self.position, distance);
     }
 
@@ -54,8 +53,8 @@ impl Player {
         self.angle.value()
     }
 
-    pub(crate) fn get_all_rays(&self) -> graph::Rays {
-        graph::LinearGraph::get_all_rays(self.number_of_rays)
+    pub(crate) fn get_all_rays(&self) -> Rays {
+        LinearGraph::get_all_rays(self.number_of_rays)
     }
 
     pub(crate) fn rotate_left(&mut self, angle_delta: Radians) {
@@ -97,7 +96,7 @@ impl Player {
     }
 
     #[cfg(test)]
-    pub(crate) fn change_position(&mut self, position_delta: &graph::Coordinate) {
+    pub(crate) fn change_position(&mut self, position_delta: &Coordinate) {
         self.position += position_delta;
     }
 }
@@ -109,8 +108,8 @@ mod tests {
     fn check_update(
         forward_backward_value: Option<f64>,
         right_left_value: Option<f64>,
-        start_position: graph::Coordinate,
-        updated_postion: graph::Coordinate,
+        start_position: Coordinate,
+        updated_postion: Coordinate,
     ) {
         let angle = Angle {
             start: Radians::PI / 4.0,
@@ -147,7 +146,7 @@ mod tests {
                 start: Radians::new(angle_start),
                 end: Radians::new(angle_end),
             },
-            graph::Coordinate { x: 0.0, y: 0.0 },
+            Coordinate { x: 0.0, y: 0.0 },
             100,
         );
         assert_eq!(
@@ -164,7 +163,7 @@ mod tests {
                 start: Default::default(),
                 end: Default::default(),
             },
-            graph::Coordinate { x: 0.0, y: 0.0 },
+            Coordinate { x: 0.0, y: 0.0 },
             number_of_rays,
         );
         assert_eq!(player.get_all_rays().0.len(), number_of_rays);
@@ -180,7 +179,7 @@ mod tests {
                 start: Radians::new(angle_start),
                 end: Radians::new(angle_end),
             },
-            graph::Coordinate { x: 0.0, y: 0.0 },
+            Coordinate { x: 0.0, y: 0.0 },
             100,
         );
         player.rotate_left(Radians::new(rotate_delta));
@@ -193,7 +192,7 @@ mod tests {
 
     #[test]
     fn player_change_position() {
-        let change_position_delta = graph::Coordinate { x: 0.2, y: 0.5 };
+        let change_position_delta = Coordinate { x: 0.2, y: 0.5 };
 
         let coordinate_x = 1.3;
         let coordinate_y = 4.7;
@@ -202,7 +201,7 @@ mod tests {
                 start: Default::default(),
                 end: Default::default(),
             },
-            graph::Coordinate {
+            Coordinate {
                 x: coordinate_x,
                 y: coordinate_y,
             },
@@ -222,9 +221,9 @@ mod tests {
             start: Radians::ZERO,
             end: Radians::PI / 2.0,
         };
-        let first_position = graph::Coordinate { x: 5.0, y: 8.0 };
-        let second_position = graph::Coordinate { x: 6.0, y: 9.0 };
-        let third_position = graph::Coordinate { x: 6.0, y: 7.0 };
+        let first_position = Coordinate { x: 5.0, y: 8.0 };
+        let second_position = Coordinate { x: 6.0, y: 9.0 };
+        let third_position = Coordinate { x: 6.0, y: 7.0 };
         let distance = 2.0_f64.sqrt();
 
         let mut player = Player {
@@ -252,7 +251,7 @@ mod tests {
             start: Radians::ZERO,
             end: Radians::PI / 2.0,
         };
-        let position = graph::Coordinate { x: 5.0, y: 8.0 };
+        let position = Coordinate { x: 5.0, y: 8.0 };
         let mut move_handler = MoveHandler::default();
 
         move_handler
@@ -318,26 +317,26 @@ mod tests {
         check_update(
             Some(1.0),
             None,
-            graph::Coordinate { x: 5.0, y: 8.0 },
-            graph::Coordinate { x: 5.0, y: 9.0 },
+            Coordinate { x: 5.0, y: 8.0 },
+            Coordinate { x: 5.0, y: 9.0 },
         );
         check_update(
             Some(-1.0),
             None,
-            graph::Coordinate { x: 5.0, y: 8.0 },
-            graph::Coordinate { x: 5.0, y: 7.0 },
+            Coordinate { x: 5.0, y: 8.0 },
+            Coordinate { x: 5.0, y: 7.0 },
         );
         check_update(
             None,
             Some(1.0),
-            graph::Coordinate { x: 5.0, y: 8.0 },
-            graph::Coordinate { x: 6.0, y: 8.0 },
+            Coordinate { x: 5.0, y: 8.0 },
+            Coordinate { x: 6.0, y: 8.0 },
         );
         check_update(
             None,
             Some(-1.0),
-            graph::Coordinate { x: 5.0, y: 8.0 },
-            graph::Coordinate { x: 4.0, y: 8.0 },
+            Coordinate { x: 5.0, y: 8.0 },
+            Coordinate { x: 4.0, y: 8.0 },
         );
     }
 
@@ -358,7 +357,7 @@ mod tests {
 
     #[test]
     fn position() {
-        let position = graph::Coordinate { x: 5.0, y: 8.0 };
+        let position = Coordinate { x: 5.0, y: 8.0 };
         let player = Player {
             angle: Default::default(),
             position: position.clone(),

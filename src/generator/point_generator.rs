@@ -1,4 +1,4 @@
-use crate::graph;
+use crate::graph::{Coordinate, LinearGraph};
 use crate::map_element::Point;
 use crate::player_utils;
 use piston::window::Size;
@@ -21,7 +21,7 @@ impl PointGenerator {
     ) -> PointGenerator {
         PointGenerator {
             resolution,
-            vertical_tangens: graph::LinearGraph::from_radians(vertical_angle_value / 2.0).tangens,
+            vertical_tangens: LinearGraph::from_radians(vertical_angle_value / 2.0).tangens,
             half_wall_height: wall_height / 2.0,
         }
     }
@@ -29,10 +29,10 @@ impl PointGenerator {
     pub fn point_width(
         &self,
         angle: &player_utils::Angle,
-        start_position: &graph::Coordinate,
+        start_position: &Coordinate,
         end_position: &Point,
     ) -> f64 {
-        let point_radians = start_position.into_radians(end_position);
+        let point_radians = start_position.into_radians_point(end_position);
         if angle.is_inside(point_radians) {
             return self.point_width_inside_field_of_view(angle, &point_radians);
         }
@@ -42,15 +42,10 @@ impl PointGenerator {
     fn compute_graphs(
         angle: &player_utils::Angle,
         point_radians: &player_utils::Radians,
-    ) -> (
-        graph::LinearGraph,
-        graph::LinearGraph,
-        f64,
-        graph::Coordinate,
-    ) {
-        let direction = graph::LinearGraph::from_radians(angle.get_direction() - angle.start);
+    ) -> (LinearGraph, LinearGraph, f64, Coordinate) {
+        let direction = LinearGraph::from_radians(angle.get_direction() - angle.start);
 
-        let perpendicular_direction = graph::LinearGraph::from_radians(
+        let perpendicular_direction = LinearGraph::from_radians(
             angle.get_direction() + player_utils::Radians::new(std::f64::consts::PI / 2.0)
                 - angle.start,
         );
@@ -61,12 +56,12 @@ impl PointGenerator {
         let perpendicular_direction_b =
             cross_point_middle_y - perpendicular_direction.tangens * cross_point_middle_x;
 
-        let graph_point_radians = graph::LinearGraph::from_radians(point_radians - angle.start);
+        let graph_point_radians = LinearGraph::from_radians(point_radians - angle.start);
         return (
             graph_point_radians,
             perpendicular_direction,
             perpendicular_direction_b,
-            graph::Coordinate {
+            Coordinate {
                 x: cross_point_middle_x,
                 y: cross_point_middle_y,
             },
@@ -84,7 +79,7 @@ impl PointGenerator {
             cross_point_middle,
         ) = Self::compute_graphs(angle, point_radians);
 
-        let cross_point_y_0 = graph::Coordinate {
+        let cross_point_y_0 = Coordinate {
             x: -perpendicular_direction_b / perpendicular_direction.tangens,
             y: 0.0,
         };
@@ -95,7 +90,7 @@ impl PointGenerator {
             / (perpendicular_direction.tangens - graph_point_radians.tangens);
         let cross_point_y = cross_point_x * graph_point_radians.tangens;
 
-        let short_distance = cross_point_y_0.distance(&graph::Coordinate {
+        let short_distance = cross_point_y_0.distance(&Coordinate {
             x: cross_point_x,
             y: cross_point_y,
         });
@@ -131,10 +126,10 @@ impl PointGenerator {
     pub fn point_height(
         &self,
         angle: &player_utils::Angle,
-        start_position: &graph::Coordinate,
+        start_position: &Coordinate,
         end_position: &Point,
     ) -> f64 {
-        let point_radians = start_position.into_radians(end_position);
+        let point_radians = start_position.into_radians_point(end_position);
         let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
             Self::compute_graphs(angle, &point_radians);
 
@@ -142,7 +137,7 @@ impl PointGenerator {
             / (perpendicular_direction.tangens - graph_point_radians.tangens);
         let cross_point_y = cross_point_x * graph_point_radians.tangens;
 
-        let short_distance = graph::Coordinate::ZERO.distance(&graph::Coordinate {
+        let short_distance = Coordinate::ZERO.distance(&Coordinate {
             x: cross_point_x,
             y: cross_point_y,
         });
@@ -173,7 +168,7 @@ mod tests {
             start: player_utils::Radians::new(0.0),
             end: player_utils::Radians::new(std::f64::consts::PI * 2.0 / 3.0),
         };
-        let start_position = graph::Coordinate { x: 0.0, y: 0.0 };
+        let start_position = Coordinate { x: 0.0, y: 0.0 };
         let end_position = Point { x: 0, y: 10 };
 
         let short_distance = 3.0_f64.sqrt() * 4.0 / 3.0;
@@ -203,7 +198,7 @@ mod tests {
             start: player_utils::Radians::new(std::f64::consts::PI / 4.0),
             end: player_utils::Radians::new(std::f64::consts::PI * 3.0 / 4.0),
         };
-        let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
+        let start_position = Coordinate { x: 8.0, y: 1.0 };
         let end_position_1 = Point { x: 14, y: 4 };
         let end_position_2 = Point { x: 2, y: 4 };
 
@@ -245,7 +240,7 @@ mod tests {
             end: player_utils::Radians::new(std::f64::consts::PI * 3.0 / 4.0),
         };
 
-        let start_position = graph::Coordinate { x: 8.0, y: 1.0 };
+        let start_position = Coordinate { x: 8.0, y: 1.0 };
         let end_position_1 = Point { x: 8, y: 4 };
         let end_position_2 = Point { x: 4, y: 5 };
 

@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, Sub, SubAssign};
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct Radians(f64); // Radians range [0, pi*2)
 
 pub const PI_2: f64 = std::f64::consts::PI * 2.0;
@@ -35,6 +35,8 @@ impl Radians {
     pub const ZERO: Radians = Radians(0.0);
     pub const PI: Radians = Radians(std::f64::consts::PI);
     pub const PI_2: Radians = Radians(std::f64::consts::PI * 2.0);
+    #[cfg(test)]
+    pub const OUT_OF_RANGE: Radians = Radians(std::f64::consts::PI * 3.0);
 }
 
 impl AddAssign for Radians {
@@ -63,12 +65,6 @@ impl Sub for Radians {
     }
 }
 
-impl Sub<&Radians> for Radians {
-    type Output = Self;
-    fn sub(self, rhs: &Self) -> Self {
-        Radians(fix_radians(self.0 - rhs.0))
-    }
-}
 impl Sub<Radians> for &Radians {
     type Output = Radians;
     fn sub(self, rhs: Radians) -> Self::Output {
@@ -87,6 +83,24 @@ impl Div<f64> for Radians {
     type Output = Radians;
     fn div(self, rhs: f64) -> Self::Output {
         Radians(self.0 / rhs)
+    }
+}
+
+impl PartialOrd for Radians {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        if self.to_f64() == other.to_f64() {
+            return Some(std::cmp::Ordering::Equal);
+        }
+        if (self.to_f64() - other.to_f64()).abs() > std::f64::consts::PI {
+            if self.to_f64() > other.to_f64() {
+                return Some(std::cmp::Ordering::Less);
+            }
+            return Some(std::cmp::Ordering::Greater);
+        }
+        if self.to_f64() < other.to_f64() {
+            return Some(std::cmp::Ordering::Less);
+        }
+        return Some(std::cmp::Ordering::Greater);
     }
 }
 
@@ -165,5 +179,20 @@ mod tests {
             Radians::new(radians_value_2).into_rays_index(number_of_rays),
             number_of_rays as f64 * 3.0 / 4.0
         );
+    }
+
+    #[test]
+    fn partial_cmp() {
+        let radians_1 = Radians(std::f64::consts::PI * 7.0 / 4.0);
+        let radians_2 = Radians(std::f64::consts::PI / 4.0);
+        let radians_3 = Radians(std::f64::consts::PI * 2.0 / 4.0);
+
+        assert!(radians_1 < radians_2);
+        assert!(radians_2 > radians_1);
+
+        assert!(radians_2 < radians_3);
+        assert!(radians_3 > radians_2);
+
+        assert!(radians_1 == radians_1);
     }
 }
