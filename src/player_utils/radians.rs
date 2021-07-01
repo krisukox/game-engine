@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, Sub, SubAssign};
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct Radians(f64); // Radians range [0, pi*2)
 
 pub const PI_2: f64 = std::f64::consts::PI * 2.0;
@@ -63,12 +63,6 @@ impl Sub for Radians {
     }
 }
 
-impl Sub<&Radians> for Radians {
-    type Output = Self;
-    fn sub(self, rhs: &Self) -> Self {
-        Radians(fix_radians(self.0 - rhs.0))
-    }
-}
 impl Sub<Radians> for &Radians {
     type Output = Radians;
     fn sub(self, rhs: Radians) -> Self::Output {
@@ -87,6 +81,24 @@ impl Div<f64> for Radians {
     type Output = Radians;
     fn div(self, rhs: f64) -> Self::Output {
         Radians(self.0 / rhs)
+    }
+}
+
+impl PartialOrd for Radians {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        if self.to_f64() == other.to_f64() {
+            return Some(std::cmp::Ordering::Equal);
+        }
+        if (self.to_f64() - other.to_f64()).abs() > std::f64::consts::PI {
+            if self.to_f64() > other.to_f64() {
+                return Some(std::cmp::Ordering::Less);
+            }
+            return Some(std::cmp::Ordering::Greater);
+        }
+        if self.to_f64() < other.to_f64() {
+            return Some(std::cmp::Ordering::Less);
+        }
+        return Some(std::cmp::Ordering::Greater);
     }
 }
 

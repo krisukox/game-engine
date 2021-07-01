@@ -1,4 +1,4 @@
-use crate::graph::{Coordinate, Walls};
+use crate::graph::{Coordinate, LinearGraph, Walls};
 use crate::map_element::MapElement;
 use mockall_double::double;
 use std::sync::mpsc::{Receiver, Sender};
@@ -6,7 +6,7 @@ use std::sync::{Arc, RwLock};
 use std::{thread, thread::JoinHandle};
 
 #[double]
-use crate::graph::LinearGraph;
+use crate::graph::GraphMetods;
 #[double]
 use crate::graph::Rays;
 #[double]
@@ -23,6 +23,15 @@ pub struct RenderThread {
     pub sender_walls: Sender<(Walls, usize)>,
     pub thread_index: usize,
     pub threads_amount: usize,
+}
+
+macro_rules! check_next_ray {
+    ($next_ray:expr, $rays_iter:expr, $walls_in_sight:expr) => {
+        $next_ray = $rays_iter.next();
+        if $next_ray.is_none() {
+            return $walls_in_sight;
+        }
+    };
 }
 
 impl RenderThread {
@@ -49,17 +58,43 @@ impl RenderThread {
     fn get_walls_in_sight<'a>(
         &self,
         position: &Coordinate,
-        rays_iter: impl Iterator<Item = &'a LinearGraph>,
+        mut rays_iter: impl Iterator<Item = &'a LinearGraph>,
         map_elements: &Vec<Box<dyn MapElement>>,
     ) -> Walls {
         let mut walls_in_sight = Walls(vec![]);
-        for ray in rays_iter {
-            let option_wall = self.map.cast_ray(position, ray, map_elements);
-            if let Some(wall) = option_wall {
-                walls_in_sight.try_extend_last_wall(wall)
+        let mut next_ray: Option<&LinearGraph> = None;
+        let mut current_ray: LinearGraph;
+        loop {
+            if next_ray.is_none() {
+                check_next_ray!(next_ray, rays_iter, walls_in_sight);
+            }
+            current_ray = next_ray.unwrap().clone();
+            next_ray = None;
+            loop {
+                if let Some((wall, ray_ret)) =
+                    self.map.cast_ray(position, &current_ray, map_elements)
+                {
+                    if walls_in_sight.is_wall_in_object(&wall) {
+                        break;
+                    }
+                    if !walls_in_sight.is_wall_connected(&wall) && next_ray.is_some() {
+                        break;
+                    } else {
+                        walls_in_sight.try_extend_last_wall(wall);
+                    }
+                    if next_ray.is_none() {
+                        check_next_ray!(next_ray, rays_iter, walls_in_sight);
+                    }
+                    while GraphMetods::less_than(next_ray.unwrap(), &current_ray) {
+                        check_next_ray!(next_ray, rays_iter, walls_in_sight);
+                    }
+
+                    current_ray = ray_ret;
+                } else {
+                    break;
+                }
             }
         }
-        return walls_in_sight;
     }
 }
 
@@ -67,7 +102,7 @@ impl RenderThread {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::graph::{MockLinearGraph, MockRays, MockRaysIterator, Wall};
+    use crate::graph::{MockRays, MockRaysIterator, Wall};
     use crate::map::MockMap;
     use crate::map_element::{Color, Point};
     use crate::player_utils::{Angle, MockPlayer, Radians};
@@ -83,8 +118,20 @@ mod tests {
         let mut map = MockMap::default();
         let mut rays = MockRays::new();
         lazy_static! {
-            static ref ray: MockLinearGraph = MockLinearGraph::new();
+            static ref ray_vec_iter: Vec<LinearGraph> = vec![
+                LinearGraph::from_radians(Radians::new(0.2)),
+                LinearGraph::from_radians(Radians::new(0.4)),
+                LinearGraph::from_radians(Radians::new(0.6)),
+                LinearGraph::from_radians(Radians::new(0.8)),
+                LinearGraph::from_radians(Radians::new(1.0)),
+                LinearGraph::from_radians(Radians::new(1.2)),
+                LinearGraph::from_radians(Radians::new(1.4)),
+                LinearGraph::from_radians(Radians::new(1.6)),
+                LinearGraph::from_radians(Radians::new(1.8)),
+            ];
         }
+
+        let less_than_context = crate::graph::MockGraphMetods::less_than_context();
 
         let (start_render_sender, start_render_receiver) = channel::<bool>();
         let (sender_walls, receiver_walls) = channel::<(Walls, usize)>();
@@ -96,25 +143,42 @@ mod tests {
             start: Radians::PI,
             end: Radians::PI_2,
         };
-        let walls = vec![
-            Wall::new(Point { x: 1, y: 4 }, Point { x: 2, y: 4 }, Color::Red),
-            Wall::new(Point { x: 2, y: 4 }, Point { x: 2, y: 3 }, Color::Red),
-            Wall::new(Point { x: 2, y: 4 }, Point { x: 2, y: 3 }, Color::Red),
-            Wall::new(Point { x: 2, y: 3 }, Point { x: 3, y: 3 }, Color::Red),
-            Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
-            Wall::new(Point { x: 4, y: 5 }, Point { x: 5, y: 5 }, Color::Red),
-            Wall::new(Point { x: 5, y: 6 }, Point { x: 6, y: 6 }, Color::Red),
-            Wall::new(Point { x: 6, y: 6 }, Point { x: 7, y: 6 }, Color::Red),
-            Wall::new(Point { x: 7, y: 6 }, Point { x: 8, y: 6 }, Color::Green),
+        let walls_rays = vec![
+            Some((
+                Wall::new(Point { x: 2, y: 4 }, Point { x: 3, y: 4 }, Color::Red),
+                LinearGraph::from_radians(Radians::new(2.0)),
+            )),
+            Some((
+                Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
+                LinearGraph::from_radians(Radians::new(2.2)),
+            )),
+            Some((
+                Wall::new(Point { x: 4, y: 2 }, Point { x: 5, y: 2 }, Color::Red),
+                LinearGraph::from_radians(Radians::new(2.4)),
+            )),
+            Some((
+                Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
+                LinearGraph::from_radians(Radians::new(2.6)),
+            )),
+            Some((
+                Wall::new(Point { x: 4, y: 2 }, Point { x: 5, y: 2 }, Color::Red),
+                LinearGraph::from_radians(Radians::new(2.8)),
+            )),
+            Some((
+                Wall::new(Point { x: 5, y: 2 }, Point { x: 5, y: 1 }, Color::Green),
+                LinearGraph::from_radians(Radians::new(3.0)),
+            )),
+            None,
+            Some((
+                Wall::new(Point { x: 5, y: 1 }, Point { x: 5, y: 0 }, Color::Green),
+                LinearGraph::from_radians(Radians::new(3.2)),
+            )),
         ];
+
         let walls_in_sight = Walls(vec![
-            Wall::new(Point { x: 1, y: 4 }, Point { x: 2, y: 4 }, Color::Red),
-            Wall::new(Point { x: 2, y: 4 }, Point { x: 2, y: 3 }, Color::Red),
-            Wall::new(Point { x: 2, y: 3 }, Point { x: 3, y: 3 }, Color::Red),
-            Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
-            Wall::new(Point { x: 4, y: 5 }, Point { x: 5, y: 5 }, Color::Red),
-            Wall::new(Point { x: 5, y: 6 }, Point { x: 7, y: 6 }, Color::Red),
-            Wall::new(Point { x: 7, y: 6 }, Point { x: 8, y: 6 }, Color::Green),
+            Wall::new(Point { x: 2, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
+            Wall::new(Point { x: 4, y: 2 }, Point { x: 5, y: 2 }, Color::Red),
+            Wall::new(Point { x: 5, y: 2 }, Point { x: 5, y: 0 }, Color::Green),
         ]);
 
         {
@@ -140,20 +204,25 @@ mod tests {
             })
             .returning(|_, _, _| {
                 let mut rays_iterator = Box::new(MockRaysIterator::default());
-                rays_iterator
-                    .expect_next()
-                    .times(9)
-                    .returning(|| Some(&ray));
-                rays_iterator.expect_next().times(1).return_const(None);
+                for ray_ in ray_vec_iter.iter() {
+                    rays_iterator
+                        .expect_next()
+                        .once()
+                        .returning(move || Some(&ray_));
+                }
+                rays_iterator.expect_next().once().return_const(None);
                 return rays_iterator;
             });
 
-        for wall in walls {
-            map.expect_cast_ray()
-                .times(1)
-                .withf(|position, _, _| *position == player_position)
-                .return_const(wall);
+        for wall_ray in walls_rays.into_iter() {
+            map.expect_cast_ray().once().return_const(wall_ray);
         }
+
+        for _ in 0..4 {
+            less_than_context.expect().once().return_const(true);
+            less_than_context.expect().once().return_const(false);
+        }
+        less_than_context.expect().once().return_const(true);
 
         let render_thread = RenderThread {
             map_elements,

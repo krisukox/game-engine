@@ -43,9 +43,9 @@ impl<'a> Iterator for RaysIterator<'a> {
 mock! {
     pub RaysIterator {}
     impl Iterator for RaysIterator {
-        type Item = &'static crate::graph::MockLinearGraph;
+        type Item = &'static crate::graph::LinearGraph;
 
-        fn next(&mut self) -> Option<&'static crate::graph::MockLinearGraph>;
+        fn next(&mut self) -> Option<&'static crate::graph::LinearGraph>;
     }
 }
 

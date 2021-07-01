@@ -5,7 +5,7 @@ use crate::player_utils::Radians;
 #[cfg(test)]
 use mockall::automock;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct LinearGraph {
     pub radians: Radians,
     pub tangens: f64,
@@ -43,9 +43,8 @@ fn generate_one_graph(amount: usize, index: usize) -> LinearGraph {
     }
 }
 
-#[cfg_attr(test, automock)]
 impl LinearGraph {
-    pub fn from_radians(radians: Radians) -> LinearGraph {
+    pub fn from_radians(radians: Radians) -> Self {
         if radians == Radians::ZERO || radians == Radians::PI {
             // TODO consider to remove this check
             return LinearGraph {
@@ -59,103 +58,11 @@ impl LinearGraph {
         }
     }
 
-    pub fn get_next(&self, current_coordinate: &Coordinate) -> Coordinate {
-        if self.radians >= Radians::ZERO && self.radians < Radians::PI / 2.0 {
-            let next_x = next_integer(current_coordinate.x);
-            let next_y = next_integer(current_coordinate.y);
-            let delta_x = next_x - current_coordinate.x;
-            let delta_y = next_y - current_coordinate.y;
-            if delta_x * self.tangens < delta_y {
-                return Coordinate {
-                    x: next_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
-                };
-            } else {
-                return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: next_y,
-                };
-            }
-        } else if self.radians == Radians::PI / 2.0 {
-            return Coordinate {
-                x: current_coordinate.x,
-                y: next_integer(current_coordinate.y),
-            };
-        } else if self.radians > Radians::PI / 2.0 && self.radians < Radians::PI {
-            let prev_x = prev_integer(current_coordinate.x);
-            let next_y = next_integer(current_coordinate.y);
-            let delta_x = prev_x - current_coordinate.x; // negative
-            let delta_y = next_y - current_coordinate.y;
-            if -delta_x * -self.tangens < delta_y {
-                return Coordinate {
-                    x: prev_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
-                };
-            } else {
-                return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: next_y,
-                };
-            }
-        } else if self.radians >= Radians::PI
-            && self.radians < Radians::new(std::f64::consts::PI * 3.0 / 2.0)
-        {
-            let prev_x = prev_integer(current_coordinate.x);
-            let prev_y = prev_integer(current_coordinate.y);
-            let delta_x = prev_x - current_coordinate.x; // negative
-            let delta_y = prev_y - current_coordinate.y; // negative
-            if -delta_x * self.tangens < -delta_y {
-                return Coordinate {
-                    x: prev_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
-                };
-            } else {
-                return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: prev_y,
-                };
-            }
-        } else if self.radians == Radians::new(std::f64::consts::PI * 3.0 / 2.0) {
-            return Coordinate {
-                x: current_coordinate.x,
-                y: prev_integer(current_coordinate.y),
-            };
-        } else if self.radians > Radians::new(std::f64::consts::PI * 3.0 / 2.0)
-            && self.radians < Radians::PI_2
-        {
-            let next_x = next_integer(current_coordinate.x);
-            let prev_y = prev_integer(current_coordinate.y);
-            let delta_x = next_x - current_coordinate.x;
-            let delta_y = prev_y - current_coordinate.y; // negative
-            if delta_x * -self.tangens < -delta_y {
-                return Coordinate {
-                    x: next_x,
-                    y: current_coordinate.y + delta_x * self.tangens,
-                };
-            } else {
-                return Coordinate {
-                    x: current_coordinate.x + delta_y / self.tangens,
-                    y: prev_y,
-                };
-            }
-        }
-        panic!("radians value out of scope");
-    }
-
     pub fn get_next_from_distance(&self, coordinate: &Coordinate, distance: f64) -> Coordinate {
         if self.radians > Radians::new(std::f64::consts::PI * 3.0 / 2.0)
             || (self.radians >= Radians::ZERO && self.radians < Radians::PI / 2.0)
         {
-            let mut x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
-            if distance > 0.0 {
-                if x_delta < 0.0 {
-                    x_delta *= -1.0;
-                }
-            } else {
-                if x_delta > 0.0 {
-                    x_delta *= -1.0;
-                }
-            }
+            let x_delta = distance / (self.tangens.powi(2) + 1.0).sqrt();
             let y_delta = x_delta * self.tangens;
             return Coordinate {
                 x: coordinate.x + x_delta,
@@ -199,6 +106,108 @@ impl LinearGraph {
             all_rays.push(generate_one_graph(number_of_rays, index));
         }
         return Rays(all_rays);
+    }
+}
+
+impl PartialOrd for LinearGraph {
+    fn partial_cmp(&self, other: &LinearGraph) -> Option<std::cmp::Ordering> {
+        self.radians.partial_cmp(&other.radians)
+    }
+}
+
+pub struct GraphMetods {}
+
+#[cfg_attr(test, automock)]
+impl GraphMetods {
+    pub fn from_two_coordinates(start: &Coordinate, end: Coordinate) -> LinearGraph {
+        LinearGraph::from_radians(start.into_radians_coor(&end))
+    }
+
+    pub fn less_than(lhs: &LinearGraph, rhs: &LinearGraph) -> bool {
+        lhs < rhs
+    }
+
+    pub fn get_next(linear_graph: &LinearGraph, current_coordinate: &Coordinate) -> Coordinate {
+        if linear_graph.radians >= Radians::ZERO && linear_graph.radians < Radians::PI / 2.0 {
+            let next_x = next_integer(current_coordinate.x);
+            let next_y = next_integer(current_coordinate.y);
+            let delta_x = next_x - current_coordinate.x;
+            let delta_y = next_y - current_coordinate.y;
+            if delta_x * linear_graph.tangens < delta_y {
+                return Coordinate {
+                    x: next_x,
+                    y: current_coordinate.y + delta_x * linear_graph.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / linear_graph.tangens,
+                    y: next_y,
+                };
+            }
+        } else if linear_graph.radians == Radians::PI / 2.0 {
+            return Coordinate {
+                x: current_coordinate.x,
+                y: next_integer(current_coordinate.y),
+            };
+        } else if linear_graph.radians > Radians::PI / 2.0 && linear_graph.radians < Radians::PI {
+            let prev_x = prev_integer(current_coordinate.x);
+            let next_y = next_integer(current_coordinate.y);
+            let delta_x = prev_x - current_coordinate.x; // negative
+            let delta_y = next_y - current_coordinate.y;
+            if -delta_x * -linear_graph.tangens < delta_y {
+                return Coordinate {
+                    x: prev_x,
+                    y: current_coordinate.y + delta_x * linear_graph.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / linear_graph.tangens,
+                    y: next_y,
+                };
+            }
+        } else if linear_graph.radians >= Radians::PI
+            && linear_graph.radians < Radians::new(std::f64::consts::PI * 3.0 / 2.0)
+        {
+            let prev_x = prev_integer(current_coordinate.x);
+            let prev_y = prev_integer(current_coordinate.y);
+            let delta_x = prev_x - current_coordinate.x; // negative
+            let delta_y = prev_y - current_coordinate.y; // negative
+            if -delta_x * linear_graph.tangens < -delta_y {
+                return Coordinate {
+                    x: prev_x,
+                    y: current_coordinate.y + delta_x * linear_graph.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / linear_graph.tangens,
+                    y: prev_y,
+                };
+            }
+        } else if linear_graph.radians == Radians::new(std::f64::consts::PI * 3.0 / 2.0) {
+            return Coordinate {
+                x: current_coordinate.x,
+                y: prev_integer(current_coordinate.y),
+            };
+        } else if linear_graph.radians > Radians::new(std::f64::consts::PI * 3.0 / 2.0)
+            && linear_graph.radians < Radians::PI_2
+        {
+            let next_x = next_integer(current_coordinate.x);
+            let prev_y = prev_integer(current_coordinate.y);
+            let delta_x = next_x - current_coordinate.x;
+            let delta_y = prev_y - current_coordinate.y; // negative
+            if delta_x * -linear_graph.tangens < -delta_y {
+                return Coordinate {
+                    x: next_x,
+                    y: current_coordinate.y + delta_x * linear_graph.tangens,
+                };
+            } else {
+                return Coordinate {
+                    x: current_coordinate.x + delta_y / linear_graph.tangens,
+                    y: prev_y,
+                };
+            }
+        }
+        panic!("radians value out of scope");
     }
 }
 
@@ -372,6 +381,40 @@ mod tests {
             upper_coordinate,
             lower_coordinate,
             distance,
+        );
+    }
+
+    #[test]
+    fn less_than() {
+        let less_1 = LinearGraph::from_radians(Radians::new(std::f64::consts::PI / 4.0));
+        let greater_1 = LinearGraph::from_radians(Radians::new(2.0 * std::f64::consts::PI / 4.0));
+
+        let less_2 = LinearGraph::from_radians(Radians::new(7.0 * std::f64::consts::PI / 4.0));
+        let greater_2 = LinearGraph::from_radians(Radians::new(1.0 * std::f64::consts::PI / 4.0));
+
+        assert!(GraphMetods::less_than(&less_1, &greater_1));
+        assert!(GraphMetods::less_than(&less_2, &greater_2));
+    }
+
+    #[test]
+    fn from_two_coordinates() {
+        let linear_graph_1 = LinearGraph::from_radians(Radians::new(std::f64::consts::PI / 4.0));
+        let linear_graph_2 =
+            LinearGraph::from_radians(Radians::new(7.0 * std::f64::consts::PI / 4.0));
+
+        assert_eq!(
+            GraphMetods::from_two_coordinates(
+                &Coordinate { x: 4.0, y: 5.0 },
+                Coordinate { x: 6.0, y: 7.0 }
+            ),
+            linear_graph_1
+        );
+        assert_eq!(
+            GraphMetods::from_two_coordinates(
+                &Coordinate { x: 4.0, y: 5.0 },
+                Coordinate { x: 6.0, y: 3.0 }
+            ),
+            linear_graph_2
         );
     }
 }

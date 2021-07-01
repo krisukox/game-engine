@@ -66,6 +66,24 @@ impl Coordinate {
         }
         return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
     }
+
+    pub(crate) fn into_radians_coor(&self, end_point: &Coordinate) -> player_utils::Radians {
+        let delta_x = self.x - end_point.x;
+        let delta_y = self.y - end_point.y;
+        if delta_x == 0.0 {
+            if self.y < end_point.y {
+                return player_utils::Radians::new(std::f64::consts::PI / 2.0);
+            }
+            return player_utils::Radians::new(std::f64::consts::PI * 3.0 / 2.0);
+        }
+        if self.x < end_point.x {
+            if self.y > end_point.y {
+                return player_utils::Radians::new((delta_y / delta_x).atan() + player_utils::PI_2);
+            }
+            return player_utils::Radians::new((delta_y / delta_x).atan());
+        }
+        return player_utils::Radians::new((delta_y / delta_x).atan() + std::f64::consts::PI);
+    }
 }
 
 impl std::ops::AddAssign<&Coordinate> for Coordinate {
@@ -190,6 +208,27 @@ mod tests {
 
         for end_point in end_points {
             assert_eq!(start_coordinate.into_radians(&end_point), radian);
+            radian += player_utils::Radians::new(std::f64::consts::PI / 4.0);
+        }
+    }
+
+    #[test]
+    fn into_radians_coor() {
+        let start_coordinate = Coordinate { x: 0.5, y: 1.5 };
+        let end_coordinates = vec![
+            Coordinate { x: 1.5, y: 1.5 },
+            Coordinate { x: 1.5, y: 2.5 },
+            Coordinate { x: 0.5, y: 2.5 },
+            Coordinate { x: -0.5, y: 2.5 },
+            Coordinate { x: -0.5, y: 1.5 },
+            Coordinate { x: -0.5, y: 0.5 },
+            Coordinate { x: 0.5, y: 0.5 },
+            Coordinate { x: 1.5, y: 0.5 },
+        ];
+        let mut radian = player_utils::Radians::new(0.0);
+
+        for end_coordinate in end_coordinates {
+            assert_eq!(start_coordinate.into_radians_coor(&end_coordinate), radian);
             radian += player_utils::Radians::new(std::f64::consts::PI / 4.0);
         }
     }

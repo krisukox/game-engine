@@ -5,14 +5,14 @@ mod rays_iterator;
 mod wall;
 
 pub use self::coordinate::Coordinate;
-pub use self::linear_graph::LinearGraph;
+pub use self::linear_graph::{GraphMetods, LinearGraph};
 pub use self::wall::{Wall, Walls};
 pub use rays::Rays;
 pub use rays_iterator::RaysIterator;
 
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-        pub use self::linear_graph::MockLinearGraph;
+        pub use self::linear_graph::MockGraphMetods;
         pub use self::rays::MockRays;
         pub use self::rays_iterator::MockRaysIterator;
     }
@@ -20,6 +20,7 @@ cfg_if::cfg_if! {
 
 #[cfg(test)]
 mod tests {
+    pub use self::linear_graph::GraphMetods;
     use super::*;
     use crate::player_utils::Radians;
 
@@ -47,19 +48,19 @@ mod tests {
             tangens,
             radians: Radians::new(radians_2),
         };
-        let result_second_coordinate = graph_increasing.get_next(&first_coordinate);
-        let result_first_coordinate = graph_decreasing.get_next(&second_coordinate);
+        let result_second_coordinate = GraphMetods::get_next(&graph_increasing, first_coordinate);
+        let result_first_coordinate = GraphMetods::get_next(&graph_decreasing, second_coordinate);
 
         assert_eq!(*first_coordinate, result_first_coordinate);
         assert_eq!(*second_coordinate, result_second_coordinate);
 
         assert_eq!(
             *first_coordinate,
-            graph_decreasing.get_next(&result_second_coordinate)
+            GraphMetods::get_next(&graph_decreasing, &result_second_coordinate)
         );
         assert_eq!(
             *second_coordinate,
-            graph_increasing.get_next(&result_first_coordinate)
+            GraphMetods::get_next(&graph_increasing, &result_first_coordinate)
         );
     }
 
@@ -169,6 +170,6 @@ mod tests {
             radians: Radians::PI_2,
             tangens: Default::default(),
         };
-        graph.get_next(&Coordinate::default());
+        GraphMetods::get_next(&graph, &Coordinate::default());
     }
 }

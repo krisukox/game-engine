@@ -30,6 +30,22 @@ impl Wall {
 pub struct Walls(pub Vec<Wall>);
 
 impl Walls {
+    pub fn is_wall_in_object(&mut self, wall: &Wall) -> bool {
+        if let Some(last_wall) = self.0.last() {
+            if last_wall.end_point == wall.end_point {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn is_wall_connected(&mut self, wall: &Wall) -> bool {
+        if let Some(last_wall) = self.0.last_mut() {
+            return last_wall.end_point == wall.start_point;
+        }
+        return true;
+    }
+
     pub fn try_extend_last_wall(&mut self, wall: Wall) {
         if let Some(last_wall) = self.0.last_mut() {
             if last_wall.start_point == wall.start_point {
@@ -63,12 +79,12 @@ impl Walls {
                     && wall.end_point.x == wall_to_merge.start_point.x
                     && wall_to_merge.start_point.x == wall_to_merge.end_point.x
                 {
-                    if wall.start_point.y <= wall_to_merge.start_point.y
-                        && wall_to_merge.start_point.y <= wall.end_point.y
+                    if wall_to_merge.start_point.y <= wall.end_point.y
+                        && wall.end_point.y <= wall_to_merge.end_point.y
                     {
                         wall.end_point = wall_to_merge.end_point;
-                    } else if wall.end_point.y <= wall_to_merge.start_point.y
-                        && wall_to_merge.start_point.y <= wall.start_point.y
+                    } else if wall_to_merge.end_point.y <= wall.end_point.y
+                        && wall.end_point.y <= wall_to_merge.start_point.y
                     {
                         wall.end_point = wall_to_merge.end_point;
                     }
@@ -76,12 +92,12 @@ impl Walls {
                     && wall.end_point.y == wall_to_merge.start_point.y
                     && wall_to_merge.start_point.y == wall_to_merge.end_point.y
                 {
-                    if wall.start_point.x <= wall_to_merge.start_point.x
-                        && wall_to_merge.start_point.x <= wall.end_point.x
+                    if wall_to_merge.start_point.x <= wall.end_point.x
+                        && wall.end_point.x <= wall_to_merge.end_point.x
                     {
                         wall.end_point = wall_to_merge.end_point;
-                    } else if wall.end_point.x <= wall_to_merge.start_point.x
-                        && wall_to_merge.start_point.x <= wall.start_point.x
+                    } else if wall_to_merge.end_point.x <= wall.end_point.x
+                        && wall.end_point.x <= wall_to_merge.start_point.x
                     {
                         wall.end_point = wall_to_merge.end_point;
                     }
