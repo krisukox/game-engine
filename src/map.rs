@@ -133,12 +133,11 @@ mod tests {
                 ))
             })
             .in_sequence(&mut seq);
-        let ret = map.cast_ray(&current_position, &ray, &vec![map_element]);
-        match ret {
+        match map.cast_ray(&current_position, &ray, &vec![map_element]) {
             Some((wall_, _)) => assert_eq!(wall_, wall),
-            _ => panic!(
+            ret_wall @ _ => panic!(
                 "wrong value cast_ray_complex expected: {:?} received: {:?}",
-                wall, ret
+                wall, ret_wall
             ),
         }
     }

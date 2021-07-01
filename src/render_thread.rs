@@ -120,15 +120,15 @@ mod tests {
         let mut rays = MockRays::new();
         lazy_static! {
             static ref ray_vec_iter: Vec<LinearGraph> = vec![
-                LinearGraph::from_radians(Radians::new(0.2)),
-                LinearGraph::from_radians(Radians::new(0.4)),
-                LinearGraph::from_radians(Radians::new(0.6)),
-                LinearGraph::from_radians(Radians::new(0.8)),
-                LinearGraph::from_radians(Radians::new(1.0)),
-                LinearGraph::from_radians(Radians::new(1.2)),
-                LinearGraph::from_radians(Radians::new(1.4)),
-                LinearGraph::from_radians(Radians::new(1.6)),
-                LinearGraph::from_radians(Radians::new(1.8)),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
+                LinearGraph::default(),
             ];
         }
 
@@ -147,32 +147,32 @@ mod tests {
         let walls_rays = vec![
             Some((
                 Wall::new(Point { x: 2, y: 4 }, Point { x: 3, y: 4 }, Color::Red),
-                LinearGraph::from_radians(Radians::new(2.0)),
+                LinearGraph::default(),
             )),
             Some((
                 Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
-                LinearGraph::from_radians(Radians::new(2.2)),
+                LinearGraph::default(),
             )),
             Some((
                 Wall::new(Point { x: 4, y: 2 }, Point { x: 5, y: 2 }, Color::Red),
-                LinearGraph::from_radians(Radians::new(2.4)),
+                LinearGraph::default(),
             )),
             Some((
                 Wall::new(Point { x: 3, y: 4 }, Point { x: 4, y: 4 }, Color::Red),
-                LinearGraph::from_radians(Radians::new(2.6)),
+                LinearGraph::default(),
             )),
             Some((
                 Wall::new(Point { x: 4, y: 2 }, Point { x: 5, y: 2 }, Color::Red),
-                LinearGraph::from_radians(Radians::new(2.8)),
+                LinearGraph::default(),
             )),
             Some((
                 Wall::new(Point { x: 5, y: 2 }, Point { x: 5, y: 1 }, Color::Green),
-                LinearGraph::from_radians(Radians::new(3.0)),
+                LinearGraph::default(),
             )),
             None,
             Some((
                 Wall::new(Point { x: 5, y: 1 }, Point { x: 5, y: 0 }, Color::Green),
-                LinearGraph::from_radians(Radians::new(3.2)),
+                LinearGraph::default(),
             )),
         ];
 

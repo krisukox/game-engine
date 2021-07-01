@@ -180,4 +180,19 @@ mod tests {
             number_of_rays as f64 * 3.0 / 4.0
         );
     }
+
+    #[test]
+    fn partial_cmp() {
+        let radians_1 = Radians(std::f64::consts::PI * 7.0 / 4.0);
+        let radians_2 = Radians(std::f64::consts::PI / 4.0);
+        let radians_3 = Radians(std::f64::consts::PI * 2.0 / 4.0);
+
+        assert!(radians_1 < radians_2);
+        assert!(radians_2 > radians_1);
+
+        assert!(radians_2 < radians_3);
+        assert!(radians_3 > radians_2);
+
+        assert!(radians_1 == radians_1);
+    }
 }
