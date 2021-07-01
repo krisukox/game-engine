@@ -115,10 +115,10 @@ impl PartialOrd for LinearGraph {
     }
 }
 
-pub struct GraphMetods {}
+pub struct GraphMethods {}
 
 #[cfg_attr(test, automock)]
-impl GraphMetods {
+impl GraphMethods {
     pub fn from_two_coordinates(start: &Coordinate, end: Coordinate) -> LinearGraph {
         LinearGraph::from_radians(start.into_radians_coor(&end))
     }
@@ -392,8 +392,8 @@ mod tests {
         let less_2 = LinearGraph::from_radians(Radians::new(7.0 * std::f64::consts::PI / 4.0));
         let greater_2 = LinearGraph::from_radians(Radians::new(1.0 * std::f64::consts::PI / 4.0));
 
-        assert!(GraphMetods::less_than(&less_1, &greater_1));
-        assert!(GraphMetods::less_than(&less_2, &greater_2));
+        assert!(GraphMethods::less_than(&less_1, &greater_1));
+        assert!(GraphMethods::less_than(&less_2, &greater_2));
     }
 
     #[test]
@@ -403,18 +403,32 @@ mod tests {
             LinearGraph::from_radians(Radians::new(7.0 * std::f64::consts::PI / 4.0));
 
         assert_eq!(
-            GraphMetods::from_two_coordinates(
+            GraphMethods::from_two_coordinates(
                 &Coordinate { x: 4.0, y: 5.0 },
                 Coordinate { x: 6.0, y: 7.0 }
             ),
             linear_graph_1
         );
         assert_eq!(
-            GraphMetods::from_two_coordinates(
+            GraphMethods::from_two_coordinates(
                 &Coordinate { x: 4.0, y: 5.0 },
                 Coordinate { x: 6.0, y: 3.0 }
             ),
             linear_graph_2
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn get_next_from_distance_radians_out_of_scope() {
+        let linear_graph = LinearGraph::from_radians(Radians::OUT_OF_RANGE);
+        linear_graph.get_next_from_distance(&Coordinate::default(), f64::default());
+    }
+
+    #[test]
+    #[should_panic]
+    fn get_next_radians_out_of_scope() {
+        let linear_graph = LinearGraph::from_radians(Radians::OUT_OF_RANGE);
+        GraphMethods::get_next(&linear_graph, &Coordinate::default());
     }
 }

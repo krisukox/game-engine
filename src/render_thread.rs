@@ -6,7 +6,7 @@ use std::sync::{Arc, RwLock};
 use std::{thread, thread::JoinHandle};
 
 #[double]
-use crate::graph::GraphMetods;
+use crate::graph::GraphMethods;
 #[double]
 use crate::graph::Rays;
 #[double]
@@ -85,7 +85,7 @@ impl RenderThread {
                     if next_ray.is_none() {
                         check_next_ray!(next_ray, rays_iter, walls_in_sight);
                     }
-                    while GraphMetods::less_than(next_ray.unwrap(), &current_ray) {
+                    while GraphMethods::less_than(next_ray.unwrap(), &current_ray) {
                         check_next_ray!(next_ray, rays_iter, walls_in_sight);
                     }
 
@@ -102,6 +102,7 @@ impl RenderThread {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
+    use crate::graph::MockGraphMethods;
     use crate::graph::{MockRays, MockRaysIterator, Wall};
     use crate::map::MockMap;
     use crate::map_element::{Color, Point};
@@ -131,7 +132,7 @@ mod tests {
             ];
         }
 
-        let less_than_context = crate::graph::MockGraphMetods::less_than_context();
+        let less_than_context = MockGraphMethods::less_than_context();
 
         let (start_render_sender, start_render_receiver) = channel::<bool>();
         let (sender_walls, receiver_walls) = channel::<(Walls, usize)>();

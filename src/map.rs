@@ -6,7 +6,7 @@ use mockall_double::double;
 use mockall::automock;
 
 #[double]
-use crate::graph::GraphMetods;
+use crate::graph::GraphMethods;
 
 #[derive(Default, Clone)]
 pub struct Map {
@@ -52,7 +52,7 @@ impl Map {
         let mut last_position = position.clone();
         let mut next_position: Coordinate;
         loop {
-            next_position = GraphMetods::get_next(&ray, &last_position);
+            next_position = GraphMethods::get_next(&ray, &last_position);
             if !self.validate_coordinate(&next_position) {
                 return None;
             }
@@ -69,7 +69,7 @@ impl Map {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::graph::MockGraphMetods;
+    use crate::graph::MockGraphMethods;
     use crate::map_element::{Color, MockMapElement, Point};
     use mockall::*;
 
@@ -94,7 +94,7 @@ mod tests {
             primary_object_color: Color::Blue,
         };
 
-        let get_next_context = MockGraphMetods::get_next_context();
+        let get_next_context = MockGraphMethods::get_next_context();
         let mut map_element = Box::new(MockMapElement::new());
 
         get_next_context
@@ -158,7 +158,7 @@ mod tests {
         static current_positon: Coordinate = Coordinate { x: 30.0, y: 20.0 };
         let next_position_out_of_map = Coordinate { x: 55.0, y: 30.0 };
 
-        let get_next_context = MockGraphMetods::get_next_context();
+        let get_next_context = MockGraphMethods::get_next_context();
         let map_element = Box::new(MockMapElement::new());
 
         get_next_context

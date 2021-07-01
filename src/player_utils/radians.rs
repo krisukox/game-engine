@@ -35,6 +35,8 @@ impl Radians {
     pub const ZERO: Radians = Radians(0.0);
     pub const PI: Radians = Radians(std::f64::consts::PI);
     pub const PI_2: Radians = Radians(std::f64::consts::PI * 2.0);
+    #[cfg(test)]
+    pub const OUT_OF_RANGE: Radians = Radians(std::f64::consts::PI * 3.0);
 }
 
 impl AddAssign for Radians {

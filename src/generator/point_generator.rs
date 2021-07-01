@@ -32,7 +32,7 @@ impl PointGenerator {
         start_position: &Coordinate,
         end_position: &Point,
     ) -> f64 {
-        let point_radians = start_position.into_radians(end_position);
+        let point_radians = start_position.into_radians_point(end_position);
         if angle.is_inside(point_radians) {
             return self.point_width_inside_field_of_view(angle, &point_radians);
         }
@@ -129,7 +129,7 @@ impl PointGenerator {
         start_position: &Coordinate,
         end_position: &Point,
     ) -> f64 {
-        let point_radians = start_position.into_radians(end_position);
+        let point_radians = start_position.into_radians_point(end_position);
         let (graph_point_radians, perpendicular_direction, perpendicular_direction_b, _) =
             Self::compute_graphs(angle, &point_radians);
 

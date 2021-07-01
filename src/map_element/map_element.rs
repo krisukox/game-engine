@@ -3,7 +3,7 @@ use crate::map_element::{Color, Point};
 use mockall_double::double;
 
 #[double]
-use crate::graph::GraphMetods;
+use crate::graph::GraphMethods;
 
 #[cfg(test)]
 use mockall::automock;
@@ -40,7 +40,7 @@ pub trait MapElement: Send + Sync {
                         },
                         primary_object_color: self.color(),
                     },
-                    GraphMetods::from_two_coordinates(
+                    GraphMethods::from_two_coordinates(
                         start_position,
                         Coordinate {
                             x: coordinate.x,
@@ -68,7 +68,7 @@ pub trait MapElement: Send + Sync {
 
                         primary_object_color: self.color(),
                     },
-                    GraphMetods::from_two_coordinates(
+                    GraphMethods::from_two_coordinates(
                         start_position,
                         Coordinate {
                             x: coordinate.x,
@@ -94,7 +94,7 @@ pub trait MapElement: Send + Sync {
                         },
                         primary_object_color: self.color(),
                     },
-                    GraphMetods::from_two_coordinates(
+                    GraphMethods::from_two_coordinates(
                         start_position,
                         Coordinate {
                             x: coordinate.x.floor() - 0.0001,
@@ -122,7 +122,7 @@ pub trait MapElement: Send + Sync {
 
                         primary_object_color: self.color(),
                     },
-                    GraphMetods::from_two_coordinates(
+                    GraphMethods::from_two_coordinates(
                         start_position,
                         Coordinate {
                             x: coordinate.x.ceil() + 0.0001,

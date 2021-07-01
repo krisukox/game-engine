@@ -59,7 +59,7 @@ impl MapElement for WallMap {
 mod tests {
     #![allow(non_upper_case_globals)]
     use super::*;
-    use crate::graph::{LinearGraph, MockGraphMetods, Wall};
+    use crate::graph::{LinearGraph, MockGraphMethods, Wall};
     use lazy_static::*;
 
     #[test]
@@ -168,7 +168,7 @@ mod tests {
                 static ref linear_graph: LinearGraph = LinearGraph::default();
             }
 
-            let from_two_coordinates_context = MockGraphMetods::from_two_coordinates_context();
+            let from_two_coordinates_context = MockGraphMethods::from_two_coordinates_context();
 
             from_two_coordinates_context
                 .expect()
